@@ -92,6 +92,28 @@
     <!-- Use fingerprint API -->
     <uses-permission android:name="android.permission.USE_FINGERPRINT" />
 
+    <!-- ====== WEAR OS PERMISSIONS ====== -->
+    <!-- Body sensors for health tracking on Wear OS -->
+    <uses-permission android:name="android.permission.BODY_SENSORS" />
+    <!-- Vibrate for haptic feedback on watches -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- Required features -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.microphone"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.location.gps"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.bluetooth"
+        android:required="false" />
+    <!-- Wear OS feature declaration -->
+    <uses-feature android:name="android.hardware.type.watch" android:required="false" />
+
     <!-- ====== APPLICATION CONFIGURATION ====== -->
     <application
         android:allowBackup="true"
@@ -104,6 +126,11 @@
         android:theme="@style/Theme.DavidAI"
         android:usesCleartextTraffic="false">
 
+        <!-- Wear OS Metadata -->
+        <meta-data
+            android:name="com.google.android.wearable.standalone"
+            android:value="true" />
+
         <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
@@ -113,6 +140,11 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- Wear OS launcher intent -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="com.google.android.wearable.category.WEARABLE_LAUNCHER" />
             </intent-filter>
         </activity>
 
@@ -150,19 +182,5 @@
             android:foregroundServiceType="camera" />
 
     </application>
-
-    <!-- Required features -->
-    <uses-feature
-        android:name="android.hardware.camera"
-        android:required="true" />
-    <uses-feature
-        android:name="android.hardware.microphone"
-        android:required="true" />
-    <uses-feature
-        android:name="android.hardware.location.gps"
-        android:required="false" />
-    <uses-feature
-        android:name="android.hardware.bluetooth"
-        android:required="false" />
 
 </manifest>
