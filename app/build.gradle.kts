@@ -51,7 +51,9 @@ android {
         jvmTarget = "17"
         freeCompilerArgs += listOf(
             "-opt-in=kotlin.RequiresOptIn",
-            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"
+            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+            "-P",
+            "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true"
         )
     }
 
@@ -86,6 +88,15 @@ configurations.all {
         force("org.jetbrains.kotlin:kotlin-stdlib:1.9.22")
         force("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.22")
         force("org.jetbrains.kotlin:kotlin-reflect:1.9.22")
+        force("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.22")
+        force("org.jetbrains.kotlin:kotlin-stdlib-common:1.9.22")
+        
+        // Force all Kotlin dependencies
+        eachDependency {
+            if (requested.group == "org.jetbrains.kotlin") {
+                useVersion("1.9.22")
+            }
+        }
     }
 }
 
