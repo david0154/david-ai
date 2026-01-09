@@ -1,46 +1,168 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.davidstudioz.david">
 
-    <!-- Permissions -->
-    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- ====== CORE PERMISSIONS ====== -->
+    <!-- Microphone for voice input (speech-to-text) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Camera for gesture recognition -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.CALL_PHONE" />
-    <uses-permission android:name="android.permission.SEND_SMS" />
-    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <!-- Internet for weather, model download, etc. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Network status checking -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />
-    <uses-permission android:name="android.permission.MANAGE_DEVICE_ADMINS" />
-    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- Check WiFi state -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
+    <!-- ====== LOCATION PERMISSIONS ====== -->
+    <!-- Fine location (GPS) for weather, location services -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Coarse location (WiFi/network) -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- ====== DEVICE CONTROL PERMISSIONS ====== -->
+    <!-- Make phone calls -->
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <!-- Send SMS messages -->
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <!-- Read SMS -->
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <!-- Read phone state -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+    <!-- ====== CONNECTIVITY CONTROL ====== -->
+    <!-- Control WiFi -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <!-- Change network state -->
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <!-- Bluetooth control -->
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <!-- Connect to paired Bluetooth devices -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- Discover Bluetooth devices -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+
+    <!-- ====== MEDIA & STORAGE ====== -->
+    <!-- Read external storage for files/models -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!-- Write external storage for saving data -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!-- Manage all files -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <!-- Access media files -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+
+    <!-- ====== CONTACT & COMMUNICATION ====== -->
+    <!-- Read contacts for SMS/call functions -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <!-- Write contacts -->
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+    <!-- Read call log -->
+    <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <!-- Write call log -->
+    <uses-permission android:name="android.permission.WRITE_CALL_LOG" />
+
+    <!-- ====== SECURITY & ADMIN ====== -->
+    <!-- Device admin for lock/unlock -->
+    <uses-permission android:name="android.permission.ACCESS_DEVICE_STATE" />
+    <!-- Battery optimization whitelist -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- Notification access -->
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+    <!-- System alert window for overlay (pointer) -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <!-- ====== BACKGROUND & SYSTEM ====== -->
+    <!-- Background service -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- Wake lock for background processing -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Get task info for background app detection -->
+    <uses-permission android:name="android.permission.GET_TASKS" />
+    <!-- Runtime stats for performance monitoring -->
+    <uses-permission android:name="android.permission.GET_RUNTIME_STATS" />
+
+    <!-- ====== BIOMETRIC & AUTHENTICATION ====== -->
+    <!-- Biometric authentication -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <!-- Use fingerprint API -->
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+
+    <!-- ====== APPLICATION CONFIGURATION ====== -->
     <application
-        android:name=".DavidAIApp"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
+        android:roundIcon="@drawable/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.DavidAI"
         android:usesCleartextTraffic="false">
 
+        <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.DavidAI">
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.DavidAI.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
+        <!-- Device Admin Receiver for device lock -->
+        <receiver
+            android:name=".security.DavidDeviceAdminReceiver"
+            android:exported="true"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Hot Word Detection Service -->
+        <service
+            android:name=".voice.HotWordDetectionService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="microphone" />
+
+        <!-- Chat & AI Service -->
+        <service
+            android:name=".chat.ChatService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <!-- Gesture Recognition Service -->
+        <service
+            android:name=".gesture.GestureRecognitionService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="camera" />
+
     </application>
+
+    <!-- Required features -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.microphone"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.location.gps"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.bluetooth"
+        android:required="false" />
 
 </manifest>
