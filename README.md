@@ -13,6 +13,29 @@ All data stays on your device. Zero backend dependency. 100% local processing.
 
 ---
 
+## 📚 Documentation & Setup
+
+### 🚀 Getting Started
+- **[ANDROID_STUDIO_SETUP.md](docs/ANDROID_STUDIO_SETUP.md)** ⭐ **START HERE** - Complete Android Studio setup guide
+  - Project configuration (app name, package name, version)
+  - App icons & logo setup
+  - Splash screen configuration
+  - Google Login API integration
+  - App signing for release builds
+  - Build & run instructions
+  - Troubleshooting guide
+
+### 📖 Feature Documentation
+- **[VOICE_GUIDE.md](docs/VOICE_GUIDE.md)** - Voice control features & commands
+- **[DEVICE_CONTROL.md](docs/DEVICE_CONTROL.md)** - Device automation (20+ commands)
+- **[GESTURE_RECOGNITION.md](docs/GESTURE_RECOGNITION.md)** - Gesture control guide
+- **[HOT_WORD_SETUP.md](docs/HOT_WORD_SETUP.md)** - Hot word configuration
+- **[ENCRYPTION.md](docs/ENCRYPTION.md)** - Security & encryption details
+- **[ACCESSIBILITY.md](docs/ACCESSIBILITY.md)** - Accessibility features
+- **[BUILD_COMMANDS.md](BUILD_COMMANDS.md)** - All build commands reference
+
+---
+
 ## 🌟 Actual Features (v2.0)
 
 ### 🎤 Voice Control & Interaction
@@ -291,7 +314,13 @@ git clone https://github.com/david0154/david-ai.git
 cd david-ai
 ```
 
-**2. Setup Firebase (Google Login)**
+**2. Read Setup Guide** ⭐
+```
+Open: docs/ANDROID_STUDIO_SETUP.md
+Follows complete step-by-step setup instructions
+```
+
+**3. Setup Firebase (Google Login)**
 ```
 1. Go to https://firebase.google.com/console
 2. Create project "DAVID-AI"
@@ -300,17 +329,17 @@ cd david-ai
 5. Paste in GoogleAuthManager.kt (Line 22)
 ```
 
-**3. Build Project**
+**4. Build Project**
 ```bash
 ./gradlew build
 ```
 
-**4. Install on Device**
+**5. Install on Device**
 ```bash
 ./gradlew installDebug
 ```
 
-**5. First Launch**
+**6. First Launch**
 - Sign in with Google
 - Set your nickname (AI will call you by this name)
 - Select your preferred language (14+ options)
@@ -538,7 +567,7 @@ david-ai/
 │   ├── build.gradle.kts              # App Build Config
 │   └── AndroidManifest.xml           # App Manifest
 ├── docs/                                    # Documentation
-│   ├── LOCAL_DEVICE_SETUP.md       # Local Setup Guide
+│   ├── ANDROID_STUDIO_SETUP.md     # ⭐ Android Studio Setup
 │   ├── VOICE_GUIDE.md              # Voice Features
 │   ├── DEVICE_CONTROL.md           # Device Control
 │   ├── GESTURE_RECOGNITION.md      # Gesture Guide
@@ -575,7 +604,7 @@ david-ai/
 - 📧 Check [Issues](https://github.com/david0154/david-ai/issues)
 - 📚 Read [Documentation](./docs/)
 - 💬 View [Discussions](https://github.com/david0154/david-ai/discussions)
-- 🔌 See [BUILD_COMMANDS.md](BUILD_COMMANDS.md)
+- ⭐ **Start with [ANDROID_STUDIO_SETUP.md](docs/ANDROID_STUDIO_SETUP.md)** for setup
 
 ### Contribute
 1. Fork the repository
@@ -590,13 +619,14 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## 📊 Documentation
 
-- **[BUILD_COMMANDS.md](BUILD_COMMANDS.md)** - All build commands
+- **[ANDROID_STUDIO_SETUP.md](docs/ANDROID_STUDIO_SETUP.md)** ⭐ - Complete Android Studio setup
 - **[VOICE_GUIDE.md](docs/VOICE_GUIDE.md)** - Voice control features
 - **[DEVICE_CONTROL.md](docs/DEVICE_CONTROL.md)** - Device automation commands
 - **[GESTURE_RECOGNITION.md](docs/GESTURE_RECOGNITION.md)** - Gesture control guide
 - **[HOT_WORD_SETUP.md](docs/HOT_WORD_SETUP.md)** - Hot word configuration
 - **[ENCRYPTION.md](docs/ENCRYPTION.md)** - Security details
 - **[ACCESSIBILITY.md](docs/ACCESSIBILITY.md)** - Accessibility features
+- **[BUILD_COMMANDS.md](BUILD_COMMANDS.md)** - Build reference
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contributing guidelines
 
 ---
@@ -616,6 +646,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 - ✅ Accessibility features
 - ✅ Optimized TTS models (Coqui Lite)
 - ✅ Multi-language support (14 languages)
+- ✅ Comprehensive Android Studio setup guide
 
 ### v2.1 (Planned)
 - 📧 Advanced ML models
@@ -666,7 +697,8 @@ David AI is licensed under the **Apache 2.0 License**. See [LICENSE](LICENSE) fo
 # Clone
 git clone https://github.com/david0154/david-ai.git
 
-# Build
+# Setup (see docs/ANDROID_STUDIO_SETUP.md)
+cd david-ai
 ./gradlew build
 
 # Install
@@ -684,6 +716,7 @@ git clone https://github.com/david0154/david-ai.git
 **DAVID AI v2.0**  
 *Your Voice. Your Device. Your Privacy.*  
 *Supports 14+ Languages with Hot Word Detection & Personalized Responses*  
+**⭐ [Start with Android Studio Setup Guide](docs/ANDROID_STUDIO_SETUP.md)**  
 *© 2026 David Powered by Nexuzy Tech*  
 *Kolkata, India*  
 https://github.com/david0154/david-ai
