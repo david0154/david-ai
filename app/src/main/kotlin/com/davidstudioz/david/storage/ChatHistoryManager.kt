@@ -26,19 +26,19 @@ interface ChatMessageDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMessage(message: ChatMessage)
     
-    @Query("SELECT * FROM chat_messages WHERE userId = ? ORDER BY timestamp DESC LIMIT :limit")
+    @Query("SELECT * FROM chat_messages WHERE userId = :userId ORDER BY timestamp DESC LIMIT :limit")
     suspend fun getRecentMessages(userId: String, limit: Int = 100): List<ChatMessage>
     
-    @Query("SELECT * FROM chat_messages WHERE userId = ? AND timestamp >= ? ORDER BY timestamp DESC")
+    @Query("SELECT * FROM chat_messages WHERE userId = :userId AND timestamp >= :sinceTimestamp ORDER BY timestamp DESC")
     suspend fun getMessagesSince(userId: String, sinceTimestamp: Long): List<ChatMessage>
     
-    @Query("DELETE FROM chat_messages WHERE userId = ? AND timestamp < ?")
+    @Query("DELETE FROM chat_messages WHERE userId = :userId AND timestamp < :beforeTimestamp")
     suspend fun deleteOldMessages(userId: String, beforeTimestamp: Long)
     
-    @Query("SELECT COUNT(*) FROM chat_messages WHERE userId = ?")
+    @Query("SELECT COUNT(*) FROM chat_messages WHERE userId = :userId")
     suspend fun getMessageCount(userId: String): Int
     
-    @Query("DELETE FROM chat_messages WHERE userId = ?")
+    @Query("DELETE FROM chat_messages WHERE userId = :userId")
     suspend fun clearUserHistory(userId: String)
 }
 
