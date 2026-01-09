@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Background -->
+    <path
+        android:fillColor="#1A1A2E"
+        android:pathData="M0,0h48v48h-48z" />
+    
+    <!-- DAVID AI Logo -->
+    <group
+        android:scaleX="0.5"
+        android:scaleY="0.5"
+        android:translateX="12"
+        android:translateY="12">
+        <path
+            android:fillColor="#00D9FF"
+            android:pathData="M10,8 Q10,4 14,4 L20,4 Q26,4 26,10 L26,28 Q26,34 20,34 L14,34 Q10,34 10,28 Z" />
+        <path
+            android:fillColor="#7B2FFF"
+            android:pathData="M18,32 L20,6 L22,6 L24,32 M19,18 L23,18"
+            android:strokeWidth="1.5"
+            android:strokeLineCap="round" />
+        <path
+            android:fillColor="#FF6B6B"
+            android:pathData="M28,10 L30,10 L30,12 L28,12 Z M28,14 L30,14 L30,26 L28,26 Z" />
+    </group>
+</vector>

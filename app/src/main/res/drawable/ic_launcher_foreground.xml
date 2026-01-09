@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="0.6"
+        android:scaleY="0.6"
+        android:translateX="21.6"
+        android:translateY="21.6">
+        <!-- D Letter -->
+        <path
+            android:fillColor="#00D9FF"
+            android:pathData="M30,25 Q30,15 40,15 L50,15 Q65,15 65,30 L65,60 Q65,75 50,75 L40,75 Q30,75 30,65 Z"
+            android:strokeWidth="3"
+            android:strokeColor="#00D9FF" />
+        
+        <!-- A Letter -->
+        <path
+            android:fillColor="#7B2FFF"
+            android:pathData="M45,70 L50,20 L55,20 L60,70 M47,50 L58,50"
+            android:strokeWidth="3"
+            android:strokeColor="#7B2FFF"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        
+        <!-- AI Accent -->
+        <path
+            android:fillColor="#FF6B6B"
+            android:pathData="M70,30 L75,30 L75,35 L70,35 Z M70,40 L75,40 L75,60 L70,60 Z"
+            android:strokeWidth="2"
+            android:strokeColor="#FF6B6B" />
+    </group>
+</vector>
