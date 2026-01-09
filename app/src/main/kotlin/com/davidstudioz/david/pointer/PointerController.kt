@@ -1,188 +1,164 @@
 package com.davidstudioz.david.pointer
 
+import android.Manifest
 import android.content.Context
-import android.graphics.PixelFormat
+import android.content.pm.PackageManager
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.PointF
+import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
-import android.widget.ImageView
-import android.graphics.drawable.ShapeDrawable
-import android.graphics.shapes.OvalShape
-import android.graphics.Paint
-import android.graphics.Color
-import android.os.Build
+import android.widget.FrameLayout
+import androidx.core.content.ContextCompat
 
 /**
- * Pointer Controller (AI Mouse Control)
- * AI can control device via pointer (mouse cursor)
- * Hand gestures translate to pointer movement
+ * Pointer Controller
+ * Shows hand-controlled mouse pointer for device control
+ * Uses gesture coordinates to move pointer and interact
  */
-class PointerController(private val context: Context) {
+class PointerController(
+    private val context: Context
+) {
 
-    private val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-    private var pointerView: ImageView? = null
-    private var isPointerVisible = false
-    private var currentX = 0f
-    private var currentY = 0f
-    private var pointerClickListener: ((x: Float, y: Float) -> Unit)? = null
+    private val TAG = "PointerController"
+    private var windowManager: WindowManager? = null
+    private var pointerView: PointerView? = null
+    private var isShowing = false
+    private var onClickListener: ((Float, Float) -> Unit)? = null
+
+    init {
+        windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    }
 
     /**
-     * Show pointer (mouse cursor) on screen
+     * Show pointer overlay
      */
     fun showPointer() {
-        if (isPointerVisible) return
+        if (isShowing) return
 
-        isPointerVisible = true
-        pointerView = ImageView(context).apply {
-            // Create pointer drawable
-            val drawable = ShapeDrawable(OvalShape()).apply {
-                paint.apply {
-                    color = Color.YELLOW
-                    style = Paint.Style.STROKE
-                    strokeWidth = 4f
-                }
-            }
-            setImageDrawable(drawable)
-            layoutParams = ImageView.LayoutParams(50, 50)
+        if (!hasOverlayPermission()) {
+            Log.w(TAG, "Overlay permission not granted")
+            return
         }
 
-        val params = WindowManager.LayoutParams().apply {
-            type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-            } else {
-                @Suppress("DEPRECATION")
-                WindowManager.LayoutParams.TYPE_PHONE
+        try {
+            pointerView = PointerView(context)
+            val params = WindowManager.LayoutParams().apply {
+                type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                format = android.graphics.PixelFormat.TRANSLUCENT
+                width = 100
+                height = 100
+                gravity = Gravity.TOP or Gravity.START
+                x = 0
+                y = 0
             }
-            format = PixelFormat.RGBA_8888
-            flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-            gravity = Gravity.TOP or Gravity.LEFT
-            width = 50
-            height = 50
-            x = currentX.toInt()
-            y = currentY.toInt()
-        }
 
-        windowManager.addView(pointerView, params)
+            windowManager?.addView(pointerView, params)
+            isShowing = true
+            Log.d(TAG, "Pointer shown")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to show pointer", e)
+        }
     }
 
     /**
-     * Hide pointer
+     * Hide pointer overlay
      */
     fun hidePointer() {
-        if (!isPointerVisible || pointerView == null) return
+        if (!isShowing || pointerView == null) return
 
         try {
-            windowManager.removeView(pointerView)
+            windowManager?.removeView(pointerView)
             pointerView = null
-            isPointerVisible = false
+            isShowing = false
+            Log.d(TAG, "Pointer hidden")
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "Failed to hide pointer", e)
         }
     }
 
     /**
-     * Move pointer to position
-     * Hand position from camera: (0.0 - 1.0, 0.0 - 1.0)
+     * Move pointer to position (x, y in normalized coordinates 0-1)
      */
     fun movePointer(normalizedX: Float, normalizedY: Float) {
-        if (!isPointerVisible || pointerView == null) return
-
-        val displayMetrics = context.resources.displayMetrics
-        currentX = normalizedX * displayMetrics.widthPixels
-        currentY = normalizedY * displayMetrics.heightPixels
-
-        val params = pointerView?.layoutParams as? WindowManager.LayoutParams ?: return
-        params.x = currentX.toInt() - 25 // Center the pointer
-        params.y = currentY.toInt() - 25
+        if (!isShowing || pointerView == null) return
 
         try {
-            windowManager.updateViewLayout(pointerView, params)
+            val displayMetrics = context.resources.displayMetrics
+            val screenX = (normalizedX * displayMetrics.widthPixels).toInt()
+            val screenY = (normalizedY * displayMetrics.heightPixels).toInt()
+
+            val params = WindowManager.LayoutParams().apply {
+                type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                format = android.graphics.PixelFormat.TRANSLUCENT
+                width = 100
+                height = 100
+                gravity = Gravity.TOP or Gravity.START
+                x = screenX - 50  // Center pointer
+                y = screenY - 50
+            }
+
+            windowManager?.updateViewLayout(pointerView, params)
+            pointerView?.setPosition(screenX, screenY)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "Failed to move pointer", e)
         }
     }
 
     /**
-     * Simulate pointer click at current position
-     * Command: "Click"
+     * Simulate click at pointer position
      */
     fun click() {
-        // Find view at current position and perform click
-        pointerClickListener?.invoke(currentX, currentY)
+        if (!isShowing || pointerView == null) return
+        pointerView?.performClick()
     }
 
     /**
      * Simulate double click
-     * Command: "Double click"
      */
     fun doubleClick() {
         click()
-        click()
-    }
-
-    /**
-     * Simulate long press
-     * Command: "Long press"
-     */
-    fun longPress(duration: Long = 500) {
-        // Hold for specified duration
-        pointerClickListener?.invoke(currentX, currentY)
-        Thread.sleep(duration)
-        pointerClickListener?.invoke(currentX, currentY)
-    }
-
-    /**
-     * Simulate drag from current position to target
-     * Command: "Drag to x,y"
-     */
-    fun drag(targetX: Float, targetY: Float, duration: Long = 1000) {
-        val startX = currentX
-        val startY = currentY
-        val steps = 20
-        val stepDuration = duration / steps
-
-        for (i in 0..steps) {
-            val progress = i.toFloat() / steps
-            val x = startX + (targetX - startX) * progress
-            val y = startY + (targetY - startY) * progress
-            movePointer(x / context.resources.displayMetrics.widthPixels,
-                       y / context.resources.displayMetrics.heightPixels)
-            Thread.sleep(stepDuration)
+        try {
+            Thread.sleep(100)
+            click()
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
         }
     }
 
     /**
-     * Scroll up
-     * Command: "Scroll up"
+     * Simulate long press
      */
-    fun scrollUp(amount: Float = 100f) {
-        movePointer(currentX / context.resources.displayMetrics.widthPixels,
-                   (currentY - amount) / context.resources.displayMetrics.heightPixels)
+    fun longPress(duration: Long = 500) {
+        if (!isShowing || pointerView == null) return
+        pointerView?.performLongPress(duration)
     }
 
     /**
-     * Scroll down
-     * Command: "Scroll down"
+     * Set click listener
      */
-    fun scrollDown(amount: Float = 100f) {
-        movePointer(currentX / context.resources.displayMetrics.widthPixels,
-                   (currentY + amount) / context.resources.displayMetrics.heightPixels)
+    fun setOnClickListener(listener: (Float, Float) -> Unit) {
+        onClickListener = listener
     }
 
     /**
-     * Get current pointer position
+     * Get pointer position
      */
-    fun getPointerPosition(): Pair<Float, Float> {
-        return Pair(currentX, currentY)
+    fun getPointerPosition(): PointF? {
+        return pointerView?.position
     }
 
     /**
-     * Set pointer click listener
+     * Check overlay permission
      */
-    fun setOnClickListener(listener: (x: Float, y: Float) -> Unit) {
-        pointerClickListener = listener
+    private fun hasOverlayPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.SYSTEM_ALERT_WINDOW
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     /**
@@ -190,6 +166,59 @@ class PointerController(private val context: Context) {
      */
     fun release() {
         hidePointer()
-        pointerClickListener = null
+    }
+}
+
+/**
+ * Pointer View
+ * Custom view for rendering the pointer/cursor
+ */
+class PointerView(context: Context) : View(context) {
+
+    var position = PointF(0f, 0f)
+    private val paint = Paint().apply {
+        color = android.graphics.Color.CYAN
+        strokeWidth = 2f
+        isAntiAlias = true
+        style = Paint.Style.STROKE
+    }
+
+    private val fillPaint = Paint().apply {
+        color = android.graphics.Color.argb(100, 0, 255, 255)
+        style = Paint.Style.FILL
+        isAntiAlias = true
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+
+        val centerX = width / 2f
+        val centerY = height / 2f
+        val radius = 20f
+
+        // Draw circle (pointer)
+        canvas.drawCircle(centerX, centerY, radius, fillPaint)
+        canvas.drawCircle(centerX, centerY, radius, paint)
+
+        // Draw crosshair
+        canvas.drawLine(centerX - 10, centerY, centerX + 10, centerY, paint)
+        canvas.drawLine(centerX, centerY - 10, centerX, centerY + 10, paint)
+    }
+
+    fun setPosition(x: Float, y: Float) {
+        position.set(x, y)
+    }
+
+    fun performClick() {
+        super.performClick()
+        // Visual feedback
+        alpha = 0.5f
+        postDelayed({ alpha = 1f }, 100)
+    }
+
+    fun performLongPress(duration: Long) {
+        // Visual feedback for long press
+        alpha = 0.3f
+        postDelayed({ alpha = 1f }, duration)
     }
 }
