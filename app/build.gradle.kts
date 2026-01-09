@@ -55,12 +55,13 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.3"
+        kotlinCompilerExtensionVersion = "1.5.8"
     }
 
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/gradle/incremental.annotation.processors"
         }
     }
 }
@@ -73,6 +74,7 @@ dependencies {
 
     // Lifecycle
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
     implementation("androidx.activity:activity-compose:1.8.2")
 
     // Jetpack Compose
@@ -84,6 +86,7 @@ dependencies {
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material:material")
     implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.runtime:runtime-livedata")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
@@ -121,10 +124,11 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 
     // Hilt with KSP
-    implementation("com.google.dagger:hilt-android:2.48.1")
-    ksp("com.google.dagger:hilt-compiler:2.48.1")
+    implementation("com.google.dagger:hilt-android:2.50")
+    ksp("com.google.dagger:hilt-compiler:2.50")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
 
     // Room Database with KSP
