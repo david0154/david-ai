@@ -1,157 +1,158 @@
 package com.davidstudioz.david.features
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Location
 import android.location.LocationManager
+import android.util.Log
 import androidx.core.content.ContextCompat
 import java.text.SimpleDateFormat
 import java.util.*
-import android.Manifest
-import android.content.pm.PackageManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
- * Weather & Time Features
- * AI can speak weather and time
- * Requires internet for weather data
+ * Weather & Time Provider
+ * Provides current time and weather information
+ * Uses location for weather API
  */
 class WeatherTimeProvider(private val context: Context) {
 
-    private val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    private val TAG = "WeatherTimeProvider"
+    private var currentLocation: Location? = null
 
     /**
-     * Get current time
-     * Command: "What time is it?"
+     * Get current time in formatted string
      */
     fun getCurrentTime(): String {
-        val timeFormatter = SimpleDateFormat("hh:mm a", Locale.getDefault())
-        return timeFormatter.format(Date())
+        val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+        return sdf.format(Date())
     }
 
     /**
      * Get current date
-     * Command: "What's today's date?"
      */
     fun getCurrentDate(): String {
-        val dateFormatter = SimpleDateFormat("EEEE, MMMM dd, yyyy", Locale.getDefault())
-        return dateFormatter.format(Date())
+        val sdf = SimpleDateFormat("EEEE, MMMM dd, yyyy", Locale.getDefault())
+        return sdf.format(Date())
     }
 
     /**
-     * Get time with full details
-     * Command: "Tell me the time"
+     * Get detailed time information
      */
     fun getDetailedTime(): String {
-        val cal = Calendar.getInstance()
-        val hour = cal.get(Calendar.HOUR_OF_DAY)
-        val minute = cal.get(Calendar.MINUTE)
-        val second = cal.get(Calendar.SECOND)
-        val dayOfWeek = SimpleDateFormat("EEEE", Locale.getDefault()).format(Date())
-        val date = SimpleDateFormat("MMMM dd", Locale.getDefault()).format(Date())
-
-        return "It's $hour:${String.format("%02d", minute)}:${String.format("%02d", second)} on $dayOfWeek, $date"
+        val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
+        val dateFormat = SimpleDateFormat("EEEE, MMMM dd", Locale.getDefault())
+        val time = timeFormat.format(Date())
+        val date = dateFormat.format(Date())
+        return "It's $time on $date"
     }
 
     /**
      * Get weather information
-     * Requires location permission and internet
-     * Command: "What's the weather?"
+     * In real app, would call weather API (OpenWeatherMap, etc.)
      */
-    fun getWeather(latitude: Double, longitude: Double): String {
-        // In production, use OpenWeatherMap API or similar
-        // For now, return placeholder
-        return """
-            Current weather at your location:
-            Temperature: 28°C
-            Condition: Partly Cloudy
-            Humidity: 65%
-            Wind Speed: 12 km/h
-            UV Index: 6 (High)
-        """.trimIndent()
-    }
-
-    /**
-     * Get weather for next 7 days
-     * Command: "What's the weather forecast?"
-     */
-    fun getWeatherForecast(): String {
-        return """
-            7-Day Forecast:
-            
-            Tomorrow (Friday): 29°C, Sunny
-            Saturday: 27°C, Cloudy
-            Sunday: 25°C, Light Rain
-            Monday: 26°C, Partly Cloudy
-            Tuesday: 30°C, Sunny
-            Wednesday: 28°C, Thunderstorms
-            Thursday: 24°C, Rainy
-        """.trimIndent()
-    }
-
-    /**
-     * Check if it's day or night
-     */
-    fun isDayTime(): Boolean {
-        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-        return hour in 6..18
-    }
-
-    /**
-     * Get current location (if permission granted)
-     */
-    fun getCurrentLocation(): Pair<Double, Double>? {
-        return try {
-            if (ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                // Get last known location
-                val lastLocation = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                    locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+    suspend fun getWeather(latitude: Double, longitude: Double): String {
+        return withContext(Dispatchers.IO) {
+            try {
+                // Get current location if not provided
+                val loc = if (latitude == 0.0 && longitude == 0.0) {
+                    getCurrentLocation()
                 } else {
-                    locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                    Location("").apply {
+                        this.latitude = latitude
+                        this.longitude = longitude
+                    }
                 }
-                
-                if (lastLocation != null) {
-                    Pair(lastLocation.latitude, lastLocation.longitude)
+
+                if (loc != null) {
+                    // Call weather API (mock implementation)
+                    "The weather is sunny, 28°C with light winds from the north. Humidity 65%"
                 } else {
-                    null
+                    "Unable to fetch weather - location not available"
                 }
-            } else {
-                null
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching weather", e)
+                "Weather data unavailable"
             }
+        }
+    }
+
+    /**
+     * Get current location
+     */
+    private fun getCurrentLocation(): Location? {
+        return try {
+            if (!hasLocationPermission()) {
+                Log.w(TAG, "Location permission not granted")
+                return null
+            }
+
+            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            
+            // Try GPS first
+            var location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            
+            // Fall back to network location
+            if (location == null) {
+                location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            }
+            
+            location
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "Error getting location", e)
             null
         }
     }
 
     /**
-     * Get personalized greeting based on time of day
+     * Get weather forecast
      */
-    fun getTimeBasedGreeting(userName: String): String {
-        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-        return when (hour) {
-            in 5..11 -> "Good morning, $userName!"
-            in 12..16 -> "Good afternoon, $userName!"
-            in 17..20 -> "Good evening, $userName!"
-            else -> "Good night, $userName!"
+    fun getWeatherForecast(days: Int = 3): List<String> {
+        // Mock forecast data
+        return listOf(
+            "Tomorrow: Sunny, 30°C",
+            "Day after: Cloudy, 27°C",
+            "In 3 days: Rainy, 24°C"
+        ).take(days)
+    }
+
+    /**
+     * Convert temperature
+     */
+    fun convertTemperature(celsius: Float, toFahrenheit: Boolean = false): Float {
+        return if (toFahrenheit) {
+            (celsius * 9/5) + 32
+        } else {
+            (celsius - 32) * 5/9
         }
     }
 
     /**
-     * Get timezone info
+     * Check location permission
      */
-    fun getTimezone(): String {
-        val tz = TimeZone.getDefault()
-        return tz.displayName
+    private fun hasLocationPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     /**
-     * Convert time to 12-hour format
+     * Get location info
      */
-    fun convertTo12Hour(hour: Int, minute: Int): String {
-        val ampm = if (hour >= 12) "PM" else "AM"
-        val displayHour = if (hour > 12) hour - 12 else if (hour == 0) 12 else hour
-        return "$displayHour:${String.format("%02d", minute)} $ampm"
+    fun getLocationInfo(): Map<String, Any> {
+        val location = getCurrentLocation()
+        return if (location != null) {
+            mapOf(
+                "latitude" to location.latitude,
+                "longitude" to location.longitude,
+                "accuracy" to location.accuracy,
+                "altitude" to location.altitude
+            )
+        } else {
+            mapOf("status" to "Location not available")
+        }
     }
 }
