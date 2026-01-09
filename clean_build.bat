@@ -1,25 +1,50 @@
 @echo off
-echo Cleaning DAVID AI Project...
+echo ============================================
+echo DAVID AI - Complete Build Clean
+echo ============================================
 echo.
+echo This will delete ALL build artifacts and caches
+echo Press Ctrl+C to cancel, or
+pause
 
-echo [1/4] Stopping Gradle daemon...
+echo.
+echo Step 1: Stopping Gradle Daemon...
 call gradlew --stop
 
-echo [2/4] Deleting build directories...
-if exist .gradle rmdir /s /q .gradle
-if exist build rmdir /s /q build
-if exist app\build rmdir /s /q app\build
-
-echo [3/4] Cleaning Gradle cache...
-if exist %USERPROFILE%\.gradle\caches\transforms-3 rmdir /s /q %USERPROFILE%\.gradle\caches\transforms-3
-if exist %USERPROFILE%\.gradle\caches\modules-2 rmdir /s /q %USERPROFILE%\.gradle\caches\modules-2
-
-echo [4/4] Running clean build...
+echo.
+echo Step 2: Cleaning project...
 call gradlew clean
 
 echo.
-echo ========================================
-echo Clean completed successfully!
-echo Now run: gradlew assembleDebug
-echo ========================================
+echo Step 3: Deleting .gradle directory...
+if exist .gradle rmdir /s /q .gradle
+
+echo.
+echo Step 4: Deleting build directories...
+if exist build rmdir /s /q build
+if exist app\build rmdir /s /q app\build
+
+echo.
+echo Step 5: Deleting Gradle cache...
+if exist %USERPROFILE%\.gradle\caches rmdir /s /q %USERPROFILE%\.gradle\caches
+
+echo.
+echo ============================================
+echo Clean complete! Now rebuilding...
+echo ============================================
+echo.
+
+echo Step 6: Building debug APK...
+call gradlew assembleDebug
+
+echo.
+echo ============================================
+if %ERRORLEVEL% EQU 0 (
+    echo BUILD SUCCESSFUL!
+    echo APK location: app\build\outputs\apk\debug\app-debug.apk
+) else (
+    echo BUILD FAILED!
+    echo Check the error messages above.
+)
+echo ============================================
 pause
