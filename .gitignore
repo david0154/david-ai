@@ -1,0 +1,26 @@
+# Build
+/build/
+/app/build/
+*.apk
+*.aab
+.gradle/
+
+# Models
+*.gguf
+models/
+
+# Secrets
+.env
+local.properties
+api_keys.json
+google-services.json
+signing.jks
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
