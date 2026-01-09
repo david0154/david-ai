@@ -13,75 +13,74 @@ All data stays on your device. Zero backend dependency. 100% local processing.
 
 ---
 
-## 🌟 Features
+## 🌟 Actual Features (v2.0)
 
 ### 🎤 Voice Control & Interaction
 - **Advanced Voice Recognition** - Offline speech-to-text using Whisper.cpp
+- **Hot Word Detection** - Always-listening "Hey David" wake word activation
 - **Natural Voice Response** - Text-to-speech with 14+ language support
 - **Voice Biometric Authentication** - Secure unlock using voice patterns
 - **Speaker Identification** - Recognize different users by voice
 - **Real-Time Conversation** - Context-aware dialogue system
-- **Advanced Voice Profiles** - Custom voice settings (speed, pitch, tone)
+- **User Nickname Support** - AI calls users by their saved nickname
+- **Personalized Greetings** - AI addresses user by nickname (e.g., "Hi John, how are you?")
 
 ### 🧠 Artificial Intelligence
 - **Offline AI Engine** - llama.cpp integration for on-device inference
 - **Adaptive Model Selection** - Auto-selects best model (1.5-6GB RAM)
-- **Context Awareness** - Understands conversation history and context
+- **Context Awareness** - Understands conversation history and user profile
 - **Multi-Model Support** - TinyLLaMA, Phi-2, Qwen 1.8B
-- **Vision Understanding** - CLIP/SigLIP for image recognition
 - **Performance Optimized** - 300-800ms response time
-- **Enhanced AI Models** - Latest open-source models from Hugging Face
+- **Background AI Processing** - Active AI model loading in background while app is in use
+- **Intelligent Responses** - AI learns from user interactions
 
 ### 📱 Device Automation
-- **20+ Voice Commands** - Control device functions via voice
-- **Call & SMS Management** - Make calls, send messages
-- **WiFi, Bluetooth, GPS** - Full connectivity control
-- **Camera & Flashlight** - Take photos, control lighting
-- **Volume & Brightness** - Adjust device settings
-- **App Launcher** - Open apps by voice command
-- **Advanced Gesture Control** - Swipe, tap, long-press, pinch-zoom support
+- **20+ Voice Commands** - Complete control device functions:
+  - "Call Mom"
+  - "Send SMS to John"
+  - "Turn on WiFi"
+  - "Enable Bluetooth"
+  - "Turn on flashlight"
+  - "Increase brightness"
+  - "Open WhatsApp"
+  - "Take a photo"
+  - And 12+ more commands
+- **Call Management** - Make calls, check call history
+- **SMS Control** - Send messages via voice
+- **WiFi & Bluetooth** - Toggle connectivity
+- **GPS Control** - Enable/disable location services
+- **Camera Control** - Take photos via voice
+- **Flashlight Control** - Turn torch on/off
+- **Volume & Brightness** - Full audio and display control
+- **App Launcher** - Open any installed app by voice
 
-### 🏑 Smart Home Integration
-- **Google Home Support** - Control your smart home devices
-- **Alexa Integration** - Multi-platform smart home control
-- **HomeKit Compatibility** - Apple device support
-- **Smart Light Control** - Turn lights on/off, adjust brightness
-- **Thermostat Management** - Set and control temperature
-- **Smart Lock Control** - Lock/unlock doors remotely
-- **Voice-Activated Scenes** - Create automation routines
+### 👆 Gesture Recognition & Control
+- **Gesture Detection** - Recognize and respond to user gestures
+- **Swipe Gestures** - Left, right, up, down swipes
+- **Tap Recognition** - Single tap, double tap, triple tap
+- **Long-Press Detection** - Hold gestures
+- **Pinch-Zoom Support** - Multi-finger zoom
+- **Custom Gesture Mapping** - Assign commands to gestures
+- **Gesture Feedback** - Haptic response for gestures
+- **Accessibility Gestures** - Compatible with accessibility shortcuts
 
-### 💪 Health & Wellness Tracking
-- **Step Counter** - Track daily steps using device sensors
-- **Heart Rate Monitoring** - Monitor heart rate if device supports it
-- **Sleep Tracking** - Analyze sleep patterns
-- **Calorie Counter** - Estimate calories burned
-- **Water Intake Logger** - Track hydration levels
-- **Screen Time Management** - Monitor device usage
-- **Health Insights** - Get personalized health recommendations
+### 🎯 User Profile & Personalization
+- **User Nickname** - Set your preferred name
+- **Personalized Responses** - AI addresses you by nickname
+- **User Preferences** - Language, voice tone, response style
+- **Login with Google** - Secure authentication
+- **Profile Storage** - Local device storage
+- **Preference Sync** - Settings saved locally
+- **Voice Profile** - Custom voice settings per user
 
 ### 🔊 Real-Time Conversation
 - **Context-Aware Responses** - Understanding conversation flow
 - **Multi-Turn Dialogue** - Natural back-and-forth conversations
 - **Sentiment Analysis** - Detect user mood and intent
 - **Smart Reply** - Intelligent response generation
-- **Conversation Memory** - Remember previous discussions
+- **Conversation Memory** - Remember previous discussions (120 days)
 - **Topic Recognition** - Identify conversation subjects
-
-### 🗒️ Advanced Voice Profiles
-- **Custom Voice Creation** - Train custom voice models
-- **Multiple Personalities** - Switch between different voice profiles
-- **Language Support** - 14+ languages with native accents
-- **Emotional Tones** - Happy, sad, angry, neutral voices
-- **Speed & Pitch Control** - Customize voice output
-- **Voice ID Storage** - Save and manage profiles
-
-### 📱 Multi-Device Synchronization
-- **Cross-Device Sync** - Share settings across devices
-- **Chat History Sync** - Access conversations on all devices
-- **Settings Synchronization** - Automatic settings backup
-- **Device Linking** - Connect multiple Android devices
-- **Conflict Resolution** - Smart sync conflict handling
-- **Real-Time Updates** - Instant synchronization
+- **Natural Language Understanding** - Contextual comprehension
 
 ### 💾 Local Data Management
 - **Device-Only Storage** - All data stays on your phone
@@ -90,6 +89,7 @@ All data stays on your device. Zero backend dependency. 100% local processing.
 - **Encrypted Storage** - AES-256-GCM encryption
 - **Android Keystore** - Secure credential management
 - **Zero Cloud Upload** - No data sent to servers
+- **Manual Export** - Export chat history anytime
 
 ### 🔐 Authentication
 - **Google Sign-In** - Simple, secure authentication
@@ -106,15 +106,17 @@ All data stays on your device. Zero backend dependency. 100% local processing.
 - **Haptic Feedback** - Vibration notifications
 - **Color Blind Mode** - Accessible color schemes
 - **Screen Reader Support** - TalkBack compatible
+- **Voice Commands Only** - No touch required for core functions
 
-### 🔄 Background Processing
+### 🔄 Background Processing & Services
+- **Background AI Model Loading** - Preload models for faster response
 - **Automatic Cleanup** - Background chat history cleanup
 - **Model Updates** - Auto-download model updates
-- **Sync Service** - Periodic device synchronization
-- **Health Tracking** - Background health data collection
+- **Health Monitoring** - Monitor app performance
 - **Battery Optimized** - Minimal battery drain
 - **WiFi-Only Option** - Sync only on WiFi
 - **Smart Scheduling** - Process during low-activity periods
+- **Service Status** - Always-on service monitoring
 
 ### 🚀 Performance Optimization
 - **Fast Startup** - < 2 seconds launch time
@@ -135,7 +137,7 @@ David AI supports comprehensive language coverage for voice recognition, text-to
 
 #### 🇮🇳 Indian Languages
 | Language | Code | Native Name | Voice | Translation | Script(s) |
-|----------|------|-------------|-------|-------------|-----------|
+|----------|------|-------------|-------|-------------|----------|
 | **Hindi** | `hin` | हिंदी | ✅ Native | ✅ Full | Devanagari, Roman |
 | **Bengali** | `ben` | বাংলা | ✅ Native | ✅ Full | Bengali, Roman |
 | **Tamil** | `tam` | தமிழ் | ✅ Native | ✅ Full | Tamil, Roman |
@@ -152,7 +154,7 @@ David AI supports comprehensive language coverage for voice recognition, text-to
 
 #### 🌐 International Language
 | Language | Code | Native Name | Voice | Translation | Script(s) |
-|----------|------|-------------|-------|-------------|-----------|
+|----------|------|-------------|-------|-------------|----------|
 | **English** | `eng` | English | ✅ Native | ✅ Full | Roman |
 
 ### Voice Technology Stack
@@ -208,6 +210,13 @@ David AI supports comprehensive language coverage for voice recognition, text-to
 
 ### Language Selection in App
 
+**First Launch:**
+1. Sign in with Google
+2. Set your nickname (e.g., "John", "Priya")
+3. Select preferred language (14+ options)
+4. Download language models (optional)
+5. Start using in your language - AI will greet you: "Hi John, I'm ready to help!"
+
 **In Code:**
 ```kotlin
 // Get all languages
@@ -221,13 +230,12 @@ ttsEngine.speak(text, SupportedLanguage.HINDI)
 
 // Get language by code
 val tamil = ttsEngine.getLanguageByCode("tam")
-```
 
-**First Launch:**
-1. Sign in with Google
-2. Select preferred language
-3. Download language models (optional)
-4. Start using in your language!
+// Personalized greeting with nickname
+val nickname = userProfile.getNickname() // "John"
+val greeting = "Hi $nickname, how can I help you?"
+ttsEngine.speak(greeting, userLanguage)
+```
 
 ---
 
@@ -242,13 +250,14 @@ val tamil = ttsEngine.getLanguageByCode("tam")
 - **Networking:** OkHttp 4.11 + Retrofit 2.9
 - **Async:** Kotlin Coroutines 1.7
 - **Security:** androidx.security 1.1.0
+- **Background Services:** WorkManager 2.8.1
+- **Gesture Detection:** GestureDetector API
 
 ### AI & Machine Learning
 - **LLM Runtime:** llama.cpp (On-Device)
 - **Speech Recognition:** Whisper.cpp (Offline)
 - **Text-to-Speech:** Coqui TTS Lite (Optimized)
 - **Translation:** IndicTrans2 (Quantized)
-- **Vision Model:** CLIP/SigLIP
 - **Model Format:** GGUF (Quantized)
 - **Model Sources:** Hugging Face (Open Source)
 
@@ -303,10 +312,67 @@ cd david-ai
 
 **5. First Launch**
 - Sign in with Google
+- Set your nickname (AI will call you by this name)
 - Select your preferred language (14+ options)
-- App automatically downloads language models
 - Grant microphone permission
+- Wait for AI models to download
+- Say "Hey David" to activate
 - Start using DAVID AI in your language!
+
+---
+
+## 🎯 How It Works
+
+### Voice Interaction Flow
+
+```
+1. Device Listening
+   ↓
+   "Hey David" (Hot word detected) → Beep sound
+   ↓
+2. Voice Input
+   ↓
+   User speaks command (Whisper.cpp STT)
+   ↓
+3. AI Processing
+   ↓
+   llama.cpp processes with context + user profile
+   ↓
+4. Response Generation
+   ↓
+   AI generates response (includes user nickname)
+   ↓
+5. Voice Output
+   ↓
+   Coqui TTS speaks response in user's language
+   ↓
+6. Device Control (if needed)
+   ↓
+   Execute device command if requested
+```
+
+### Example Interactions
+
+```
+User Sets Nickname: "John"
+User Sets Language: "Hindi"
+
+Scenario 1:
+User: "Hey David!"
+AI: "नमस्ते जॉन, मैं आपकी कैसे मदद कर सकता हूँ?" 
+     (Hello John, how can I help you?)
+
+Scenario 2:
+User: "Send SMS to Mom - I'm coming home"
+AI: "जॉन, मैंने आपकी माँ को संदेश भेज दिया।" 
+     (John, I've sent the message to Mom.)
+[SMS Sent Automatically]
+
+Scenario 3:
+User: "Take a photo"
+AI: "तस्वीर ले रहा हूँ..." (Taking a photo...)
+[Camera opens and takes photo]
+```
 
 ---
 
@@ -415,12 +481,16 @@ Device Storage/
 │   ├── Messages (auto-deleted after 120 days)
 │   ├── Responses
 │   └── Metadata
+├── User Profile (Google)
+│   ├── Nickname
+│   ├── Language Preference
+│   └── Voice Settings
 ├── AI Models (1.5-3 GB)
 │   ├── LLM Model (1.3-1.5 GB)
-│   ├── Vision Model (200 MB)
 │   ├── Voice Models (50 MB + 850 MB)
 │   └── Translation Model (500 MB)
-└── User Profile (Google)
+└── Settings
+    └── User Preferences
 ```
 
 ### Model Specifications
@@ -431,7 +501,6 @@ Device Storage/
 | Phi-2 7B | 1.4 GB | 3 GB | 500-800ms | LLM |
 | Qwen 1.8B | 1.3 GB | 2-3 GB | 400-600ms | LLM |
 | Whisper Tiny | 50 MB | 1 GB | Real-time | STT |
-| CLIP Vision | 200 MB | 1 GB | Fast | Vision |
 | Coqui TTS Lite | 850 MB | 1 GB | 200-500ms | TTS |
 | IndicTrans2 | 500 MB | 1 GB | 100-300ms | Translation |
 | Festival TTS | 50 MB | 0.5 GB | 1-2s | TTS Fallback |
@@ -448,38 +517,36 @@ david-ai/
 │   ├── src/main/kotlin/com/davidstudioz/david/
 │   │   ├── auth/                       # Google Authentication
 │   │   ├── storage/                    # Local Data Storage
-│   │   ├── models/                    # AI Model Management
-│   │   ├── gesture/                   # Gesture Recognition
-│   │   ├── health/                    # Health Tracking
-│   │   ├── smarthome/                # Smart Home Control
-│   │   ├── voice/                     # Voice Features
-│   │   │   ├── VoiceEngine.kt       # Speech Recognition
-│   │   │   └── TextToSpeechEngine.kt # TTS with 14+ languages
-│   │   ├── sync/                      # Multi-Device Sync
-│   │   ├── conversation/              # Real-Time Chat
-│   │   ├── background/                # Background Processing
-│   │   ├── accessibility/             # Accessibility Features
-│   │   ├── ui/                        # UI Components
-│   │   └── MainActivity.kt           # Main Activity
-│   ├── src/main/res/               # Resources
-│   │   ├── drawable/                 # Icons & Images
-│   │   ├── values/                   # Strings & Colors
-│   │   └── xml/                      # Config Files
-│   ├── build.gradle.kts             # App Build Config
-│   └── AndroidManifest.xml         # App Manifest
+│   │   ├── models/                     # AI Model Management
+│   │   ├── gesture/                    # Gesture Recognition
+│   │   ├── hotword/                    # Hot Word Detection
+│   │   ├── background/                 # Background Services
+│   │   ├── profile/                    # User Profile Management
+│   │   ├── device/                     # Device Control
+│   │   ├── voice/                      # Voice Features
+│   │   │   ├── VoiceEngine.kt        # Speech Recognition
+│   │   │   ├── TextToSpeechEngine.kt  # TTS with 14+ languages
+│   │   │   └── HotWordDetector.kt    # "Hey David" Detection
+│   │   ├── conversation/               # Real-Time Chat
+│   │   ├── accessibility/              # Accessibility Features
+│   │   ├── ui/                         # UI Components
+│   │   └── MainActivity.kt             # Main Activity
+│   ├── src/main/res/                # Resources
+│   │   ├── drawable/                  # Icons & Images
+│   │   ├── values/                    # Strings & Colors
+│   │   └── xml/                       # Config Files
+│   ├── build.gradle.kts              # App Build Config
+│   └── AndroidManifest.xml           # App Manifest
 ├── docs/                                    # Documentation
-│   ├── LOCAL_DEVICE_SETUP.md      # Local Setup Guide
-│   ├── VOICE_GUIDE.md             # Voice Features
-│   ├── DEVICE_CONTROL.md          # Device Control
-│   ├── ENCRYPTION.md              # Security Details
-│   └── SMART_HOME.md              # Smart Home Guide
+│   ├── LOCAL_DEVICE_SETUP.md       # Local Setup Guide
+│   ├── VOICE_GUIDE.md              # Voice Features
+│   ├── DEVICE_CONTROL.md           # Device Control
+│   ├── GESTURE_RECOGNITION.md      # Gesture Guide
+│   └── HOT_WORD_SETUP.md           # Hot Word Configuration
 ├── scripts/                                 # Build Scripts
-│   └── download-models.sh         # Model Downloader
+│   └── download-models.sh          # Model Downloader
 ├── logo.png                                # App Logo
 ├── README.md                               # This File
-├── BUILD_COMMANDS.md                       # Build Documentation
-├── LOCAL_DEVICE_IMPLEMENTATION.md         # Implementation Guide
-├── QUICK_SETUP_LOCAL.md                   # Quick Setup
 ├── CONTRIBUTING.md                        # Contributing
 ├── CHANGELOG.md                           # Version History
 ├── LICENSE                                # Apache 2.0
@@ -523,45 +590,43 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## 📊 Documentation
 
-- **[LOCAL_DEVICE_SETUP.md](docs/LOCAL_DEVICE_SETUP.md)** - Complete local setup guide
 - **[BUILD_COMMANDS.md](BUILD_COMMANDS.md)** - All build commands
-- **[LOCAL_DEVICE_IMPLEMENTATION.md](LOCAL_DEVICE_IMPLEMENTATION.md)** - Implementation details
-- **[QUICK_SETUP_LOCAL.md](QUICK_SETUP_LOCAL.md)** - 5-minute quick start
 - **[VOICE_GUIDE.md](docs/VOICE_GUIDE.md)** - Voice control features
-- **[DEVICE_CONTROL.md](docs/DEVICE_CONTROL.md)** - Device automation
+- **[DEVICE_CONTROL.md](docs/DEVICE_CONTROL.md)** - Device automation commands
+- **[GESTURE_RECOGNITION.md](docs/GESTURE_RECOGNITION.md)** - Gesture control guide
+- **[HOT_WORD_SETUP.md](docs/HOT_WORD_SETUP.md)** - Hot word configuration
 - **[ENCRYPTION.md](docs/ENCRYPTION.md)** - Security details
-- **[ACCESSIBILITY.md](ACCESSIBILITY.md)** - Accessibility features
+- **[ACCESSIBILITY.md](docs/ACCESSIBILITY.md)** - Accessibility features
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contributing guidelines
 
 ---
 
 ## 🚀 Roadmap
 
-### v2.0 (Current)
+### v2.0 (Current) ✅
 - ✅ Voice recognition & synthesis (14+ languages)
-- ✅ Offline AI models
-- ✅ Device automation
-- ✅ Local chat storage
+- ✅ Offline AI models (llama.cpp)
+- ✅ Hot word detection ("Hey David")
+- ✅ User nickname support with personalized greetings
+- ✅ Device automation (20+ commands)
+- ✅ Gesture recognition (swipe, tap, pinch, long-press)
+- ✅ Local chat storage (120-day auto-cleanup)
 - ✅ Google Sign-In
-- ✅ Gesture control
-- ✅ Health tracking
-- ✅ Smart home integration
-- ✅ Multi-device sync
-- ✅ Background processing
+- ✅ Background AI processing
 - ✅ Accessibility features
-- ✅ Optimized TTS models
-- ✅ Language support (Hindi, Bengali, Tamil, Telugu, Marathi, Gujarati, Punjabi, Urdu, Kannada, Malayalam, Odia, Assamese, Hinglish, English)
+- ✅ Optimized TTS models (Coqui Lite)
+- ✅ Multi-language support (14 languages)
 
 ### v2.1 (Planned)
-- 📧 AR features
 - 📧 Advanced ML models
 - 📧 Voice cloning
-- 📧 Custom AI training
 - 📧 Extended language support (more regional languages)
+- 📧 Enhanced gesture recognition
+- 📧 AI training on user data
 
 ### v3.0 (Future)
 - 📧 Cross-platform (iOS)
-- 📧 Cloud sync (optional)
-- 📧 Advanced NLP
+- 📧 Advanced NLP improvements
 - 📧 Real-time translation
 - 📧 Community models
 
@@ -618,7 +683,7 @@ git clone https://github.com/david0154/david-ai.git
 
 **DAVID AI v2.0**  
 *Your Voice. Your Device. Your Privacy.*  
-*Supports 14+ Languages with Optimized Voice Models*  
-© 2026 David Powered by Nexuzy Tech  
-Kolkata, India  
+*Supports 14+ Languages with Hot Word Detection & Personalized Responses*  
+*© 2026 David Powered by Nexuzy Tech*  
+*Kolkata, India*  
 https://github.com/david0154/david-ai
