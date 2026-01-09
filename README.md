@@ -1,4 +1,4 @@
-# 🦤 DAVID AI - Voice-First Android AI Assistant
+#  DAVID AI - Voice-First Android AI Assistant
 
 ![DAVID AI Logo](logo.png)
 
