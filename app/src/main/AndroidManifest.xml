@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.davidstudioz.david">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- ====== CORE PERMISSIONS ====== -->
     <!-- Microphone for voice input (speech-to-text) -->
@@ -46,9 +45,11 @@
 
     <!-- ====== MEDIA & STORAGE ====== -->
     <!-- Read external storage for files/models -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
     <!-- Write external storage for saving data -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
     <!-- Manage all files -->
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
     <!-- Access media files -->
@@ -67,8 +68,6 @@
     <uses-permission android:name="android.permission.WRITE_CALL_LOG" />
 
     <!-- ====== SECURITY & ADMIN ====== -->
-    <!-- Device admin for lock/unlock -->
-    <uses-permission android:name="android.permission.ACCESS_DEVICE_STATE" />
     <!-- Battery optimization whitelist -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <!-- Notification access -->
@@ -79,18 +78,14 @@
     <!-- ====== BACKGROUND & SYSTEM ====== -->
     <!-- Background service -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
     <!-- Wake lock for background processing -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <!-- Get task info for background app detection -->
-    <uses-permission android:name="android.permission.GET_TASKS" />
-    <!-- Runtime stats for performance monitoring -->
-    <uses-permission android:name="android.permission.GET_RUNTIME_STATS" />
 
     <!-- ====== BIOMETRIC & AUTHENTICATION ====== -->
     <!-- Biometric authentication -->
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
-    <!-- Use fingerprint API -->
-    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
 
     <!-- ====== WEAR OS PERMISSIONS ====== -->
     <!-- Body sensors for health tracking on Wear OS -->
@@ -119,12 +114,13 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.DavidAI"
-        android:usesCleartextTraffic="false">
+        android:usesCleartextTraffic="false"
+        tools:targetApi="31">
 
         <!-- Wear OS Metadata -->
         <meta-data
@@ -136,7 +132,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.DavidAI.NoActionBar">
+            android:theme="@style/Theme.DavidAI">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -148,31 +144,12 @@
             </intent-filter>
         </activity>
 
-        <!-- Device Admin Receiver for device lock -->
-        <receiver
-            android:name=".security.DavidDeviceAdminReceiver"
-            android:exported="true"
-            android:permission="android.permission.BIND_DEVICE_ADMIN">
-            <meta-data
-                android:name="android.app.device_admin"
-                android:resource="@xml/device_admin" />
-            <intent-filter>
-                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
-            </intent-filter>
-        </receiver>
-
         <!-- Hot Word Detection Service -->
         <service
             android:name=".voice.HotWordDetectionService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="microphone" />
-
-        <!-- Chat & AI Service -->
-        <service
-            android:name=".chat.ChatService"
-            android:enabled="true"
-            android:exported="false" />
 
         <!-- Gesture Recognition Service -->
         <service
