@@ -96,13 +96,13 @@ dependencies {
     implementation("androidx.camera:camera-view:1.2.3")
     implementation("androidx.camera:camera-extensions:1.2.3")
 
-    // MediaPipe
-    implementation("com.google.mediapipe:tasks-vision:0.10.3")
-    implementation("com.google.mediapipe:tasks-core:0.10.3")
+    // MediaPipe - Corrected versions
+    implementation("com.google.mediapipe:tasks-vision:0.10.14")
 
     // TensorFlow Lite
     implementation("org.tensorflow:tensorflow-lite:2.13.0")
     implementation("org.tensorflow:tensorflow-lite-gpu:2.13.0")
+    implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
 
     // Networking
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
