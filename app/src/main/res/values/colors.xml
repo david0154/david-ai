@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Colors -->
+    <color name="primary_blue">#0088CC</color>
+    <color name="primary_dark_blue">#0066AA</color>
+    <color name="primary_light_blue">#00AAEE</color>
+    
+    <!-- Secondary Colors -->
+    <color name="secondary_orange">#FF6B35</color>
+    <color name="secondary_dark_orange">#E85A2A</color>
+    <color name="secondary_light_orange">#FFB366</color>
+    
+    <!-- Accent Colors -->
+    <color name="accent_cyan">#00BCD4</color>
+    <color name="accent_green">#4CAF50</color>
+    <color name="accent_red">#FF4444</color>
+    <color name="accent_yellow">#FFBB33</color>
+    
+    <!-- Neutral Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="gray_light">#F5F5F5</color>
+    <color name="gray_medium">#999999</color>
+    <color name="gray_dark">#333333</color>
+    
+    <!-- Status Colors -->
+    <color name="success_green">#4CAF50</color>
+    <color name="error_red">#FF4444</color>
+    <color name="warning_yellow">#FFBB33</color>
+    <color name="info_blue">#33B5E5</color>
+</resources>

@@ -1,0 +1,26 @@
+# Auto detect text files and normalize line endings to LF
+* text=auto
+
+# Source code
+*.kt text eol=lf
+*.java text eol=lf
+*.php text eol=lf
+*.js text eol=lf
+*.ts text eol=lf
+*.json text eol=lf
+*.xml text eol=lf
+*.gradle text eol=lf
+
+# Binary files
+*.gguf binary
+*.bin binary
+*.pb binary
+*.tflite binary
+*.apk binary
+*.aab binary
+
+# Documentation
+*.md text eol=lf
+*.txt text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf

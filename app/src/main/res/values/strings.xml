@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DAVID AI</string>
+    <string name="app_developer">David Powered by Nexuzy Tech</string>
+    <string name="app_description">Voice-First Android AI Assistant with Offline Intelligence</string>
+    
+    <!-- Permissions -->
+    <string name="perm_voice">Voice Control</string>
+    <string name="perm_device">Device Control</string>
+    <string name="perm_camera">Camera Access</string>
+    <string name="perm_location">Location Access</string>
+    
+    <!-- Voice Commands -->
+    <string name="cmd_call">Call</string>
+    <string name="cmd_sms">Send Message</string>
+    <string name="cmd_photo">Take Photo</string>
+    <string name="cmd_wifi">WiFi</string>
+    <string name="cmd_bluetooth">Bluetooth</string>
+    <string name="cmd_alarm">Set Alarm</string>
+    <string name="cmd_volume">Volume</string>
+    <string name="cmd_brightness">Brightness</string>
+    
+    <!-- UI Strings -->
+    <string name="listening">Listening...</string>
+    <string name="processing">Processing...</string>
+    <string name="speaking">Speaking...</string>
+    <string name="error">Error occurred</string>
+    <string name="success">Success</string>
+    <string name="retry">Retry</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    
+    <!-- Settings -->
+    <string name="settings">Settings</string>
+    <string name="language">Language</string>
+    <string name="theme">Theme</string>
+    <string name="privacy">Privacy</string>
+    <string name="security">Security</string>
+    
+    <!-- Status -->
+    <string name="status_online">Online</string>
+    <string name="status_offline">Offline</string>
+    <string name="status_listening">Listening for commands</string>
+</resources>
