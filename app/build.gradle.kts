@@ -62,6 +62,7 @@ android {
     }
 
     composeOptions {
+        // Kotlin 1.9.22 requires Compose Compiler 1.5.8
         kotlinCompilerExtensionVersion = "1.5.8"
     }
 
@@ -79,7 +80,19 @@ android {
     }
 }
 
+// Force Kotlin version to 1.9.22 to match Compose Compiler 1.5.8
+configurations.all {
+    resolutionStrategy {
+        force("org.jetbrains.kotlin:kotlin-stdlib:1.9.22")
+        force("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.22")
+        force("org.jetbrains.kotlin:kotlin-reflect:1.9.22")
+    }
+}
+
 dependencies {
+    // Explicitly force Kotlin 1.9.22
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.22")
+    
     // AndroidX Core
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
