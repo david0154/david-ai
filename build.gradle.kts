@@ -3,12 +3,22 @@ plugins {
     kotlin("android") version "1.9.0" apply false
     kotlin("kapt") version "1.9.0" apply false
     id("dagger.hilt.android.plugin") version "2.46" apply false
+    id("com.google.gms.google-services") version "4.4.0" apply false
 }
 
 allprojects {
     repositories {
         google()
         mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+subprojects {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
     }
 }
 
