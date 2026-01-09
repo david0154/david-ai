@@ -7,23 +7,25 @@ import android.location.Location
 import android.location.LocationManager
 import android.util.Log
 import androidx.core.content.ContextCompat
-import java.text.SimpleDateFormat
-import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.*
 
 /**
  * Weather & Time Provider
- * Provides current time and weather information
- * Uses location for weather API
+ * Provides current time, weather, and forecasts
+ * Uses Open-Meteo API (free, no API key needed)
  */
 class WeatherTimeProvider(private val context: Context) {
 
     private val TAG = "WeatherTimeProvider"
+    private val weatherManager = WeatherManager(context)
+    private val forecastManager = ForecastManager()
     private var currentLocation: Location? = null
 
     /**
-     * Get current time in formatted string
+     * Get current time in HH:MM:SS format
      */
     fun getCurrentTime(): String {
         val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
@@ -50,32 +52,61 @@ class WeatherTimeProvider(private val context: Context) {
     }
 
     /**
-     * Get weather information
-     * In real app, would call weather API (OpenWeatherMap, etc.)
+     * Get current weather with location (voice-friendly)
      */
-    suspend fun getWeather(latitude: Double, longitude: Double): String {
-        return withContext(Dispatchers.IO) {
-            try {
-                // Get current location if not provided
-                val loc = if (latitude == 0.0 && longitude == 0.0) {
-                    getCurrentLocation()
-                } else {
-                    Location("").apply {
-                        this.latitude = latitude
-                        this.longitude = longitude
-                    }
-                }
+    suspend fun getWeatherVoiceReport(): String {
+        return weatherManager.getWeatherVoiceReport(useMetric = true)
+    }
 
-                if (loc != null) {
-                    // Call weather API (mock implementation)
-                    "The weather is sunny, 28°C with light winds from the north. Humidity 65%"
-                } else {
-                    "Unable to fetch weather - location not available"
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error fetching weather", e)
-                "Weather data unavailable"
+    /**
+     * Get current weather data
+     */
+    suspend fun getWeatherData(latitude: Double = 0.0, longitude: Double = 0.0): WeatherData? {
+        return if (latitude == 0.0 && longitude == 0.0) {
+            val location = getCurrentLocation()
+            if (location != null) {
+                weatherManager.getWeatherData(location.latitude, location.longitude)
+            } else {
+                null
             }
+        } else {
+            weatherManager.getWeatherData(latitude, longitude)
+        }
+    }
+
+    /**
+     * Get weather forecast (voice-friendly)
+     */
+    suspend fun getForecastVoiceReport(days: Int = 3): String {
+        val location = getCurrentLocation()
+        return if (location != null) {
+            forecastManager.getForecastVoiceReport(
+                location.latitude,
+                location.longitude,
+                days
+            )
+        } else {
+            "I couldn't determine your location for the forecast."
+        }
+    }
+
+    /**
+     * Get weather forecast data
+     */
+    suspend fun getForecastData(latitude: Double = 0.0, longitude: Double = 0.0): ForecastData? {
+        val loc = if (latitude == 0.0 && longitude == 0.0) {
+            getCurrentLocation()
+        } else {
+            Location("").apply {
+                this.latitude = latitude
+                this.longitude = longitude
+            }
+        }
+
+        return if (loc != null) {
+            forecastManager.getForecastData(loc.latitude, loc.longitude)
+        } else {
+            null
         }
     }
 
@@ -90,42 +121,50 @@ class WeatherTimeProvider(private val context: Context) {
             }
 
             val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            
+
             // Try GPS first
             var location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-            
-            // Fall back to network location
-            if (location == null) {
-                location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            if (location != null && System.currentTimeMillis() - location.time < 10 * 60 * 1000) {
+                return location
             }
-            
-            location
+
+            // Fall back to network location
+            location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            if (location != null && System.currentTimeMillis() - location.time < 10 * 60 * 1000) {
+                return location
+            }
+
+            // Default to Kolkata if no location available
+            Log.d(TAG, "Using default location: Kolkata")
+            Location("kolkata").apply {
+                latitude = 22.5726
+                longitude = 88.3639
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Error getting location", e)
-            null
+            // Default to Kolkata
+            Location("kolkata").apply {
+                latitude = 22.5726
+                longitude = 88.3639
+            }
         }
     }
 
     /**
-     * Get weather forecast
+     * Get location info
      */
-    fun getWeatherForecast(days: Int = 3): List<String> {
-        // Mock forecast data
-        return listOf(
-            "Tomorrow: Sunny, 30°C",
-            "Day after: Cloudy, 27°C",
-            "In 3 days: Rainy, 24°C"
-        ).take(days)
-    }
-
-    /**
-     * Convert temperature
-     */
-    fun convertTemperature(celsius: Float, toFahrenheit: Boolean = false): Float {
-        return if (toFahrenheit) {
-            (celsius * 9/5) + 32
+    fun getLocationInfo(): Map<String, Any> {
+        val location = getCurrentLocation()
+        return if (location != null) {
+            mapOf(
+                "latitude" to location.latitude,
+                "longitude" to location.longitude,
+                "accuracy" to location.accuracy,
+                "altitude" to location.altitude,
+                "provider" to (location.provider ?: "default")
+            )
         } else {
-            (celsius - 32) * 5/9
+            mapOf("status" to "Location not available")
         }
     }
 
@@ -140,19 +179,11 @@ class WeatherTimeProvider(private val context: Context) {
     }
 
     /**
-     * Get location info
+     * Start weather updates
      */
-    fun getLocationInfo(): Map<String, Any> {
-        val location = getCurrentLocation()
-        return if (location != null) {
-            mapOf(
-                "latitude" to location.latitude,
-                "longitude" to location.longitude,
-                "accuracy" to location.accuracy,
-                "altitude" to location.altitude
-            )
-        } else {
-            mapOf("status" to "Location not available")
+    fun startWeatherUpdates(callback: (String) -> Unit) {
+        weatherManager.startLocationUpdates { location ->
+            Log.d(TAG, "Location updated, weather will refresh")
         }
     }
 }
