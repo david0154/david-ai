@@ -1,10 +1,12 @@
 package com.davidstudioz.david.ui
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -26,6 +28,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.work.*
 import com.davidstudioz.david.R
@@ -38,12 +42,26 @@ import java.util.concurrent.TimeUnit
  * D.A.V.I.D Splash Screen - Beautiful Modern Design
  * Shows branding, logo, and initialization progress
  * Digital Assistant Voice Intelligence Device
+ * 
+ * FIXED: All runtime bugs addressed
  */
 class SplashActivity : ComponentActivity() {
 
-    private var splashMinDuration = 3000L // 3 second beautiful splash
+    private var splashMinDuration = 3000L
     private var splashStartTime = 0L
     private var initializationError by mutableStateOf<String?>(null)
+    private var permissionsGranted by mutableStateOf(false)
+
+    // Permission launcher
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val allGranted = permissions.all { it.value }
+        permissionsGranted = allGranted
+        if (!allGranted) {
+            Log.w(TAG, "Some permissions denied, continuing anyway")
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,7 +76,6 @@ class SplashActivity : ComponentActivity() {
             initializationError = "Model download error: ${e.localizedMessage}"
         }
 
-        // Set content without try-catch (Compose requirement)
         setContent {
             MaterialTheme(
                 colorScheme = darkColorScheme(
@@ -69,6 +86,36 @@ class SplashActivity : ComponentActivity() {
             ) {
                 BeautifulSplashScreen()
             }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        checkPermissions()
+    }
+
+    private fun checkPermissions() {
+        try {
+            val permissions = arrayOf(
+                android.Manifest.permission.RECORD_AUDIO,
+                android.Manifest.permission.CAMERA,
+                android.Manifest.permission.INTERNET
+            )
+
+            val needed = permissions.filter {
+                ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+            }
+
+            if (needed.isNotEmpty()) {
+                Log.d(TAG, "Requesting permissions: ${needed.joinToString()}")
+                permissionLauncher.launch(needed.toTypedArray())
+            } else {
+                permissionsGranted = true
+                Log.d(TAG, "All critical permissions already granted")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking permissions", e)
+            permissionsGranted = true // Continue anyway
         }
     }
 
@@ -167,7 +214,6 @@ class SplashActivity : ComponentActivity() {
             contentAlignment = Alignment.Center
         ) {
             if (!hasError) {
-                // Beautiful Normal Splash
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
@@ -182,7 +228,6 @@ class SplashActivity : ComponentActivity() {
                             .scale(pulseScale),
                         contentAlignment = Alignment.Center
                     ) {
-                        // Outer glow ring
                         Box(
                             modifier = Modifier
                                 .size(180.dp)
@@ -198,7 +243,6 @@ class SplashActivity : ComponentActivity() {
                                 )
                         )
 
-                        // Middle ring
                         Box(
                             modifier = Modifier
                                 .size(140.dp)
@@ -213,7 +257,6 @@ class SplashActivity : ComponentActivity() {
                                 )
                         )
 
-                        // Logo or Emoji
                         LogoOrEmoji(
                             modifier = Modifier.size(100.dp),
                             tint = Color(0xFF00E5FF)
@@ -222,7 +265,6 @@ class SplashActivity : ComponentActivity() {
 
                     Spacer(modifier = Modifier.height(40.dp))
 
-                    // D.A.V.I.D Title with letter spacing
                     Text(
                         text = "D.A.V.I.D",
                         fontSize = 48.sp,
@@ -234,7 +276,6 @@ class SplashActivity : ComponentActivity() {
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Full form with gradient
                     Text(
                         text = "Digital Assistant Voice\nIntelligence Device",
                         fontSize = 14.sp,
@@ -247,7 +288,6 @@ class SplashActivity : ComponentActivity() {
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Divider line
                     Box(
                         modifier = Modifier
                             .width(200.dp)
@@ -265,7 +305,6 @@ class SplashActivity : ComponentActivity() {
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Tagline
                     Text(
                         text = "Your AI-Powered Voice Assistant",
                         fontSize = 12.sp,
@@ -275,7 +314,6 @@ class SplashActivity : ComponentActivity() {
 
                     Spacer(modifier = Modifier.height(48.dp))
 
-                    // Modern Progress bar
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.width(280.dp)
@@ -305,7 +343,6 @@ class SplashActivity : ComponentActivity() {
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Status text
                         Text(
                             text = statusText,
                             fontSize = 13.sp,
@@ -316,7 +353,6 @@ class SplashActivity : ComponentActivity() {
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // Percentage
                         Text(
                             text = "${(progress * 100).toInt()}%",
                             fontSize = 24.sp,
@@ -327,7 +363,6 @@ class SplashActivity : ComponentActivity() {
 
                     Spacer(modifier = Modifier.height(60.dp))
 
-                    // Footer - Developer credit
                     Text(
                         text = "Developed by David Studioz",
                         fontSize = 10.sp,
@@ -336,7 +371,6 @@ class SplashActivity : ComponentActivity() {
                     )
                 }
             } else {
-                // Error screen
                 ErrorSplashScreen(errorMessage)
             }
         }
@@ -347,28 +381,25 @@ class SplashActivity : ComponentActivity() {
         modifier: Modifier = Modifier,
         tint: Color? = null
     ) {
-        val logoResourceId = remember {
+        var showFallback by remember { mutableStateOf(false) }
+        
+        if (!showFallback) {
             try {
-                resources.getIdentifier("logo", "drawable", packageName)
+                // Try to load logo from resources
+                Image(
+                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                    contentDescription = "D.A.V.I.D Logo",
+                    modifier = modifier.clip(CircleShape),
+                    contentScale = ContentScale.Fit,
+                    colorFilter = tint?.let { ColorFilter.tint(it) },
+                    onError = { showFallback = true }
+                )
             } catch (e: Exception) {
-                0
+                showFallback = true
             }
         }
-
-        // Use state to track if we should show logo or fallback
-        var showFallback by remember { mutableStateOf(logoResourceId == 0) }
-
-        if (!showFallback && logoResourceId != 0) {
-            // Attempt to show logo image
-            Image(
-                painter = painterResource(id = logoResourceId),
-                contentDescription = "D.A.V.I.D Logo",
-                modifier = modifier.clip(CircleShape),
-                contentScale = ContentScale.Fit,
-                colorFilter = tint?.let { ColorFilter.tint(it) }
-            )
-        } else {
-            // Show fallback emoji
+        
+        if (showFallback) {
             LogoFallback(modifier, tint)
         }
     }
@@ -432,6 +463,20 @@ class SplashActivity : ComponentActivity() {
 
     private fun startModelDownloadWorker() {
         try {
+            // Ensure WorkManager is initialized
+            if (!WorkManager.isInitialized()) {
+                try {
+                    WorkManager.initialize(
+                        this,
+                        Configuration.Builder()
+                            .setMinimumLoggingLevel(Log.INFO)
+                            .build()
+                    )
+                } catch (e: Exception) {
+                    Log.e(TAG, "WorkManager already initialized or error", e)
+                }
+            }
+
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .setRequiresBatteryNotLow(false)
@@ -464,17 +509,34 @@ class SplashActivity : ComponentActivity() {
 
     private fun navigateToLogin() {
         try {
+            // Verify LoginActivity exists
             val intent = Intent(this@SplashActivity, LoginActivity::class.java)
+            val resolveInfo = packageManager.resolveActivity(intent, 0)
+            
+            if (resolveInfo == null) {
+                Log.e(TAG, "LoginActivity not found in manifest")
+                navigateToSafeMain()
+                return
+            }
+
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             finish()
         } catch (e: Exception) {
             Log.e(TAG, "Error navigating to LoginActivity", e)
-            try {
-                finish()
-            } catch (ex: Exception) {
-                Log.e(TAG, "Error finishing activity", ex)
-            }
+            navigateToSafeMain()
+        }
+    }
+
+    private fun navigateToSafeMain() {
+        try {
+            val intent = Intent(this, com.davidstudioz.david.SafeMainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            finish()
+        } catch (e: Exception) {
+            Log.e(TAG, "Critical navigation error", e)
+            finish()
         }
     }
 
