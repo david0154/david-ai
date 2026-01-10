@@ -1,434 +1,471 @@
-# 👋 Gesture Control
+# Gesture Control Guide
 
-**Control your device using hand gestures captured by your camera!**
-
----
-
-## 🎯 Overview
-
-D.A.V.I.D AI's gesture control system allows you to control your Android device using hand gestures. The system uses your device's camera to track your hand movements and recognize specific gestures in real-time.
-
-**Features:**
-- ✋ 21-point hand tracking
-- 🖱️ Mouse-like pointer control
-- 👆 Click and tap gestures
-- 🔄 Smooth movement animation
-- 💫 Visual feedback effects
-- 📱 Overlay on any app
+**Control your device using hand gestures!**
 
 ---
 
-## 🚀 Getting Started
+## 📋 Table of Contents
 
-### Enable Gesture Control
-
-1. **Open D.A.V.I.D AI**
-2. **Go to Settings**
-3. **Enable "Gesture Control"**
-4. **Grant Camera Permission** (if not already granted)
-5. **Grant "Display over other apps" permission**
-6. **Position your hand in front of the camera**
-
-### Camera Setup
-
-- **Distance**: Hold your hand 30-50 cm from camera
-- **Lighting**: Ensure good lighting for best tracking
-- **Background**: Plain background works best
-- **Stability**: Keep device stable for accurate tracking
+1. [What is Gesture Control?](#what-is-gesture-control)
+2. [Supported Gestures](#supported-gestures)
+3. [Setup](#setup)
+4. [Using Gestures](#using-gestures)
+5. [Customization](#customization)
+6. [Troubleshooting](#troubleshooting)
 
 ---
 
-## 🖐️ Supported Gestures
+## What is Gesture Control?
+
+**Gesture Control lets you control your device without touching the screen!**
+
+### How It Works
+
+1. **Camera** captures your hand
+2. **AI Model** (MediaPipe) detects 21 hand landmarks
+3. **Gesture Recognizer** identifies your gesture
+4. **Overlay Pointer** moves based on hand position
+5. **Action** executes when gesture is recognized
+
+### Benefits
+
+✅ **Hands-free operation**  
+✅ **Accessibility for users with motor disabilities**  
+✅ **Hygienic (no screen touch)**  
+✅ **Fun and futuristic!**  
+✅ **Works offline**  
+
+---
+
+## Supported Gestures
 
 ### 1. ✋ Open Palm
-**Action:** Show Pointer
 
-**How to perform:**
-- Spread all five fingers apart
-- Face palm towards camera
-- Keep hand steady
+**Action:** Show pointer
 
-**Use case:** Activate the on-screen pointer
+**How to do it:**
+- Open your hand fully
+- All fingers extended
+- Palm facing camera
+
+**Use case:** Activate gesture mode
 
 ---
 
 ### 2. ✊ Closed Fist
-**Action:** Hide Pointer
 
-**How to perform:**
-- Close all fingers into a fist
-- Thumb can be inside or outside
+**Action:** Hide pointer
 
-**Use case:** Deactivate and hide the pointer
+**How to do it:**
+- Close all fingers
+- Make a fist
 
----
-
-### 3. ☝️ Pointing Up (Index Finger Extended)
-**Action:** Move Pointer
-
-**How to perform:**
-- Extend only your index finger
-- Keep other fingers closed
-- Move your index finger to control pointer
-
-**Use case:** Move the pointer around the screen
-
-**Movement:**
-- Move hand left → Pointer moves left
-- Move hand right → Pointer moves right
-- Move hand up → Pointer moves up
-- Move hand down → Pointer moves down
+**Use case:** Deactivate gesture mode
 
 ---
 
-### 4. ✌️ Victory Sign (Peace Sign)
+### 3. ☝️ Pointing Up
+
+**Action:** Move pointer
+
+**How to do it:**
+- Extend index finger
+- Other fingers closed
+- Point upward
+
+**Use case:** Move cursor around screen
+
+---
+
+### 4. ✌️ Victory Sign
+
 **Action:** Click/Tap
 
-**How to perform:**
+**How to do it:**
 - Extend index and middle fingers
-- Keep them together or slightly apart
+- Form a "V" shape
 - Other fingers closed
 
-**Use case:** Click on items, buttons, links
-
-**Visual Feedback:**
-- Pointer expands with ripple effect
-- Short vibration (if enabled)
-- Click sound (if enabled)
+**Use case:** Click buttons, select items
 
 ---
 
 ### 5. 👍 Thumbs Up
+
 **Action:** Confirm/OK
 
-**How to perform:**
-- Extend only your thumb upward
-- Keep other fingers closed
-- Face thumb towards camera
+**How to do it:**
+- Extend thumb upward
+- Other fingers closed
 
-**Use case:** Confirm actions, approve selections
+**Use case:** Confirm actions, approve
 
 ---
 
-### 6. 👎 Thumbs Down *(Coming Soon)*
+### 6. 👎 Thumbs Down
+
 **Action:** Cancel/Back
 
-**How to perform:**
+**How to do it:**
 - Extend thumb downward
-- Keep other fingers closed
+- Other fingers closed
 
-**Use case:** Cancel actions, go back
-
----
-
-### 7. 🤏 Pinch *(Coming Soon)*
-**Action:** Zoom
-
-**How to perform:**
-- Touch thumb and index finger tips together
-- Move apart to zoom in
-- Move together to zoom out
-
-**Use case:** Zoom in/out of images, maps
+**Use case:** Cancel, go back
 
 ---
 
-## 🖱️ Pointer System
+## Setup
 
-### Visual Design
+### Requirements
 
-**Pointer Appearance:**
-- Circular shape (24dp diameter)
-- Semi-transparent (70% opacity)
-- Glow effect (shadow with blur)
-- Color: Accent color from theme
+✅ **Front or rear camera**  
+✅ **Good lighting** (not too dark)  
+✅ **Clear background** (for better detection)  
+✅ **1-2 feet distance** from camera  
 
-**States:**
-- **Inactive**: Not visible
-- **Active**: Visible, semi-transparent
-- **Hovering**: Full opacity
-- **Clicking**: Expanded with ripple
+### Enable Gesture Control
 
-### Movement Animation
+**Step 1: Grant Camera Permission**
 
-**Smooth Tracking:**
-- Spring animation for natural movement
-- Low latency (< 50ms)
-- Predictive tracking for responsiveness
-- Boundary constraints (stays on screen)
+1. Open D.A.V.I.D AI
+2. Go to **Settings**
+3. Tap **Gesture Control**
+4. Allow camera access
 
-### Click Animation
+**Step 2: Enable Feature**
 
-**Visual Effects:**
-- Pointer expands to 1.5x size
-- Ripple effect emanates outward
-- Color pulse (accent → white → accent)
-- Duration: 300ms
+1. In Settings, toggle **Enable Gesture Control**
+2. Select camera (front/rear)
+3. Adjust sensitivity (if needed)
 
-**Haptic Feedback:**
-- Short vibration (50ms)
-- Intensity: Medium
-- Pattern: Single pulse
+**Step 3: Start Using**
+
+1. Show ✋ **Open Palm** to camera
+2. Pointer appears on screen
+3. Start gesturing!
 
 ---
 
-## ⚙️ Settings
+## Using Gestures
 
-### Gesture Control Settings
+### Basic Workflow
 
-**Enable/Disable:**
-- Toggle gesture control on/off
-- Persists across app restarts
+```
+1. Show ✋ Open Palm → Pointer appears
+2. Use ☝️ Pointing to move pointer
+3. Use ✌️ Victory to click
+4. Show ✊ Fist to hide pointer
+```
 
-**Camera Selection:**
-- Front camera (default)
-- Back camera
+### Example: Opening Settings
 
-**Pointer Settings:**
-- **Size**: Small, Medium, Large
-- **Color**: Choose from theme colors
-- **Opacity**: 50-100%
-- **Glow Effect**: On/Off
+**Step-by-step:**
 
-**Sensitivity:**
-- **Movement Speed**: Slow, Normal, Fast
-- **Click Delay**: 100-500ms
-- **Gesture Confidence**: 60-95%
+1. **Activate:** Show ✋ Open Palm
+   - Pointer appears
 
-**Visual Feedback:**
-- **Show Hand Landmarks**: On/Off (for debugging)
-- **Show FPS Counter**: On/Off
-- **Pointer Trail**: On/Off
+2. **Navigate:** Use ☝️ Pointing finger
+   - Move hand to move pointer
+   - Position over Settings icon
 
-**Haptic Feedback:**
-- **Enable Vibration**: On/Off
-- **Vibration Intensity**: Light, Medium, Strong
+3. **Click:** Show ✌️ Victory sign
+   - Settings opens
 
-**Sound Effects:**
-- **Click Sound**: On/Off
-- **Gesture Sound**: On/Off
-- **Volume**: 0-100%
+4. **Deactivate:** Show ✊ Closed Fist
+   - Pointer disappears
 
----
+### Example: Scrolling
 
-## 🎮 Usage Examples
+1. Activate pointer (✋ Open Palm)
+2. Move hand up/down (☝️ Pointing)
+3. Scroll automatically follows
 
-### Web Browsing
+### Example: Typing
 
-1. **Open palm** to show pointer
-2. **Point with index finger** to move pointer
-3. **Victory sign** to click links
-4. **Thumbs up** to confirm navigation
-5. **Closed fist** to hide pointer
-
-### Watching Videos
-
-1. **Victory sign** on play button to start video
-2. **Closed fist** to hide pointer during video
-3. **Open palm** to show controls
-4. **Victory sign** to pause/resume
-
-### Scrolling
-
-1. **Point with index finger** to position pointer
-2. **Move hand up slowly** to scroll down
-3. **Move hand down slowly** to scroll up
-
-### Taking Photos
-
-1. **Open camera app**
-2. **Thumbs up gesture** to take photo
-3. **Victory sign** to take selfie
+1. Open keyboard
+2. Activate pointer
+3. Point at letter (☝️)
+4. Click letter (✌️ Victory)
+5. Repeat for each letter
 
 ---
 
-## 🔧 Advanced Features
+## Customization
 
-### Custom Gestures *(Coming Soon)*
+### Settings Options
 
-Create your own custom gestures:
-- Record new gesture patterns
-- Assign actions to gestures
-- Import/export gesture sets
-- Share with community
+**Go to: Settings → Gesture Control**
 
-### Multi-Hand Support *(Coming Soon)*
+#### Sensitivity
 
-Track multiple hands simultaneously:
-- Two-hand gestures
-- Complex interactions
-- Gaming controls
+**Adjust how easily gestures are detected:**
 
-### Gesture Macros *(Coming Soon)*
+- **Low:** Requires precise gestures
+- **Medium:** Balanced (recommended)
+- **High:** Detects easily (may have false positives)
 
-Combine multiple gestures:
-- Sequential actions
-- Conditional triggers
-- Automation workflows
+#### Pointer Speed
+
+**Control pointer movement speed:**
+
+- **Slow:** Precise but slow
+- **Medium:** Balanced
+- **Fast:** Quick but less precise
+
+#### Pointer Size
+
+**Change pointer visual size:**
+
+- Small (20px)
+- Medium (40px) - default
+- Large (60px)
+
+#### Camera Selection
+
+**Choose which camera to use:**
+
+- **Front Camera:** Best for personal use
+- **Rear Camera:** Best for presentations
+
+#### Gesture Confirmation
+
+**Toggle visual/audio feedback:**
+
+- ✅ **Visual:** Show animation on gesture
+- ✅ **Audio:** Play sound on gesture
+- ✅ **Haptic:** Vibrate on gesture
 
 ---
 
-## 🚨 Troubleshooting
+## Advanced Features
 
-### Pointer Not Showing
+### Gesture Macros
 
-**Problem:** Pointer doesn't appear when showing open palm
+**Create custom gesture sequences:**
+
+**Example: "Go Home"**
+```
+1. Thumbs Up
+2. Victory Sign
+3. Opens home screen
+```
+
+**To create:**
+1. Settings → Gesture Control → Macros
+2. Tap "Add Macro"
+3. Record gesture sequence
+4. Assign action
+
+### Multi-Hand Gestures
+
+**Use two hands for advanced controls:**
+
+- **Both palms open:** Zoom in
+- **Both fists:** Zoom out
+- **One up, one down:** Rotate
+
+---
+
+## Tips & Best Practices
+
+### 💡 For Best Accuracy
+
+1. **Good Lighting**
+   - Natural light is best
+   - Avoid backlighting
+   - No shadows on hand
+
+2. **Clear Background**
+   - Solid color backgrounds
+   - No clutter
+   - Contrasting with hand
+
+3. **Proper Distance**
+   - 1-2 feet from camera
+   - Full hand visible
+   - Not too close or far
+
+4. **Steady Hand**
+   - Keep hand stable
+   - Slow, deliberate movements
+   - Pause briefly on gestures
+
+5. **Clear Gestures**
+   - Make distinct shapes
+   - Fully extend/close fingers
+   - Face palm to camera
+
+### ⚠️ Common Mistakes
+
+**❌ Don't:**
+- Move hand too fast
+- Use partial gestures
+- Block camera view
+- Use in dark lighting
+- Wear gloves
+
+**✅ Do:**
+- Move smoothly
+- Make full gestures
+- Keep camera clear
+- Use good lighting
+- Bare hands work best
+
+---
+
+## Troubleshooting
+
+### Gesture Not Detected
+
+**Problem:** Gestures not recognized
 
 **Solutions:**
-1. Check "Display over other apps" permission
-2. Ensure gesture control is enabled in settings
-3. Restart gesture service
-4. Check camera permission granted
-5. Ensure good lighting conditions
+1. Improve lighting
+2. Clear background
+3. Increase sensitivity
+4. Make clearer gestures
+5. Check camera not blocked
 
-### Poor Hand Tracking
+### Pointer Jumpy/Unstable
 
-**Problem:** Hand tracking is inaccurate or laggy
-
-**Solutions:**
-1. Improve lighting in room
-2. Use plain background
-3. Keep hand 30-50 cm from camera
-4. Clean camera lens
-5. Reduce sensitivity in settings
-6. Close other camera apps
-7. Restart device
-
-### Gestures Not Recognized
-
-**Problem:** Specific gestures not being detected
+**Problem:** Pointer moves erratically
 
 **Solutions:**
-1. Perform gesture clearly and slowly
-2. Ensure all fingers are visible
-3. Check gesture confidence threshold
-4. Increase click delay
-5. Review gesture tutorials
-6. Adjust camera angle
+1. Reduce sensitivity
+2. Steady your hand
+3. Improve lighting
+4. Move hand slower
+5. Enable smoothing (Settings)
 
-### High Battery Usage
+### Pointer Not Appearing
 
-**Problem:** Gesture control drains battery quickly
-
-**Solutions:**
-1. Reduce frame rate in settings
-2. Disable visual effects (glow, trail)
-3. Use only when needed
-4. Enable power saving mode
-5. Lower gesture confidence threshold
-
-### Camera Conflicts
-
-**Problem:** Other apps can't use camera
+**Problem:** Pointer doesn't show
 
 **Solutions:**
-1. Disable gesture control when not needed
-2. Use picture-in-picture mode
-3. Check camera priority in settings
-4. Close gesture overlay
+1. Check overlay permission granted
+2. Restart gesture service
+3. Re-enable gesture control
+4. Check camera permission
+
+### Wrong Gesture Detected
+
+**Problem:** Different gesture recognized
+
+**Solutions:**
+1. Make gestures more distinct
+2. Hold gesture longer
+3. Reduce sensitivity
+4. Retrain gestures (Settings)
+
+### Camera Not Working
+
+**Problem:** Camera feed not showing
+
+**Solutions:**
+1. Grant camera permission
+2. Close other camera apps
+3. Restart D.A.V.I.D AI
+4. Check camera not physically blocked
+5. Try other camera (front/rear)
 
 ---
 
-## 💡 Tips & Best Practices
+## Accessibility
 
-### For Best Performance
+### For Users with Disabilities
 
-1. **Lighting**: Use bright, even lighting
-2. **Background**: Plain, contrasting background
-3. **Distance**: 30-50 cm from camera
-4. **Stability**: Mount device or use stand
-5. **Hand Position**: Keep hand flat, parallel to camera
-6. **Practice**: Practice gestures for better recognition
+**Gesture Control is designed to help users with:**
 
-### For Privacy
+✅ **Motor disabilities** - No screen touch needed  
+✅ **Limited mobility** - Control from distance  
+✅ **Hand tremors** - Smoothing reduces shaking  
+✅ **Visual impairments** - Large pointer option  
 
-1. **Indicator**: Camera indicator shows when active
-2. **Quick Disable**: Use quick settings tile
-3. **No Recording**: Camera feed not recorded or saved
-4. **Local Processing**: All processing on-device
-5. **Permissions**: Review camera permissions regularly
+### Custom Accessibility Settings
 
-### For Accessibility
+**Settings → Accessibility → Gesture:**
 
-1. **Alternative Input**: Gesture control as alternative to touch
-2. **Customization**: Adjust sensitivity for individual needs
-3. **Voice Combo**: Combine with voice commands
-4. **Large Pointer**: Use larger pointer for visibility
-5. **High Contrast**: Enable high contrast pointer
+- **Large Pointer:** 80px size
+- **High Contrast:** Bright colors
+- **Audio Feedback:** Speak actions
+- **Dwell Click:** Auto-click after hover
+- **Slow Mode:** Reduced sensitivity
 
 ---
 
-## 🔬 Technical Details
+## Privacy & Security
 
-### AI Model
+### 🔒 Your Privacy
 
-**MediaPipe Hands:**
-- 21 hand landmarks detection
-- Real-time tracking (30+ FPS)
-- Multi-hand support (up to 2 hands)
-- High accuracy (95%+ in good conditions)
+**D.A.V.I.D AI Gesture Control:**
 
-**Gesture Recognizer:**
-- Pre-trained on 7+ gestures
-- Custom gesture training capable
-- Confidence scoring (0-100%)
-- Low latency inference (< 50ms)
+✅ **All processing happens on your device**  
+✅ **Camera feed never sent to internet**  
+✅ **No recording or storage of video**  
+✅ **Only hand landmarks extracted**  
+✅ **Landmarks processed in real-time**  
+✅ **No data collection**  
 
-### Performance
+### How It Works Privately
 
-**System Requirements:**
-- Camera: 720p minimum (1080p recommended)
-- CPU: Quad-core minimum
-- RAM: 2GB minimum (4GB recommended)
-- Android: 8.0+ (API 26+)
+1. Camera captures frame
+2. MediaPipe detects hand **locally**
+3. 21 landmark points extracted
+4. Gesture recognized **on-device**
+5. Action executed
+6. **Frame discarded** (not saved)
 
-**Resource Usage:**
-- CPU: 10-20% (varies by device)
-- RAM: 150-300 MB
-- Battery: 5-10% per hour active use
-- Camera: Continuous use when active
+**Your camera feed NEVER leaves your device!**
 
 ---
 
-## 🔐 Privacy & Security
+## FAQ
 
-**Camera Access:**
-- Used only for gesture detection
-- No images or videos saved
-- No data sent to external servers
-- All processing on-device
+### Does it work in the dark?
 
-**Data Storage:**
-- Gesture settings stored locally
-- No user data collected
-- No analytics or tracking
+**Partially.** Some light is needed for camera. Use screen brightness or room light.
 
-**Permissions:**
-- Camera: Required for hand tracking
-- Display over other apps: Required for pointer overlay
-- No other permissions needed
+### Can I use it while wearing gloves?
 
----
+**Not recommended.** Bare hands work best. Thin gloves might work.
 
-## 📚 Related Documentation
+### Does it drain battery?
 
-- [Voice Commands](Voice-Commands) - Control with voice
-- [Device Control](Device-Control) - Control device features
-- [Privacy Policy](Privacy-Policy) - Privacy information
-- [FAQ](FAQ) - Frequently asked questions
-- [Troubleshooting](Troubleshooting) - Common issues
+**Moderate use.** Camera + AI processing uses battery. Optimize:
+- Use only when needed
+- Lower camera resolution
+- Reduce sensitivity
+
+### Can others control my device?
+
+**Only if they're in front of camera.** Dismiss overlay when not in use.
+
+### Works with screen off?
+
+**No.** Screen must be on for overlay and camera.
 
 ---
 
-## 🆘 Need Help?
+## Future Features
 
-**Support Options:**
+**Coming soon:**
+
+- 🤝 Custom gesture training
+- 🎮 Game control mode
+- 📱 Multi-device gestures
+- 🌎 AR gestures
+- 🎵 Media gesture controls
+
+---
+
+## Feedback
+
+**Help us improve Gesture Control!**
+
 - 📧 Email: [david@nexuzy.in](mailto:david@nexuzy.in)
-- 🐛 Report Bug: [GitHub Issues](https://github.com/david0154/david-ai/issues/new?template=bug_report.md)
-- 💡 Feature Request: [GitHub Issues](https://github.com/david0154/david-ai/issues/new?template=feature_request.md)
-- 💬 Discussions: [GitHub Discussions](https://github.com/david0154/david-ai/discussions)
+- 🐛 [Report Issue](https://github.com/david0154/david-ai/issues/new?template=bug_report.md)
+- ✨ [Request Feature](https://github.com/david0154/david-ai/issues/new?template=feature_request.md)
 
 ---
 
-**© 2026 Nexuzy Tech Ltd.**  
-*Privacy-First AI • Your Device, Your Data • No Data Collection*
+**© 2026 Nexuzy Tech Ltd.**
