@@ -2,16 +2,24 @@
 
 <div align="center">
 
-![D.A.V.I.D AI Logo](https://img.shields.io/badge/D.A.V.I.D-AI-00E5FF?style=for-the-badge&logo=android&logoColor=white)
+<img src="https://raw.githubusercontent.com/david0154/david-ai/main/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" alt="D.A.V.I.D AI Logo" width="150" height="150">
 
-**Advanced AI Assistant with Voice Control, Gesture Recognition, and Complete Device Management**
+# D.A.V.I.D AI
+
+**Digital Assistant with Voice & Intelligent Decisions**
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.0-7F52FF?style=flat&logo=kotlin)](https://kotlinlang.org/)
 [![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=flat&logo=android)](https://www.android.com/)
 [![License](https://img.shields.io/badge/License-Custom-orange?style=flat)](LICENSE)
-[![GitHub](https://img.shields.io/badge/GitHub-david0154/david--ai-181717?style=flat&logo=github)](https://github.com/david0154/david-ai)
+[![GitHub Stars](https://img.shields.io/github/stars/david0154/david-ai?style=flat&logo=github)](https://github.com/david0154/david-ai/stargazers)
+[![GitHub Issues](https://img.shields.io/github/issues/david0154/david-ai?style=flat&logo=github)](https://github.com/david0154/david-ai/issues)
+[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/david0154/david-ai?style=flat&logo=github)](https://github.com/david0154/david-ai/pulls)
+
+**Advanced AI Assistant with Voice Control, Gesture Recognition, and Complete Device Management**
 
 **Developed by [Nexuzy Tech Ltd.](mailto:david@nexuzy.in)**
+
+[Features](#-features) • [Installation](#-getting-started) • [Usage](#first-use) • [Contributing](#-contributing) • [Support](#-support)
 
 </div>
 
@@ -231,10 +239,12 @@ cd david-ai
 ### Need Help?
 
 - **Email**: [david@nexuzy.in](mailto:david@nexuzy.in)
-- **GitHub Issues**: [Create an issue](https://github.com/david0154/david-ai/issues)
+- **GitHub Issues**: [Create an issue](https://github.com/david0154/david-ai/issues/new/choose)
 - **GitHub Discussions**: [Join discussions](https://github.com/david0154/david-ai/discussions)
 
-### Reporting Bugs
+### 🐛 Reporting Bugs
+
+**Found a bug?** [Report it here](https://github.com/david0154/david-ai/issues/new?template=bug_report.md)
 
 Please include:
 - Device model and Android version
@@ -242,6 +252,17 @@ Please include:
 - Steps to reproduce
 - Expected vs actual behavior
 - LogCat output (if possible)
+- Screenshots (if applicable)
+
+### ✨ Feature Requests
+
+**Have an idea?** [Request a feature here](https://github.com/david0154/david-ai/issues/new?template=feature_request.md)
+
+Please describe:
+- The feature you'd like
+- Why it would be useful
+- How it should work
+- Any examples or mockups
 
 ---
 
@@ -255,7 +276,81 @@ We welcome contributions! Whether it's:
 - 🌍 Translations
 - 🎨 UI/UX enhancements
 
-Please feel free to submit pull requests!
+### How to Contribute
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+Please read our [Contributing Guidelines](CONTRIBUTING.md) _(coming soon)_ for details.
+
+---
+
+## 👨‍💻 Contributors
+
+Thanks to all contributors who have helped make D.A.V.I.D AI better!
+
+<div align="center">
+
+<a href="https://github.com/david0154/david-ai/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=david0154/david-ai" />
+</a>
+
+**Want to see your name here?** [Start contributing!](#-contributing)
+
+</div>
+
+### Core Team
+
+- **[David](https://github.com/david0154)** - Creator & Lead Developer
+- **Nexuzy Tech Ltd.** - Development & Support
+
+### Special Thanks
+
+To all users who:
+- 🐛 Report bugs
+- 💡 Suggest features
+- ⭐ Star the project
+- 📢 Share with others
+- 🌍 Contribute translations
+
+---
+
+## 📊 Project Status
+
+- ✅ Voice Control - **COMPLETE**
+- ✅ Gesture Recognition - **COMPLETE**
+- ✅ AI Chat - **COMPLETE**
+- ✅ Multi-Language Support - **COMPLETE**
+- ✅ Device Control - **COMPLETE**
+- ✅ Privacy-First Design - **COMPLETE**
+- 🚧 Advanced Vision Features - **IN PROGRESS**
+- 📋 Smart Home Integration - **PLANNED**
+- 📋 Wearable Support - **PLANNED**
+
+---
+
+## 🗺️ Roadmap
+
+### Version 1.1 (Q1 2026)
+- [ ] Enhanced gesture recognition
+- [ ] More voice command types
+- [ ] Custom wake word training
+- [ ] Gesture customization
+
+### Version 1.2 (Q2 2026)
+- [ ] Smart home device control
+- [ ] Calendar integration
+- [ ] Email management
+- [ ] Note taking
+
+### Version 2.0 (Q3 2026)
+- [ ] AR features
+- [ ] Wearable app
+- [ ] API for third-party apps
+- [ ] Cloud sync (optional)
 
 ---
 
@@ -281,42 +376,6 @@ This project is licensed under a custom license. See [LICENSE](LICENSE) file for
 
 ---
 
-## 📊 Project Status
-
-- ✅ Voice Control - **COMPLETE**
-- ✅ Gesture Recognition - **COMPLETE**
-- ✅ AI Chat - **COMPLETE**
-- ✅ Multi-Language Support - **COMPLETE**
-- ✅ Device Control - **COMPLETE**
-- ✅ Privacy-First Design - **COMPLETE**
-- 🚧 Advanced Vision Features - **IN PROGRESS**
-- 🚧 Smart Home Integration - **PLANNED**
-- 🚧 Wearable Support - **PLANNED**
-
----
-
-## 🌟 Roadmap
-
-### Version 1.1 (Q1 2026)
-- [ ] Enhanced gesture recognition
-- [ ] More voice command types
-- [ ] Custom wake word training
-- [ ] Gesture customization
-
-### Version 1.2 (Q2 2026)
-- [ ] Smart home device control
-- [ ] Calendar integration
-- [ ] Email management
-- [ ] Note taking
-
-### Version 2.0 (Q3 2026)
-- [ ] AR features
-- [ ] Wearable app
-- [ ] API for third-party apps
-- [ ] Cloud sync (optional)
-
----
-
 ## 🚀 About Nexuzy Tech Ltd.
 
 **D.A.V.I.D AI** is developed and maintained by **Nexuzy Tech Ltd.**, a company focused on building privacy-first AI applications that empower users without compromising their data.
@@ -332,6 +391,7 @@ To create powerful AI tools that:
 ### Contact
 
 - **Email**: [david@nexuzy.in](mailto:david@nexuzy.in)
+- **GitHub**: [@david0154](https://github.com/david0154)
 - **Website**: _Coming soon_
 
 ---
@@ -340,10 +400,19 @@ To create powerful AI tools that:
 
 If you find D.A.V.I.D AI useful, please consider:
 
-- ⭐ Starring this repository
-- 🐛 Reporting bugs
-- 💡 Suggesting features
-- 💬 Spreading the word
+- ⭐ **Star this repository**
+- 🐛 **Report bugs** via [issues](https://github.com/david0154/david-ai/issues/new/choose)
+- 💡 **Suggest features** via [feature requests](https://github.com/david0154/david-ai/issues/new?template=feature_request.md)
+- 📢 **Spread the word** - Share with friends and colleagues
+- 🤝 **Contribute** - Submit a pull request
+
+<div align="center">
+
+[![Star History](https://img.shields.io/github/stars/david0154/david-ai?style=social)](https://github.com/david0154/david-ai/stargazers)
+[![Fork](https://img.shields.io/github/forks/david0154/david-ai?style=social)](https://github.com/david0154/david-ai/fork)
+[![Watch](https://img.shields.io/github/watchers/david0154/david-ai?style=social)](https://github.com/david0154/david-ai/watchers)
+
+</div>
 
 ---
 
@@ -355,6 +424,7 @@ If you find D.A.V.I.D AI useful, please consider:
 - **Google MediaPipe** - Gesture recognition
 - **TensorFlow** - Language models
 - All open-source contributors
+- Our amazing users and community
 
 ---
 
@@ -365,6 +435,10 @@ If you find D.A.V.I.D AI useful, please consider:
 [![Email](https://img.shields.io/badge/Email-david%40nexuzy.in-blue?style=flat&logo=gmail)](mailto:david@nexuzy.in)
 [![GitHub](https://img.shields.io/badge/GitHub-david0154-181717?style=flat&logo=github)](https://github.com/david0154)
 
+---
+
 **© 2026 Nexuzy Tech Ltd. All rights reserved.**
+
+*Privacy-First AI • Your Device, Your Data • No Data Collection*
 
 </div>
