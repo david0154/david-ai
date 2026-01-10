@@ -60,11 +60,7 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
-        // Only include valid opt-in flags, remove unsupported -Xsuppress-warning flags
-        freeCompilerArgs += listOf(
-            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
-            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi"
-        )
+        // No experimental opt-ins needed - Material3 and Foundation are stable
     }
 
     buildFeatures {
