@@ -51,10 +51,10 @@
    [==================] 85%
    Setting up voice recognition
    
-   Developed by David Studioz
+   Developed by Nexuzy Tech 
 ```
 
-### Main Interface - Jarvis Style
+### Main Interface 
 ```
 🤖 D.A.V.I.D                    🕛 16:32:05
    Digital Assistant Voice      User: Friend
