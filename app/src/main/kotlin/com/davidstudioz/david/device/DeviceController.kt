@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.provider.AlarmClock
 import android.provider.ContactsContract
 import android.provider.MediaStore
 import android.provider.Settings
@@ -253,9 +254,11 @@ class DeviceController(private val context: Context) {
      */
     fun setAlarm(hourOfDay: Int, minute: Int): Boolean {
         return try {
-            val intent = Intent(Intent.ACTION_SET_ALARM).apply {
-                putExtra("android.intent.extra.alarm.HOUR", hourOfDay)
-                putExtra("android.intent.extra.alarm.MINUTES", minute)
+            val intent = Intent(AlarmClock.ACTION_SET_ALARM).apply {
+                putExtra(AlarmClock.EXTRA_HOUR, hourOfDay)
+                putExtra(AlarmClock.EXTRA_MINUTES, minute)
+                putExtra(AlarmClock.EXTRA_MESSAGE, "David AI Alarm")
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             context.startActivity(intent)
             true
