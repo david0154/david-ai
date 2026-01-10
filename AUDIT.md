@@ -506,7 +506,7 @@ Your DAVID AI app is:
 ║ Project: DAVID AI                            ║
 ║ Repository: david0154/david-ai               ║
 ║ Audit Date: January 10, 2026                 ║
-║ Auditor: Perplexity AI Deep Scanner          ║
+║ Auditor:  Clerk           ║
 ║                                              ║
 ║ STATUS: ✅ PRODUCTION READY                  ║
 ║ GRADE: A++ (99/100)                          ║
