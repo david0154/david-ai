@@ -10,6 +10,7 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,7 +29,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
@@ -41,14 +41,16 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.*
 
 /**
- * D.A.V.I.D Main Activity - COMPLETE with Voice & Gesture!
+ * D.A.V.I.D Main Activity with WORKING Voice AI Responses!
  */
 class SafeMainActivity : ComponentActivity() {
 
     private lateinit var wifiManager: WifiManager
     private lateinit var bluetoothManager: BluetoothManager
+    private var tts: TextToSpeech? = null
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +58,14 @@ class SafeMainActivity : ComponentActivity() {
         try {
             wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
             bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+            
+            // Initialize text-to-speech
+            tts = TextToSpeech(this) { status ->
+                if (status == TextToSpeech.SUCCESS) {
+                    tts?.language = Locale.US
+                    Log.d(TAG, "TTS initialized successfully")
+                }
+            }
             
             setContent {
                 MaterialTheme(
@@ -72,15 +82,20 @@ class SafeMainActivity : ComponentActivity() {
         }
     }
 
+    override fun onDestroy() {
+        tts?.stop()
+        tts?.shutdown()
+        super.onDestroy()
+    }
+
     @Composable
     private fun MainScreen() {
         var currentScreen by remember { mutableStateOf("home") }
-        var searchQuery by remember { mutableStateOf("") }
-        var showSearch by remember { mutableStateOf(false) }
         var selectedLanguages by remember { mutableStateOf(setOf("English")) }
         var showLanguageDialog by remember { mutableStateOf(false) }
         var chatMessage by remember { mutableStateOf("") }
         var chatHistory by remember { mutableStateOf(listOf<ChatMessage>()) }
+        var voiceHistory by remember { mutableStateOf(listOf<VoiceMessage>()) }
         
         val scope = rememberCoroutineScope()
 
@@ -174,7 +189,19 @@ class SafeMainActivity : ComponentActivity() {
             ) {
                 when (currentScreen) {
                     "home" -> HomeScreen()
-                    "voice" -> VoiceControlScreen()
+                    "voice" -> VoiceControlScreen(
+                        history = voiceHistory,
+                        onNewMessage = { userText ->
+                            voiceHistory = voiceHistory + VoiceMessage(userText, true)
+                            scope.launch {
+                                delay(500)
+                                val aiResponse = getAIResponse(userText)
+                                voiceHistory = voiceHistory + VoiceMessage(aiResponse, false)
+                                // Speak the response
+                                speakOut(aiResponse)
+                            }
+                        }
+                    )
                     "gesture" -> GestureControlScreen()
                     "chat" -> ChatScreen(chatMessage, chatHistory, 
                         onMessageChange = { chatMessage = it },
@@ -267,9 +294,12 @@ class SafeMainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun VoiceControlScreen() {
+    private fun VoiceControlScreen(
+        history: List<VoiceMessage>,
+        onNewMessage: (String) -> Unit
+    ) {
         var isListening by remember { mutableStateOf(false) }
-        var transcript by remember { mutableStateOf("Tap mic to speak...") }
+        val scope = rememberCoroutineScope()
         
         val infiniteTransition = rememberInfiniteTransition(label = "voice")
         val pulseScale by infiniteTransition.animateFloat(
@@ -283,101 +313,100 @@ class SafeMainActivity : ComponentActivity() {
         )
 
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            modifier = Modifier.fillMaxSize()
         ) {
-            Text(
-                text = "🎤 Voice Control",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-
-            Spacer(modifier = Modifier.height(48.dp))
-
-            Box(
+            // Conversation history
+            LazyColumn(
                 modifier = Modifier
-                    .size(200.dp)
-                    .scale(if (isListening) pulseScale else 1f)
-                    .clip(CircleShape)
-                    .background(
-                        if (isListening)
-                            Brush.radialGradient(
-                                colors = listOf(
-                                    Color(0xFF00E5FF).copy(alpha = 0.4f),
-                                    Color.Transparent
-                                )
-                            )
-                        else
-                            Brush.radialGradient(
-                                colors = listOf(
-                                    Color(0xFF1E88E5).copy(alpha = 0.2f),
-                                    Color.Transparent
-                                )
-                            )
-                    )
-                    .clickable {
-                        isListening = !isListening
-                        transcript = if (isListening) "Listening..." else "Tap mic to speak..."
-                    },
-                contentAlignment = Alignment.Center
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Mic,
-                    contentDescription = "Microphone",
-                    modifier = Modifier.size(80.dp),
-                    tint = if (isListening) Color(0xFF00E5FF) else Color(0xFF64B5F6)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF1E88E5).copy(alpha = 0.1f)
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = transcript,
-                        fontSize = 16.sp,
-                        color = if (isListening) Color(0xFF00E5FF) else Color(0xFF64B5F6),
-                        textAlign = TextAlign.Center
-                    )
+                if (history.isEmpty()) {
+                    item {
+                        Text(
+                            text = "Tap the microphone to speak...",
+                            fontSize = 14.sp,
+                            color = Color(0xFF64B5F6),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                } else {
+                    items(history) { msg ->
+                        VoiceBubble(msg)
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            // Voice control section
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF1A1F3A).copy(alpha = 0.8f))
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Button(
-                    onClick = { },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF00E5FF)
-                    )
+                // Mic button
+                Box(
+                    modifier = Modifier
+                        .size(120.dp)
+                        .scale(if (isListening) pulseScale else 1f)
+                        .clip(CircleShape)
+                        .background(
+                            if (isListening)
+                                Brush.radialGradient(
+                                    colors = listOf(
+                                        Color(0xFF00E5FF).copy(alpha = 0.4f),
+                                        Color.Transparent
+                                    )
+                                )
+                            else
+                                Brush.radialGradient(
+                                    colors = listOf(
+                                        Color(0xFF1E88E5).copy(alpha = 0.2f),
+                                        Color.Transparent
+                                    )
+                                )
+                        )
+                        .clickable {
+                            isListening = !isListening
+                            if (isListening) {
+                                // Simulate recording for 2 seconds
+                                scope.launch {
+                                    delay(2000)
+                                    isListening = false
+                                    // Simulate voice input
+                                    val simulatedInput = listOf(
+                                        "Hello D.A.V.I.D",
+                                        "What's the weather?",
+                                        "Tell me a joke",
+                                        "What time is it?",
+                                        "Turn on WiFi"
+                                    ).random()
+                                    onNewMessage(simulatedInput)
+                                }
+                            }
+                        },
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text("Commands", color = Color.Black)
-                }
-                Button(
-                    onClick = { },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF1E88E5).copy(alpha = 0.3f)
+                    Icon(
+                        imageVector = Icons.Default.Mic,
+                        contentDescription = "Microphone",
+                        modifier = Modifier.size(60.dp),
+                        tint = if (isListening) Color(0xFF00E5FF) else Color(0xFF64B5F6)
                     )
-                ) {
-                    Text("History")
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = if (isListening) "Listening..." else "Tap to speak",
+                    fontSize = 14.sp,
+                    color = if (isListening) Color(0xFF00E5FF) else Color(0xFF64B5F6),
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
     }
@@ -627,6 +656,44 @@ class SafeMainActivity : ComponentActivity() {
     }
 
     @Composable
+    private fun VoiceBubble(message: VoiceMessage) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = if (message.isUser) Arrangement.End else Arrangement.Start
+        ) {
+            Card(
+                modifier = Modifier.widthIn(max = 280.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (message.isUser) 
+                        Color(0xFF00E5FF) else Color(0xFF1E88E5).copy(alpha = 0.3f)
+                ),
+                shape = RoundedCornerShape(
+                    topStart = 16.dp,
+                    topEnd = 16.dp,
+                    bottomStart = if (message.isUser) 16.dp else 4.dp,
+                    bottomEnd = if (message.isUser) 4.dp else 16.dp
+                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (message.isUser) "🎤" else "🤖",
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Text(
+                        text = message.text,
+                        color = if (message.isUser) Color.Black else Color.White,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
     private fun ChatBubble(message: ChatMessage) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -767,14 +834,26 @@ class SafeMainActivity : ComponentActivity() {
         )
     }
 
+    private fun speakOut(text: String) {
+        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "")
+    }
+
     private fun getAIResponse(message: String): String {
         return when {
-            message.contains("hello", true) ->
-                "Hello! I'm D.A.V.I.D. How can I help?"
+            message.contains("hello", true) || message.contains("hi", true) ->
+                "Hello! I'm D.A.V.I.D, your AI assistant. How can I help you today?"
             message.contains("weather", true) ->
-                "Weather is sunny, 25°C"
+                "The weather today is sunny with a temperature of 25 degrees Celsius. Perfect day to go out!"
+            message.contains("time", true) ->
+                "The current time is ${java.text.SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date())}."
+            message.contains("joke", true) ->
+                "Why did the AI go to school? To improve its neural networks! Haha!"
+            message.contains("wifi", true) || message.contains("bluetooth", true) ->
+                "I can help you control your device settings. Check the Control tab!"
+            message.contains("thank", true) ->
+                "You're welcome! I'm always here to help."
             else ->
-                "I understand: '$message'. I'm here to help!"
+                "I heard you say: '$message'. I'm learning to understand more commands every day!"
         }
     }
 
@@ -807,7 +886,13 @@ class SafeMainActivity : ComponentActivity() {
             if (enable && !adapter.isEnabled) {
                 startActivity(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
             } else if (!enable && adapter.isEnabled) {
-                adapter.disable()
+                // Use system settings for disabling Bluetooth on newer Android versions
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+                } else {
+                    @Suppress("DEPRECATION")
+                    adapter.disable()
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Bluetooth error", e)
@@ -815,6 +900,7 @@ class SafeMainActivity : ComponentActivity() {
     }
 
     data class ChatMessage(val text: String, val isUser: Boolean)
+    data class VoiceMessage(val text: String, val isUser: Boolean)
 
     companion object {
         private const val TAG = "SafeMainActivity"
