@@ -5,17 +5,21 @@ import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import com.davidstudioz.david.config.ModelConfig
 import com.davidstudioz.david.utils.DeviceResourceManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileOutputStream
+import java.net.HttpURLConnection
+import java.net.URL
 
 /**
  * Smart AI Model Downloader
  * - Uses DeviceResourceManager for resource-aware downloads
  * - Respects 50-60% resource usage limits
- * - Selects appropriate model based on available resources
- * - Only downloads if device has sufficient free resources
+ * - Downloads real models from Hugging Face (via ModelConfig)
+ * - Integrates with existing LLMEngine model selection
  */
 class ModelDownloadWorker(
     context: Context,
@@ -26,9 +30,9 @@ class ModelDownloadWorker(
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
-            Log.d(TAG, "=" * 50)
+            Log.d(TAG, "=".repeat(50))
             Log.d(TAG, "Starting Smart Model Download")
-            Log.d(TAG, "=" * 50)
+            Log.d(TAG, "=".repeat(50))
             
             // Get current resource status
             val resourceStatus = resourceManager.getResourceStatus()
@@ -44,13 +48,12 @@ class ModelDownloadWorker(
             val availability = resourceStatus.canUseForAI
             Log.d(TAG, "Resource Availability Check:")
             Log.d(TAG, "  Can Download: ${availability.canDownloadModel}")
-            Log.d(TAG, "  Recommended Model: ${availability.recommendedModel.name}")
             Log.d(TAG, "  Max Model Size: ${availability.maxModelSizeMB}MB")
             Log.d(TAG, "  Max RAM Usage: ${availability.maxRamUsageMB}MB")
             Log.d(TAG, "  Reason: ${availability.reason}")
             Log.d(TAG, "")
             
-            // Don't download if resources are constrained
+            // Don't download if resources are constrained (usage > 50%)
             if (!availability.canDownloadModel) {
                 Log.w(TAG, "Download blocked: ${availability.reason}")
                 Log.w(TAG, "Current RAM usage (${resourceStatus.ramUsagePercent.toInt()}%) or Storage usage (${resourceStatus.storageUsagePercent.toInt()}%) exceeds 50% limit")
@@ -62,25 +65,30 @@ class ModelDownloadWorker(
                 )
             }
             
-            // Download appropriate model
-            val modelType = availability.recommendedModel.name.lowercase()
-            Log.d(TAG, "Downloading model: $modelType")
-            Log.d(TAG, "  Size: ${availability.recommendedModel.sizeMB}MB")
-            Log.d(TAG, "  RAM Required: ${availability.recommendedModel.ramRequiredMB}MB")
+            // Select model based on available RAM (matching LLMEngine logic)
+            val availableMemGB = resourceStatus.totalRamMB / 1024
+            val modelInfo = selectModelBasedOnRAM(availableMemGB)
             
-            val success = downloadModel(modelType, availability.recommendedModel)
+            Log.d(TAG, "Selected Model: ${modelInfo.name}")
+            Log.d(TAG, "  URL: ${modelInfo.url}")
+            Log.d(TAG, "  Size: ${modelInfo.sizeStr}")
+            Log.d(TAG, "  Min RAM: ${modelInfo.minRamGB}GB")
+            Log.d(TAG, "")
+            
+            // Download model
+            val success = downloadModel(modelInfo)
             
             if (success) {
-                Log.d(TAG, "✓ Model downloaded successfully: $modelType")
-                Log.d(TAG, "=" * 50)
+                Log.d(TAG, "✓ Model downloaded successfully: ${modelInfo.name}")
+                Log.d(TAG, "=".repeat(50))
                 Result.success(workDataOf(
-                    "model_type" to modelType,
-                    "model_size_mb" to availability.recommendedModel.sizeMB,
-                    "ram_required_mb" to availability.recommendedModel.ramRequiredMB
+                    "model_name" to modelInfo.name,
+                    "model_size" to modelInfo.sizeStr,
+                    "min_ram_gb" to modelInfo.minRamGB
                 ))
             } else {
-                Log.e(TAG, "✗ Model download failed: $modelType")
-                Log.d(TAG, "=" * 50)
+                Log.e(TAG, "✗ Model download failed: ${modelInfo.name}")
+                Log.d(TAG, "=".repeat(50))
                 Result.retry()
             }
         } catch (e: Exception) {
@@ -90,26 +98,61 @@ class ModelDownloadWorker(
     }
 
     /**
-     * Download AI model from server
-     * In production, this would download from your CDN/server
+     * Model information
      */
-    private suspend fun downloadModel(
-        modelType: String,
-        modelSize: DeviceResourceManager.ModelSize
-    ): Boolean = withContext(Dispatchers.IO) {
+    data class ModelInfo(
+        val name: String,
+        val url: String,
+        val sizeStr: String,
+        val minRamGB: Int
+    )
+
+    /**
+     * Select model based on available RAM
+     * Matches logic from LLMEngine.kt
+     */
+    private fun selectModelBasedOnRAM(availableMemGB: Long): ModelInfo {
+        return when {
+            availableMemGB >= 6 -> ModelInfo(
+                name = "phi-3-8b",
+                url = "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-q8_0.gguf",
+                sizeStr = "2.4 GB",
+                minRamGB = 6
+            )
+            availableMemGB >= 4 -> ModelInfo(
+                name = "phi-3-4b",
+                url = "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-q4_k_m.gguf",
+                sizeStr = "1.2 GB",
+                minRamGB = 4
+            )
+            availableMemGB >= 3 -> ModelInfo(
+                name = "qwen-1.8b",
+                url = ModelConfig.LLM_QWEN_URL,
+                sizeStr = ModelConfig.LLM_QWEN_SIZE,
+                minRamGB = ModelConfig.LLM_QWEN_MIN_RAM
+            )
+            availableMemGB >= 2 -> ModelInfo(
+                name = "phi-2",
+                url = ModelConfig.LLM_PHI2_URL,
+                sizeStr = ModelConfig.LLM_PHI2_SIZE,
+                minRamGB = ModelConfig.LLM_PHI2_MIN_RAM
+            )
+            else -> ModelInfo(
+                name = "tinyllama-1b",
+                url = ModelConfig.LLM_TINYLLAMA_URL,
+                sizeStr = ModelConfig.LLM_TINYLLAMA_SIZE,
+                minRamGB = ModelConfig.LLM_TINYLLAMA_MIN_RAM
+            )
+        }
+    }
+
+    /**
+     * Download AI model from Hugging Face
+     */
+    private suspend fun downloadModel(modelInfo: ModelInfo): Boolean = withContext(Dispatchers.IO) {
         try {
-            // Model URLs (replace with your actual URLs)
-            val modelUrl = when (modelType) {
-                "ultra" -> "https://example.com/models/david-ai-ultra.tflite"
-                "pro" -> "https://example.com/models/david-ai-pro.tflite"
-                "standard" -> "https://example.com/models/david-ai-standard.tflite"
-                "lite" -> "https://example.com/models/david-ai-lite.tflite"
-                "tiny" -> "https://example.com/models/david-ai-tiny.tflite"
-                else -> return@withContext false
-            }
-            
-            // Download path
-            val modelFile = File(applicationContext.filesDir, "ai_model_$modelType.tflite")
+            // Model filename from name
+            val modelFile = File(applicationContext.filesDir, "${modelInfo.name}.gguf")
             
             // Check if model already exists
             if (modelFile.exists() && modelFile.length() > 0) {
@@ -117,28 +160,56 @@ class ModelDownloadWorker(
                 return@withContext true
             }
             
-            // TODO: Implement actual download from your server
-            // For now, create a placeholder file with size info
-            Log.d(TAG, "Creating model file: ${modelFile.absolutePath}")
-            val modelInfo = buildString {
-                appendLine("DAVID AI Model: $modelType")
-                appendLine("Size: ${modelSize.sizeMB}MB")
-                appendLine("RAM Required: ${modelSize.ramRequiredMB}MB")
-                appendLine("Download URL: $modelUrl")
-                appendLine("Status: Ready for production download")
-            }
-            modelFile.writeText(modelInfo)
+            Log.d(TAG, "Downloading from Hugging Face...")
+            Log.d(TAG, "URL: ${modelInfo.url}")
+            Log.d(TAG, "Destination: ${modelFile.absolutePath}")
             
-            Log.d(TAG, "Model file created: ${modelFile.length()} bytes")
-            true
+            // Download with progress
+            val url = URL(modelInfo.url)
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+            connection.connectTimeout = 30000
+            connection.readTimeout = 30000
+            connection.connect()
+            
+            if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                val totalSize = connection.contentLength
+                Log.d(TAG, "Total size: ${totalSize / (1024 * 1024)}MB")
+                
+                connection.inputStream.use { input ->
+                    FileOutputStream(modelFile).use { output ->
+                        val buffer = ByteArray(8192)
+                        var bytesRead: Int
+                        var totalBytesRead = 0L
+                        var lastProgress = 0
+                        
+                        while (input.read(buffer).also { bytesRead = it } != -1) {
+                            output.write(buffer, 0, bytesRead)
+                            totalBytesRead += bytesRead
+                            
+                            // Log progress every 10%
+                            val progress = ((totalBytesRead * 100) / totalSize).toInt()
+                            if (progress >= lastProgress + 10) {
+                                Log.d(TAG, "Download progress: $progress%")
+                                lastProgress = progress
+                            }
+                        }
+                    }
+                }
+                
+                Log.d(TAG, "Model downloaded: ${modelFile.length() / (1024 * 1024)}MB")
+                true
+            } else {
+                Log.e(TAG, "Download failed: HTTP ${connection.responseCode}")
+                false
+            }
         } catch (e: Exception) {
-            Log.e(TAG, "Error in downloadModel", e)
+            Log.e(TAG, "Error downloading model", e)
             false
         }
     }
 
     companion object {
         private const val TAG = "ModelDownloadWorker"
-        private operator fun String.times(count: Int) = this.repeat(count)
     }
 }
