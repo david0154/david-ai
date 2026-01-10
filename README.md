@@ -2,7 +2,7 @@
 
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/david0154/david-ai/main/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" alt="D.A.V.I.D AI Logo" width="150" height="150">
+<img src="https://raw.githubusercontent.com/david0154/david-ai/main/logo.png" alt="D.A.V.I.D AI Logo" width="150" height="150">
 
 # D.A.V.I.D AI
 
