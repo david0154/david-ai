@@ -3,7 +3,7 @@ package com.davidstudioz.david.gesture
 import android.content.Context
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
-import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarkerOptions
+// REMOVED: import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarkerOptions
 import javax.inject.Inject
 import javax.inject.Singleton
 

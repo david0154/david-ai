@@ -138,21 +138,22 @@ class MainActivity : ComponentActivity() {
                 statusMessage = "Clicked at ($x, $y)"
             }
 
-            // Gesture Controller
-            gestureController = GestureController(this) { gesture, details ->
-                handleGesture(gesture, details)
-            }
+            // FIXED: Gesture Controller - only needs Context
+            gestureController = GestureController(this)
 
-            // Hot Word Detector ("Hey David")
-            hotWordDetector = HotWordDetector(this) { confidence ->
-                statusMessage = "Wake word detected! ($confidence confidence)"
-                activateListeningMode()
-                textToSpeechEngine.speak(
-                    "I'm listening...",
-                    TextToSpeechEngine.SupportedLanguage.ENGLISH
-                )
-            }
-            hotWordDetector.startListening()
+            // FIXED: Hot Word Detector - only needs Context, use new signature
+            hotWordDetector = HotWordDetector(this)
+            hotWordDetector.startListening(
+                hotWords = listOf("hey david", "ok david"),
+                callback = { word ->
+                    statusMessage = "Wake word detected: $word"
+                    activateListeningMode()
+                    textToSpeechEngine.speak(
+                        "I'm listening...",
+                        TextToSpeechEngine.SupportedLanguage.ENGLISH
+                    )
+                }
+            )
 
             Log.d("MainActivity", "All components initialized successfully")
         } catch (e: Exception) {
@@ -209,15 +210,16 @@ class MainActivity : ComponentActivity() {
 
     /**
      * Handle gesture input
+     * FIXED: Removed GestureType enum references
      */
-    private fun handleGesture(gesture: GestureController.GestureType, details: String) {
-        statusMessage = "Gesture: ${gesture.name} - $details"
+    private fun handleGesture(gesture: String, details: String) {
+        statusMessage = "Gesture: $gesture - $details"
         when (gesture) {
-            GestureController.GestureType.SWIPE_LEFT -> statusMessage = "Previous"
-            GestureController.GestureType.SWIPE_RIGHT -> statusMessage = "Next"
-            GestureController.GestureType.SINGLE_TAP -> statusMessage = "Tap"
-            GestureController.GestureType.DOUBLE_TAP -> statusMessage = "Double tap"
-            GestureController.GestureType.LONG_PRESS -> statusMessage = "Long press"
+            "swipe_left" -> statusMessage = "Previous"
+            "swipe_right" -> statusMessage = "Next"
+            "single_tap" -> statusMessage = "Tap"
+            "double_tap" -> statusMessage = "Double tap"
+            "long_press" -> statusMessage = "Long press"
             else -> {}
         }
     }
@@ -399,7 +401,15 @@ class MainActivity : ComponentActivity() {
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
-                    onClick = { hotWordDetector.startListening() },
+                    onClick = {
+                        // FIXED: Proper signature
+                        hotWordDetector.startListening(
+                            hotWords = listOf("hey david", "ok david"),
+                            callback = { word ->
+                                statusMessage = "Detected: $word"
+                            }
+                        )
+                    },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00D4FF))
                 ) {
@@ -429,7 +439,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        hotWordDetector.release()
+        hotWordDetector.stopListening()  // FIXED: Use stopListening() instead of release()
         textToSpeechEngine.release()
         pointerController.release()
     }
