@@ -721,7 +721,6 @@ class MainActivity : ComponentActivity() {
         modifier: Modifier = Modifier,
         tint: Color? = null
     ) {
-        // Try to load logo.png from drawable
         val logoResourceId = remember {
             try {
                 resources.getIdentifier("logo", "drawable", packageName)
@@ -732,19 +731,17 @@ class MainActivity : ComponentActivity() {
         }
         
         if (logoResourceId != 0) {
-            // Use runCatching to handle image loading errors
-            val imageLoadSuccess = remember { mutableStateOf(true) }
-            
-            if (imageLoadSuccess.value) {
+            // Try to load the image, fall back to emoji on any error
+            try {
                 Image(
                     painter = painterResource(id = logoResourceId),
                     contentDescription = "D.A.V.I.D Logo",
                     modifier = modifier.clip(CircleShape),
                     contentScale = ContentScale.Fit,
-                    colorFilter = tint?.let { ColorFilter.tint(it) },
-                    onError = { imageLoadSuccess.value = false }
+                    colorFilter = tint?.let { ColorFilter.tint(it) }
                 )
-            } else {
+            } catch (e: Exception) {
+                Log.w(TAG, "Error loading logo image", e)
                 LogoFallback(modifier, tint)
             }
         } else {

@@ -366,18 +366,20 @@ class SplashActivity : ComponentActivity() {
             }
         }
 
-        val imageLoadSuccess = remember { mutableStateOf(true) }
-
-        if (logoResourceId != 0 && imageLoadSuccess.value) {
-            // Use runCatching to handle errors in Composable context
-            Image(
-                painter = painterResource(id = logoResourceId),
-                contentDescription = "D.A.V.I.D Logo",
-                modifier = modifier.clip(CircleShape),
-                contentScale = ContentScale.Fit,
-                colorFilter = tint?.let { ColorFilter.tint(it) },
-                onError = { imageLoadSuccess.value = false }
-            )
+        if (logoResourceId != 0) {
+            // Try to load image, fall back to emoji on error
+            try {
+                Image(
+                    painter = painterResource(id = logoResourceId),
+                    contentDescription = "D.A.V.I.D Logo",
+                    modifier = modifier.clip(CircleShape),
+                    contentScale = ContentScale.Fit,
+                    colorFilter = tint?.let { ColorFilter.tint(it) }
+                )
+            } catch (e: Exception) {
+                Log.w(TAG, "Error loading logo", e)
+                LogoFallback(modifier, tint)
+            }
         } else {
             LogoFallback(modifier, tint)
         }
