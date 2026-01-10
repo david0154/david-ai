@@ -34,10 +34,83 @@
     <color name="overlay_light">#40FFFFFF</color>
     <color name="glass_overlay">#1A00E5FF</color>
     
-    <!-- Material You (Android 12+) -->
-    <color name="md_theme_primary">#00E5FF</color>
-    <color name="md_theme_onPrimary">#000000</color>
-    <color name="md_theme_secondary">#64B5F6</color>
-    <color name="md_theme_background">#0A0E27</color>
-    <color name="md_theme_surface">#1A1F3A</color>
+    <!-- Material 3 Dark Theme Colors -->
+    <color name="md_theme_dark_primary">#00E5FF</color>
+    <color name="md_theme_dark_onPrimary">#000000</color>
+    <color name="md_theme_dark_primaryContainer">#0091EA</color>
+    <color name="md_theme_dark_onPrimaryContainer">#FFFFFF</color>
+    
+    <color name="md_theme_dark_secondary">#64B5F6</color>
+    <color name="md_theme_dark_onSecondary">#000000</color>
+    <color name="md_theme_dark_secondaryContainer">#42A5F5</color>
+    <color name="md_theme_dark_onSecondaryContainer">#FFFFFF</color>
+    
+    <color name="md_theme_dark_tertiary">#00FF88</color>
+    <color name="md_theme_dark_onTertiary">#000000</color>
+    <color name="md_theme_dark_tertiaryContainer">#00E676</color>
+    <color name="md_theme_dark_onTertiaryContainer">#FFFFFF</color>
+    
+    <color name="md_theme_dark_error">#FF6E40</color>
+    <color name="md_theme_dark_onError">#FFFFFF</color>
+    <color name="md_theme_dark_errorContainer">#D84315</color>
+    <color name="md_theme_dark_onErrorContainer">#FFFFFF</color>
+    
+    <color name="md_theme_dark_background">#0A0E27</color>
+    <color name="md_theme_dark_onBackground">#FFFFFF</color>
+    
+    <color name="md_theme_dark_surface">#1A1F3A</color>
+    <color name="md_theme_dark_onSurface">#FFFFFF</color>
+    <color name="md_theme_dark_surfaceVariant">#2A2F4A</color>
+    <color name="md_theme_dark_onSurfaceVariant">#E0E0E0</color>
+    
+    <color name="md_theme_dark_outline">#64B5F6</color>
+    <color name="md_theme_dark_outlineVariant">#42A5F5</color>
+    
+    <color name="md_theme_dark_inverseSurface">#E0E0E0</color>
+    <color name="md_theme_dark_inverseOnSurface">#000000</color>
+    <color name="md_theme_dark_inversePrimary">#0091EA</color>
+    
+    <color name="md_theme_dark_shadow">#000000</color>
+    <color name="md_theme_dark_surfaceTint">#00E5FF</color>
+    <color name="md_theme_dark_scrim">#000000</color>
+    
+    <!-- Material 3 Light Theme Colors (for day mode support) -->
+    <color name="md_theme_light_primary">#0091EA</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_primaryContainer">#B3E5FC</color>
+    <color name="md_theme_light_onPrimaryContainer">#01579B</color>
+    
+    <color name="md_theme_light_secondary">#1976D2</color>
+    <color name="md_theme_light_onSecondary">#FFFFFF</color>
+    <color name="md_theme_light_secondaryContainer">#BBDEFB</color>
+    <color name="md_theme_light_onSecondaryContainer">#0D47A1</color>
+    
+    <color name="md_theme_light_tertiary">#00C853</color>
+    <color name="md_theme_light_onTertiary">#FFFFFF</color>
+    <color name="md_theme_light_tertiaryContainer">#B9F6CA</color>
+    <color name="md_theme_light_onTertiaryContainer">#00695C</color>
+    
+    <color name="md_theme_light_error">#D32F2F</color>
+    <color name="md_theme_light_onError">#FFFFFF</color>
+    <color name="md_theme_light_errorContainer">#FFCDD2</color>
+    <color name="md_theme_light_onErrorContainer">#B71C1C</color>
+    
+    <color name="md_theme_light_background">#FAFAFA</color>
+    <color name="md_theme_light_onBackground">#1A1F3A</color>
+    
+    <color name="md_theme_light_surface">#FFFFFF</color>
+    <color name="md_theme_light_onSurface">#1A1F3A</color>
+    <color name="md_theme_light_surfaceVariant">#E3F2FD</color>
+    <color name="md_theme_light_onSurfaceVariant">#424242</color>
+    
+    <color name="md_theme_light_outline">#1976D2</color>
+    <color name="md_theme_light_outlineVariant">#42A5F5</color>
+    
+    <color name="md_theme_light_inverseSurface">#263238</color>
+    <color name="md_theme_light_inverseOnSurface">#FFFFFF</color>
+    <color name="md_theme_light_inversePrimary">#00E5FF</color>
+    
+    <color name="md_theme_light_shadow">#000000</color>
+    <color name="md_theme_light_surfaceTint">#0091EA</color>
+    <color name="md_theme_light_scrim">#000000</color>
 </resources>
