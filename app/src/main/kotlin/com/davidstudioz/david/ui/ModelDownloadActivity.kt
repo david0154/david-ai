@@ -21,20 +21,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import com.davidstudioz.david.SafeMainActivity
+import com.davidstudioz.david.models.AIModel
+import com.davidstudioz.david.models.ModelManager
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * Model Download Activity
- * Simple standalone version without Hilt
- * Shows simulated download progress
+ * Downloads real AI models from Hugging Face
+ * Uses ModelManager with direct initialization (NO HILT)
  */
 class ModelDownloadActivity : ComponentActivity() {
+
+    // Direct initialization without Hilt
+    private lateinit var modelManager: ModelManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         try {
             Log.d(TAG, "ModelDownloadActivity started")
+            
+            // Initialize ModelManager directly (NO HILT)
+            modelManager = ModelManager(applicationContext)
+            Log.d(TAG, "ModelManager initialized")
             
             // Check if model already downloaded
             val prefs = getSharedPreferences("david_prefs", MODE_PRIVATE)
@@ -59,8 +71,18 @@ class ModelDownloadActivity : ComponentActivity() {
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error in onCreate", e)
-            // Skip to main if error
-            navigateToMain()
+            // Show error but allow skip
+            setContent {
+                MaterialTheme(
+                    colorScheme = darkColorScheme(
+                        primary = Color(0xFF00E5FF),
+                        secondary = Color(0xFF9CA3AF),
+                        background = Color(0xFF0A0E27)
+                    )
+                ) {
+                    ErrorScreen(e.message ?: "Unknown error")
+                }
+            }
         }
     }
 
@@ -69,6 +91,22 @@ class ModelDownloadActivity : ComponentActivity() {
         var downloadProgress by remember { mutableStateOf(0f) }
         var downloadStatus by remember { mutableStateOf("Preparing download...") }
         var isComplete by remember { mutableStateOf(false) }
+        var hasError by remember { mutableStateOf(false) }
+        var errorMessage by remember { mutableStateOf("") }
+        var selectedModel by remember { mutableStateOf<AIModel?>(null) }
+        var isDownloading by remember { mutableStateOf(false) }
+
+        // Get recommended model
+        LaunchedEffect(Unit) {
+            try {
+                val recommendedLLM = modelManager.getRecommendedLLM()
+                selectedModel = recommendedLLM
+                Log.d(TAG, "Recommended model: ${recommendedLLM?.name}")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error getting recommended model", e)
+                selectedModel = null
+            }
+        }
 
         // Animated progress
         val infiniteTransition = rememberInfiniteTransition(label = "download_anim")
@@ -81,38 +119,6 @@ class ModelDownloadActivity : ComponentActivity() {
             ),
             label = "glow"
         )
-
-        // Simulate download
-        LaunchedEffect(Unit) {
-            val steps = listOf(
-                0.2f to "Connecting to server...",
-                0.4f to "Downloading D.A.V.I.D AI 2B...",
-                0.6f to "Downloading voice models...",
-                0.8f to "Optimizing for your device...",
-                1.0f to "Download complete!"
-            )
-
-            steps.forEach { (target, status) ->
-                downloadStatus = status
-                val start = downloadProgress
-                val duration = 800L
-                val startTime = System.currentTimeMillis()
-
-                while (downloadProgress < target) {
-                    val elapsed = System.currentTimeMillis() - startTime
-                    downloadProgress = (start + (target - start) * (elapsed.toFloat() / duration))
-                        .coerceAtMost(target)
-                    kotlinx.coroutines.delay(16)
-                }
-                kotlinx.coroutines.delay(200)
-            }
-
-            isComplete = true
-            val prefs = getSharedPreferences("david_prefs", MODE_PRIVATE)
-            prefs.edit().putBoolean("model_downloaded", true).apply()
-            kotlinx.coroutines.delay(1000)
-            navigateToMain()
-        }
 
         Box(
             modifier = Modifier
@@ -156,13 +162,18 @@ class ModelDownloadActivity : ComponentActivity() {
                     CircularProgressIndicator(
                         progress = downloadProgress,
                         modifier = Modifier.size(160.dp),
-                        color = Color(0xFF00E5FF),
+                        color = if (hasError) Color(0xFFFF6E40) else Color(0xFF00E5FF),
                         strokeWidth = 8.dp,
                         trackColor = Color(0xFF1E293B)
                     )
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        if (isComplete) {
+                        if (hasError) {
+                            Text(
+                                text = "⚠️",
+                                fontSize = 36.sp
+                            )
+                        } else if (isComplete) {
                             Text(
                                 text = "✔",
                                 fontSize = 36.sp,
@@ -182,10 +193,10 @@ class ModelDownloadActivity : ComponentActivity() {
                 Spacer(modifier = Modifier.height(48.dp))
 
                 Text(
-                    text = "Setting Up Your AI",
+                    text = if (hasError) "Download Failed" else "Setting Up Your AI",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = if (hasError) Color(0xFFFF6E40) else Color.White
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -198,9 +209,9 @@ class ModelDownloadActivity : ComponentActivity() {
                         .padding(16.dp)
                 ) {
                     Text(
-                        text = downloadStatus,
+                        text = if (hasError) errorMessage else downloadStatus,
                         fontSize = 14.sp,
-                        color = Color(0xFF64B5F6),
+                        color = if (hasError) Color(0xFFFF6E40) else Color(0xFF64B5F6),
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -208,45 +219,166 @@ class ModelDownloadActivity : ComponentActivity() {
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    InfoCard(
-                        icon = "🧠",
-                        title = "AI Model",
-                        subtitle = "D.A.V.I.D AI 2B",
-                        modifier = Modifier.weight(1f)
-                    )
-                    InfoCard(
-                        icon = "📦",
-                        title = "Size",
-                        subtitle = "1.3 GB",
-                        modifier = Modifier.weight(1f)
-                    )
-                    InfoCard(
-                        icon = "⚡",
-                        title = "Type",
-                        subtitle = "LLM",
-                        modifier = Modifier.weight(1f)
-                    )
+                // Model info cards
+                selectedModel?.let { model ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        InfoCard(
+                            icon = "🧠",
+                            title = "AI Model",
+                            subtitle = model.name,
+                            modifier = Modifier.weight(1f)
+                        )
+                        InfoCard(
+                            icon = "📦",
+                            title = "Size",
+                            subtitle = model.size,
+                            modifier = Modifier.weight(1f)
+                        )
+                        InfoCard(
+                            icon = "⚡",
+                            title = "Type",
+                            subtitle = model.type,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                TextButton(
-                    onClick = {
-                        val prefs = getSharedPreferences("david_prefs", MODE_PRIVATE)
-                        prefs.edit().putBoolean("model_downloaded", true).apply()
-                        navigateToMain()
-                    }
+                // Action buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(
-                        text = "Skip for now",
-                        fontSize = 12.sp,
-                        color = Color(0xFF9CA3AF)
-                    )
+                    // Download button
+                    if (!isDownloading && !isComplete) {
+                        Button(
+                            onClick = {
+                                selectedModel?.let { model ->
+                                    isDownloading = true
+                                    hasError = false
+                                    lifecycleScope.launch {
+                                        try {
+                                            downloadStatus = "Connecting to Hugging Face..."
+                                            delay(500)
+                                            
+                                            downloadStatus = "Downloading ${model.name}..."
+                                            Log.d(TAG, "Starting download: ${model.name}")
+                                            
+                                            val result = modelManager.downloadModel(model) { progress ->
+                                                downloadProgress = progress / 100f
+                                                downloadStatus = "Downloading ${model.name}... $progress%"
+                                                Log.d(TAG, "Download progress: $progress%")
+                                            }
+                                            
+                                            result.onSuccess { path ->
+                                                downloadProgress = 1f
+                                                downloadStatus = "Download complete!"
+                                                isComplete = true
+                                                Log.d(TAG, "Download successful: $path")
+                                                
+                                                // Save download state
+                                                val prefs = getSharedPreferences("david_prefs", MODE_PRIVATE)
+                                                prefs.edit().apply {
+                                                    putBoolean("model_downloaded", true)
+                                                    putString("downloaded_model", model.name)
+                                                    putString("model_path", path)
+                                                    apply()
+                                                }
+                                                
+                                                delay(1500)
+                                                navigateToMain()
+                                            }
+                                            
+                                            result.onFailure { error ->
+                                                hasError = true
+                                                errorMessage = "Download failed: ${error.message}"
+                                                isDownloading = false
+                                                Log.e(TAG, "Download error", error)
+                                            }
+                                            
+                                        } catch (e: Exception) {
+                                            hasError = true
+                                            errorMessage = "Error: ${e.message}"
+                                            isDownloading = false
+                                            Log.e(TAG, "Download exception", e)
+                                        }
+                                    }
+                                }
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(56.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF00E5FF)
+                            ),
+                            shape = RoundedCornerShape(28.dp)
+                        ) {
+                            Text(
+                                text = "📥 Download",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+                        }
+                    }
+                    
+                    // Skip button
+                    OutlinedButton(
+                        onClick = {
+                            val prefs = getSharedPreferences("david_prefs", MODE_PRIVATE)
+                            prefs.edit().putBoolean("model_downloaded", true).apply()
+                            navigateToMain()
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color(0xFF9CA3AF)
+                        ),
+                        shape = RoundedCornerShape(28.dp),
+                        enabled = !isDownloading
+                    ) {
+                        Text(
+                            text = "Skip for now",
+                            fontSize = 14.sp
+                        )
+                    }
                 }
+
+                // Retry button if error
+                if (hasError) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    TextButton(
+                        onClick = {
+                            hasError = false
+                            downloadProgress = 0f
+                        }
+                    ) {
+                        Text(
+                            text = "🔄 Retry",
+                            fontSize = 14.sp,
+                            color = Color(0xFF00E5FF)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Info text
+                Text(
+                    text = if (isDownloading) {
+                        "Please keep the app open while downloading"
+                    } else {
+                        "Download AI model from Hugging Face for offline use"
+                    },
+                    fontSize = 11.sp,
+                    color = Color(0xFF4B5563),
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }
@@ -281,6 +413,61 @@ class ModelDownloadActivity : ComponentActivity() {
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
                 )
+            }
+        }
+    }
+
+    @Composable
+    private fun ErrorScreen(errorMsg: String) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF0A0E27),
+                            Color(0xFF1A1F3A),
+                            Color(0xFF0A0E27)
+                        )
+                    )
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(32.dp)
+            ) {
+                Text(
+                    text = "⚠️",
+                    fontSize = 64.sp
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "Initialization Error",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFFF6E40)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = errorMsg,
+                    fontSize = 12.sp,
+                    color = Color(0xFF9CA3AF),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Button(
+                    onClick = {
+                        val prefs = getSharedPreferences("david_prefs", MODE_PRIVATE)
+                        prefs.edit().putBoolean("model_downloaded", true).apply()
+                        navigateToMain()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF00E5FF)
+                    )
+                ) {
+                    Text("Skip to App", color = Color.Black)
+                }
             }
         }
     }
