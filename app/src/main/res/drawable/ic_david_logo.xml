@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Placeholder vector logo - replace with your actual design -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    
+    <!-- Outer ring -->
+    <path
+        android:pathData="M24,4 a20,20 0 1,0 0,40 a20,20 0 1,0 0,-40"
+        android:strokeWidth="2"
+        android:strokeColor="@color/primary_cyan"
+        android:fillColor="@android:color/transparent" />
+    
+    <!-- Inner circle -->
+    <path
+        android:pathData="M24,14 a10,10 0 1,0 0,20 a10,10 0 1,0 0,-20"
+        android:fillColor="@color/primary_cyan" />
+    
+    <!-- Center dot -->
+    <path
+        android:pathData="M24,20 a4,4 0 1,0 0,8 a4,4 0 1,0 0,-8"
+        android:fillColor="@color/primary_cyan_darker" />
+</vector>

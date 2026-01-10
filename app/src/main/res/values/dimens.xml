@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Spacing -->
+    <dimen name="spacing_tiny">4dp</dimen>
+    <dimen name="spacing_small">8dp</dimen>
+    <dimen name="spacing_medium">12dp</dimen>
+    <dimen name="spacing_normal">16dp</dimen>
+    <dimen name="spacing_large">24dp</dimen>
+    <dimen name="spacing_xlarge">32dp</dimen>
+    
+    <!-- Text Sizes -->
+    <dimen name="text_tiny">8sp</dimen>
+    <dimen name="text_small">9sp</dimen>
+    <dimen name="text_caption">10sp</dimen>
+    <dimen name="text_body_small">11sp</dimen>
+    <dimen name="text_body">12sp</dimen>
+    <dimen name="text_subtitle">13sp</dimen>
+    <dimen name="text_title">16sp</dimen>
+    <dimen name="text_heading">20sp</dimen>
+    <dimen name="text_display_small">24sp</dimen>
+    <dimen name="text_display">28sp</dimen>
+    
+    <!-- Icon Sizes -->
+    <dimen name="icon_small">20dp</dimen>
+    <dimen name="icon_medium">24dp</dimen>
+    <dimen name="icon_normal">32dp</dimen>
+    <dimen name="icon_large">40dp</dimen>
+    <dimen name="icon_xlarge">48dp</dimen>
+    <dimen name="icon_huge">64dp</dimen>
+    
+    <!-- Component Sizes -->
+    <dimen name="ai_orb_size">140dp</dimen>
+    <dimen name="ai_orb_core">80dp</dimen>
+    <dimen name="ai_orb_rings">120dp</dimen>
+    <dimen name="resource_ring_size">60dp</dimen>
+    <dimen name="resource_ring_width">80dp</dimen>
+    <dimen name="logo_size_small">40dp</dimen>
+    <dimen name="logo_size_medium">50dp</dimen>
+    <dimen name="voice_button_size">64dp</dimen>
+    
+    <!-- Card/Button Heights -->
+    <dimen name="button_height_small">36dp</dimen>
+    <dimen name="button_height_normal">48dp</dimen>
+    <dimen name="button_height_large">56dp</dimen>
+    <dimen name="card_elevation">4dp</dimen>
+    
+    <!-- Corner Radius -->
+    <dimen name="corner_radius_small">8dp</dimen>
+    <dimen name="corner_radius_medium">12dp</dimen>
+    <dimen name="corner_radius_large">16dp</dimen>
+    <dimen name="corner_radius_xlarge">24dp</dimen>
+    
+    <!-- Stroke Width -->
+    <dimen name="stroke_thin">1dp</dimen>
+    <dimen name="stroke_normal">1.5dp</dimen>
+    <dimen name="stroke_thick">2dp</dimen>
+    <dimen name="stroke_resource_ring">6dp</dimen>
+    
+    <!-- Chat -->
+    <dimen name="chat_history_height">100dp</dimen>
+    
+    <!-- Grid -->
+    <dimen name="grid_size">50dp</dimen>
+</resources>
