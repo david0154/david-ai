@@ -29,7 +29,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.work.*
@@ -40,61 +39,34 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 /**
- * D.A.V.I.D Splash Screen - Beautiful Modern Design
- * Shows branding, logo, and initialization progress
- * Digital Assistant Voice Intelligence Device
- * 
- * ALL BUGS FIXED:
- * ✅ R import added
- * ✅ Runtime permissions with Android 12+ Bluetooth
- * ✅ WorkManager initialization check
- * ✅ Activity verification
- * ✅ Image loading without onError (fixed)
- * ✅ PackageManager deprecation fixed
- * ✅ Try-catch around composable removed
+ * D.A.V.I.D Splash Screen
+ * SKIP LOGIN - Go directly to Model Download
  */
 class SplashActivity : ComponentActivity() {
 
-    private var splashMinDuration = 3000L
+    private var splashMinDuration = 2000L
     private var splashStartTime = 0L
-    private var initializationError by mutableStateOf<String?>(null)
     private var permissionsGranted by mutableStateOf(false)
 
-    // Permission launcher
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        val allGranted = permissions.all { it.value }
-        permissionsGranted = allGranted
-        if (!allGranted) {
-            Log.w(TAG, "Some permissions denied: ${permissions.filter { !it.value }}")
-        } else {
-            Log.d(TAG, "All permissions granted")
-        }
+        permissionsGranted = permissions.all { it.value }
+        Log.d(TAG, "Permissions: $permissionsGranted")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         splashStartTime = System.currentTimeMillis()
-
-        try {
-            // Start model download worker (non-blocking)
-            startModelDownloadWorker()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error starting model download", e)
-            initializationError = "Model download error: ${e.localizedMessage}"
-        }
 
         setContent {
             MaterialTheme(
                 colorScheme = darkColorScheme(
                     primary = Color(0xFF00E5FF),
-                    secondary = Color(0xFF9CA3AF),
                     background = Color(0xFF0A0E27)
                 )
             ) {
-                BeautifulSplashScreen()
+                QuickSplashScreen()
             }
         }
     }
@@ -105,56 +77,33 @@ class SplashActivity : ComponentActivity() {
     }
 
     private fun checkPermissions() {
-        try {
-            val permissions = mutableListOf(
-                android.Manifest.permission.RECORD_AUDIO,
-                android.Manifest.permission.CAMERA,
-                android.Manifest.permission.INTERNET,
-                android.Manifest.permission.ACCESS_FINE_LOCATION,
-                android.Manifest.permission.ACCESS_COARSE_LOCATION
-            )
+        val permissions = mutableListOf(
+            android.Manifest.permission.RECORD_AUDIO,
+            android.Manifest.permission.CAMERA,
+            android.Manifest.permission.INTERNET
+        )
 
-            // Add Bluetooth permissions for Android 12+ (API 31+)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                permissions.add(android.Manifest.permission.BLUETOOTH_CONNECT)
-                permissions.add(android.Manifest.permission.BLUETOOTH_SCAN)
-            }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            permissions.add(android.Manifest.permission.BLUETOOTH_CONNECT)
+            permissions.add(android.Manifest.permission.BLUETOOTH_SCAN)
+        }
 
-            val needed = permissions.filter {
-                ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
-            }
+        val needed = permissions.filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
 
-            if (needed.isNotEmpty()) {
-                Log.d(TAG, "Requesting ${needed.size} permissions: ${needed.joinToString()}")
-                permissionLauncher.launch(needed.toTypedArray())
-            } else {
-                permissionsGranted = true
-                Log.d(TAG, "All critical permissions already granted")
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error checking permissions", e)
-            permissionsGranted = true // Continue anyway
+        if (needed.isNotEmpty()) {
+            permissionLauncher.launch(needed.toTypedArray())
+        } else {
+            permissionsGranted = true
         }
     }
 
     @Composable
-    private fun BeautifulSplashScreen() {
+    private fun QuickSplashScreen() {
         var progress by remember { mutableStateOf(0f) }
-        var statusText by remember { mutableStateOf("Initializing") }
-        var hasError by remember { mutableStateOf(false) }
-        var errorMessage by remember { mutableStateOf("") }
 
-        // Check for initialization errors
-        LaunchedEffect(initializationError) {
-            initializationError?.let {
-                hasError = true
-                errorMessage = it
-            }
-        }
-
-        // Animations
-        val infiniteTransition = rememberInfiniteTransition(label = "splash_animation")
-        
+        val infiniteTransition = rememberInfiniteTransition(label = "splash")
         val pulseScale by infiniteTransition.animateFloat(
             initialValue = 0.95f,
             targetValue = 1.05f,
@@ -165,56 +114,18 @@ class SplashActivity : ComponentActivity() {
             label = "pulse"
         )
 
-        val glowAlpha by infiniteTransition.animateFloat(
-            initialValue = 0.3f,
-            targetValue = 0.8f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(1500, easing = EaseInOutCubic),
-                repeatMode = RepeatMode.Reverse
-            ),
-            label = "glow"
-        )
-
         LaunchedEffect(Unit) {
-            try {
-                // Progressive initialization
-                val steps = listOf(
-                    0.2f to "Loading core systems",
-                    0.4f to "Initializing AI models",
-                    0.6f to "Setting up voice recognition",
-                    0.8f to "Preparing interface",
-                    1.0f to "Ready to launch"
-                )
-
-                steps.forEach { (targetProgress, message) ->
-                    statusText = message
-                    val startProgress = progress
-                    val duration = 600L
-                    val startTime = System.currentTimeMillis()
-
-                    while (progress < targetProgress) {
-                        val elapsed = System.currentTimeMillis() - startTime
-                        progress = (startProgress + (targetProgress - startProgress) * 
-                                   (elapsed.toFloat() / duration)).coerceAtMost(targetProgress)
-                        delay(16)
-                    }
-                }
-
-                // Wait for minimum splash duration
-                val elapsed = System.currentTimeMillis() - splashStartTime
-                val remaining = splashMinDuration - elapsed
-                if (remaining > 0) {
-                    delay(remaining)
-                }
-
-                navigateToLogin()
-            } catch (e: Exception) {
-                Log.e(TAG, "Fatal error in splash screen", e)
-                hasError = true
-                errorMessage = e.localizedMessage ?: "Unknown error"
-                delay(2000)
-                navigateToLogin()
+            while (progress < 1f) {
+                delay(16)
+                progress = (progress + 0.02f).coerceAtMost(1f)
             }
+            
+            val elapsed = System.currentTimeMillis() - splashStartTime
+            val remaining = splashMinDuration - elapsed
+            if (remaining > 0) delay(remaining)
+            
+            // SKIP LOGIN - Go directly to Model Download
+            navigateToModelDownload()
         }
 
         Box(
@@ -231,344 +142,58 @@ class SplashActivity : ComponentActivity() {
                 ),
             contentAlignment = Alignment.Center
         ) {
-            if (!hasError) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(32.dp)
+            ) {
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(32.dp)
+                        .size(120.dp)
+                        .scale(pulseScale),
+                    contentAlignment = Alignment.Center
                 ) {
-                    // Animated Logo Container
-                    Box(
-                        modifier = Modifier
-                            .size(180.dp)
-                            .scale(pulseScale),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(180.dp)
-                                .alpha(glowAlpha)
-                                .clip(CircleShape)
-                                .background(
-                                    Brush.radialGradient(
-                                        colors = listOf(
-                                            Color(0xFF00E5FF).copy(alpha = 0.3f),
-                                            Color.Transparent
-                                        )
-                                    )
-                                )
-                        )
-
-                        Box(
-                            modifier = Modifier
-                                .size(140.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    Brush.radialGradient(
-                                        colors = listOf(
-                                            Color(0xFF00E5FF).copy(alpha = 0.15f),
-                                            Color(0xFF1E88E5).copy(alpha = 0.05f)
-                                        )
-                                    )
-                                )
-                        )
-
-                        LogoOrEmoji(
-                            modifier = Modifier.size(100.dp),
-                            tint = Color(0xFF00E5FF)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(40.dp))
-
-                    Text(
-                        text = "D.A.V.I.D",
-                        fontSize = 48.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFF00E5FF),
-                        letterSpacing = 8.sp,
-                        style = MaterialTheme.typography.displayLarge
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Text(
-                        text = "Digital Assistant Voice\nIntelligence Device",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF64B5F6),
-                        letterSpacing = 2.sp,
-                        textAlign = TextAlign.Center,
-                        lineHeight = 20.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .width(200.dp)
-                            .height(1.dp)
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        Color(0xFF00E5FF).copy(alpha = 0.5f),
-                                        Color.Transparent
-                                    )
-                                )
-                            )
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = "Your AI-Powered Voice Assistant",
-                        fontSize = 12.sp,
-                        color = Color(0xFF9CA3AF),
-                        letterSpacing = 1.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(48.dp))
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.width(280.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(6.dp)
-                                .clip(MaterialTheme.shapes.small)
-                                .background(Color(0xFF1E293B))
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth(progress)
-                                    .fillMaxHeight()
-                                    .background(
-                                        Brush.horizontalGradient(
-                                            colors = listOf(
-                                                Color(0xFF00E5FF),
-                                                Color(0xFF1E88E5),
-                                                Color(0xFF00E5FF)
-                                            )
-                                        )
-                                    )
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Text(
-                            text = statusText,
-                            fontSize = 13.sp,
-                            color = Color(0xFF64B5F6),
-                            letterSpacing = 0.5.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(
-                            text = "${(progress * 100).toInt()}%",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF00E5FF)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(60.dp))
-
-                    Text(
-                        text = "Developed by David Studioz",
-                        fontSize = 10.sp,
-                        color = Color(0xFF4B5563),
-                        letterSpacing = 1.sp
-                    )
+                    Text(text = "🤖", fontSize = 64.sp)
                 }
-            } else {
-                ErrorSplashScreen(errorMessage)
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    text = "D.A.V.I.D",
+                    fontSize = 42.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color(0xFF00E5FF),
+                    letterSpacing = 6.sp
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Digital Assistant Voice Intelligence Device",
+                    fontSize = 12.sp,
+                    color = Color(0xFF64B5F6),
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                LinearProgressIndicator(
+                    progress = progress,
+                    modifier = Modifier.width(200.dp),
+                    color = Color(0xFF00E5FF)
+                )
             }
         }
     }
 
-    @Composable
-    private fun LogoOrEmoji(
-        modifier: Modifier = Modifier,
-        tint: Color? = null
-    ) {
-        // State to track if we should use fallback
-        var useLogoResource by remember { mutableStateOf(true) }
-        
-        // FIXED: No try-catch around composable - use conditional rendering
-        if (useLogoResource) {
-            // Attempt to show launcher icon
-            Image(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                contentDescription = "D.A.V.I.D Logo",
-                modifier = modifier.clip(CircleShape),
-                contentScale = ContentScale.Fit,
-                colorFilter = tint?.let { ColorFilter.tint(it) }
-            )
-        } else {
-            // Fallback emoji
-            LogoFallback(modifier, tint)
-        }
-    }
-
-    @Composable
-    private fun LogoFallback(modifier: Modifier = Modifier, tint: Color? = null) {
-        Box(
-            modifier = modifier
-                .clip(CircleShape)
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            tint ?: Color(0xFF00E5FF),
-                            (tint ?: Color(0xFF00E5FF)).copy(alpha = 0.3f)
-                        )
-                    )
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "🤖",
-                fontSize = 48.sp
-            )
-        }
-    }
-
-    @Composable
-    private fun ErrorSplashScreen(errorMsg: String) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(32.dp)
-        ) {
-            Text(
-                text = "⚠️",
-                fontSize = 64.sp
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                text = "Initialization Error",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFFFF6E40)
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = errorMsg,
-                fontSize = 12.sp,
-                color = Color(0xFF9CA3AF),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                text = "Continuing to app...",
-                fontSize = 11.sp,
-                color = Color(0xFF64B5F6)
-            )
-        }
-    }
-
-    private fun startModelDownloadWorker() {
+    private fun navigateToModelDownload() {
         try {
-            // Ensure WorkManager is initialized
-            if (!WorkManager.isInitialized()) {
-                try {
-                    WorkManager.initialize(
-                        this,
-                        Configuration.Builder()
-                            .setMinimumLoggingLevel(Log.INFO)
-                            .build()
-                    )
-                    Log.d(TAG, "WorkManager initialized")
-                } catch (e: Exception) {
-                    Log.e(TAG, "WorkManager already initialized or error", e)
-                }
-            }
-
-            val constraints = Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .setRequiresBatteryNotLow(false)
-                .setRequiresDeviceIdle(false)
-                .build()
-
-            val downloadWork = OneTimeWorkRequestBuilder<ModelDownloadWorker>()
-                .setConstraints(constraints)
-                .setBackoffCriteria(
-                    BackoffPolicy.LINEAR,
-                    WorkRequest.MIN_BACKOFF_MILLIS,
-                    TimeUnit.MILLISECONDS
-                )
-                .build()
-
-            try {
-                WorkManager.getInstance(this).enqueueUniqueWork(
-                    "model_download",
-                    ExistingWorkPolicy.KEEP,
-                    downloadWork
-                )
-                Log.d(TAG, "Model download worker enqueued")
-            } catch (e: Exception) {
-                Log.e(TAG, "Error enqueuing work", e)
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error starting model download worker", e)
-        }
-    }
-
-    private fun navigateToLogin() {
-        try {
-            // Verify LoginActivity exists - FIXED: PackageManager deprecation
-            val intent = Intent(this@SplashActivity, LoginActivity::class.java)
-            val resolveInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                packageManager.resolveActivity(
-                    intent,
-                    PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_DEFAULT_ONLY.toLong())
-                )
-            } else {
-                @Suppress("DEPRECATION")
-                packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
-            }
-            
-            if (resolveInfo == null) {
-                Log.e(TAG, "LoginActivity not found in manifest")
-                navigateToSafeMain()
-                return
-            }
-
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            Log.d(TAG, "Navigating to ModelDownloadActivity (SKIP LOGIN)")
+            val intent = Intent(this, ModelDownloadActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
         } catch (e: Exception) {
-            Log.e(TAG, "Error navigating to LoginActivity", e)
-            navigateToSafeMain()
-        }
-    }
-
-    private fun navigateToSafeMain() {
-        try {
-            val intent = Intent(this, com.davidstudioz.david.SafeMainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-            finish()
-        } catch (e: Exception) {
-            Log.e(TAG, "Critical navigation error", e)
-            finish()
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        try {
-            // Clean up if needed
-        } catch (e: Exception) {
-            Log.e(TAG, "Error in onDestroy", e)
+            Log.e(TAG, "Navigation error", e)
         }
     }
 
