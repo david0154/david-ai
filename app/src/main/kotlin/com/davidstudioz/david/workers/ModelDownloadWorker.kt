@@ -13,10 +13,13 @@ import kotlinx.coroutines.withContext
 
 /**
  * Background worker for downloading AI models
- * Runs on background thread with proper network checks
+ * Runs on background thread with proper network checks and memory management
  * 
- * FIXED: Added network availability check
- * FIXED: Better error handling
+ * ALL FIXES APPLIED:
+ * ✅ Network availability check
+ * ✅ WiFi connection check
+ * ✅ Memory availability check
+ * ✅ Better error handling with error codes
  */
 class ModelDownloadWorker(
     private val context: Context,
@@ -36,6 +39,17 @@ class ModelDownloadWorker(
                     workDataOf(
                         "error" to "No internet connection",
                         "error_code" to "NETWORK_UNAVAILABLE"
+                    )
+                )
+            }
+
+            // Check memory availability for large downloads
+            if (!isMemoryAvailable()) {
+                Log.e(TAG, "Insufficient memory for download")
+                return@withContext Result.failure(
+                    workDataOf(
+                        "error" to "Low memory - please free up space",
+                        "error_code" to "LOW_MEMORY"
                     )
                 )
             }
@@ -152,6 +166,31 @@ class ModelDownloadWorker(
         } catch (e: Exception) {
             Log.e(TAG, "Error checking WiFi", e)
             false
+        }
+    }
+
+    /**
+     * Check if sufficient memory is available for download
+     * Ensures at least 200MB free memory to prevent OOM errors
+     */
+    private fun isMemoryAvailable(): Boolean {
+        return try {
+            val runtime = Runtime.getRuntime()
+            val usedMemory = runtime.totalMemory() - runtime.freeMemory()
+            val maxMemory = runtime.maxMemory()
+            val availableMemory = maxMemory - usedMemory
+            
+            val minRequiredMemory = 200 * 1024 * 1024 // 200MB minimum
+            val hasEnoughMemory = availableMemory > minRequiredMemory
+            
+            Log.d(TAG, "Memory check: Available=${availableMemory / 1024 / 1024}MB, " +
+                      "Required=${minRequiredMemory / 1024 / 1024}MB, " +
+                      "Sufficient=$hasEnoughMemory")
+            
+            hasEnoughMemory
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking memory", e)
+            true // Continue anyway if check fails
         }
     }
 
