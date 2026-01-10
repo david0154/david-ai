@@ -22,7 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
-import com.davidstudioz.david.MainActivity
+import com.davidstudioz.david.SafeMainActivity
 import com.davidstudioz.david.models.AIModel
 import com.davidstudioz.david.models.ModelManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -225,7 +225,7 @@ class ModelDownloadActivity : ComponentActivity() {
                         InfoCard(
                             icon = "⚡",
                             title = "Type",
-                            subtitle = model.type.uppercase(),
+                            subtitle = model.type,
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -404,7 +404,8 @@ class ModelDownloadActivity : ComponentActivity() {
 
     private fun navigateToMain() {
         try {
-            val intent = Intent(this, MainActivity::class.java)
+            // Use SafeMainActivity instead of MainActivity to prevent crashes
+            val intent = Intent(this, SafeMainActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             finish()
