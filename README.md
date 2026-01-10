@@ -1,4 +1,7 @@
 # DAVID AI - Your Personal AI Assistant
+       D.A.V.I.D               │
+│    Digital Assistant Voice      │
+│    Intelligence Device 
 
 **D**ynamic **A**rtificial **V**oice **I**nteractive **D**evice
 
