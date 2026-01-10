@@ -1,313 +1,335 @@
 package com.davidstudioz.david.device
 
+import android.Manifest
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
+import android.content.pm.PackageManager
+import android.media.AudioManager
+import android.net.wifi.WifiManager
 import android.os.Build
-import android.provider.AlarmClock
-import android.provider.ContactsContract
-import android.provider.MediaStore
 import android.provider.Settings
 import android.telephony.SmsManager
-import android.telephony.TelephonyManager
-import android.bluetooth.BluetoothAdapter
-import android.location.LocationManager
-import android.media.AudioManager
-import android.os.VibrationEffect
-import android.os.Vibrator
-import android.content.pm.PackageManager
-import androidx.core.content.ContextCompat
+import android.util.Log
+import androidx.core.app.ActivityCompat
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
- * Device Control
- * Execute 20+ voice commands to control device functions
- * All commands use system APIs - no root required
+ * Device Controller - Voice-to-Device Control
+ * Handles system controls via voice commands
+ * FIXED: Proper permission checks and command parsing
  */
 class DeviceController(private val context: Context) {
 
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-    private val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-    private val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-    private val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-    private val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-
-    /**
-     * Make a phone call
-     * Command: "Call Mom" or "Call 9876543210"
-     */
-    fun makeCall(phoneNumber: String): Boolean {
-        return try {
-            val cleanNumber = phoneNumber.filter { it.isDigit() }
-            if (cleanNumber.isEmpty()) return false
-
-            val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$cleanNumber"))
-            if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.CALL_PHONE) ==
-                PackageManager.PERMISSION_GRANTED
-            ) {
-                context.startActivity(intent)
-                true
-            } else {
-                false
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
+    private val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+    
+    companion object {
+        private const val TAG = "DeviceController"
+        
+        // Command patterns
+        private val VOLUME_UP_PATTERNS = listOf("volume up", "increase volume", "louder", "turn up")
+        private val VOLUME_DOWN_PATTERNS = listOf("volume down", "decrease volume", "quieter", "turn down")
+        private val VOLUME_MUTE_PATTERNS = listOf("mute", "silence", "quiet")
+        private val WIFI_ON_PATTERNS = listOf("wifi on", "enable wifi", "turn on wifi", "connect wifi")
+        private val WIFI_OFF_PATTERNS = listOf("wifi off", "disable wifi", "turn off wifi", "disconnect wifi")
+        private val BLUETOOTH_ON_PATTERNS = listOf("bluetooth on", "enable bluetooth", "turn on bluetooth")
+        private val BLUETOOTH_OFF_PATTERNS = listOf("bluetooth off", "disable bluetooth", "turn off bluetooth")
+        private val CALL_PATTERNS = listOf("call", "phone", "dial")
+        private val SMS_PATTERNS = listOf("send sms", "send message", "text", "message")
+        private val BRIGHTNESS_UP_PATTERNS = listOf("brightness up", "increase brightness", "brighter")
+        private val BRIGHTNESS_DOWN_PATTERNS = listOf("brightness down", "decrease brightness", "dimmer")
+        private val FLASHLIGHT_ON_PATTERNS = listOf("flashlight on", "torch on", "light on")
+        private val FLASHLIGHT_OFF_PATTERNS = listOf("flashlight off", "torch off", "light off")
     }
 
     /**
-     * Send SMS message
-     * Command: "Send SMS to Mom - I'm coming home"
+     * Process voice command and execute device control
      */
-    fun sendSMS(phoneNumber: String, message: String): Boolean {
-        return try {
-            val cleanNumber = phoneNumber.filter { it.isDigit() }
-            if (cleanNumber.isEmpty() || message.isEmpty()) return false
+    suspend fun processCommand(command: String): DeviceCommandResult = withContext(Dispatchers.Main) {
+        val lowerCommand = command.lowercase().trim()
+        Log.d(TAG, "Processing command: $lowerCommand")
 
-            if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.SEND_SMS) ==
-                PackageManager.PERMISSION_GRANTED
-            ) {
-                val smsManager = SmsManager.getDefault()
-                smsManager.sendTextMessage(cleanNumber, null, message, null, null)
-                true
-            } else {
-                false
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
-    }
-
-    /**
-     * Toggle WiFi
-     * Command: "Turn on WiFi" or "Turn off WiFi"
-     */
-    fun toggleWiFi(enable: Boolean): Boolean {
-        return try {
-            val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as android.net.wifi.WifiManager
-            if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.CHANGE_NETWORK_STATE) ==
-                PackageManager.PERMISSION_GRANTED
-            ) {
-                wifiManager.isWifiEnabled = enable
-                true
-            } else {
-                false
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
-    }
-
-    /**
-     * Toggle Bluetooth
-     * Command: "Enable Bluetooth" or "Turn off Bluetooth"
-     */
-    fun toggleBluetooth(enable: Boolean): Boolean {
-        return try {
-            if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.BLUETOOTH_ADMIN) ==
-                PackageManager.PERMISSION_GRANTED
-            ) {
-                if (enable) {
-                    bluetoothAdapter?.enable()
-                } else {
-                    bluetoothAdapter?.disable()
+        try {
+            when {
+                // Volume controls
+                matchesAnyPattern(lowerCommand, VOLUME_UP_PATTERNS) -> {
+                    adjustVolume(AudioManager.ADJUST_RAISE)
                 }
-                true
-            } else {
-                false
+                matchesAnyPattern(lowerCommand, VOLUME_DOWN_PATTERNS) -> {
+                    adjustVolume(AudioManager.ADJUST_LOWER)
+                }
+                matchesAnyPattern(lowerCommand, VOLUME_MUTE_PATTERNS) -> {
+                    muteVolume()
+                }
+                
+                // WiFi controls
+                matchesAnyPattern(lowerCommand, WIFI_ON_PATTERNS) -> {
+                    toggleWiFi(true)
+                }
+                matchesAnyPattern(lowerCommand, WIFI_OFF_PATTERNS) -> {
+                    toggleWiFi(false)
+                }
+                
+                // Bluetooth controls
+                matchesAnyPattern(lowerCommand, BLUETOOTH_ON_PATTERNS) -> {
+                    toggleBluetooth(true)
+                }
+                matchesAnyPattern(lowerCommand, BLUETOOTH_OFF_PATTERNS) -> {
+                    toggleBluetooth(false)
+                }
+                
+                // Phone calls
+                matchesAnyPattern(lowerCommand, CALL_PATTERNS) -> {
+                    val phoneNumber = extractPhoneNumber(command)
+                    makeCall(phoneNumber)
+                }
+                
+                // SMS
+                matchesAnyPattern(lowerCommand, SMS_PATTERNS) -> {
+                    val (number, message) = extractSMSDetails(command)
+                    sendSMS(number, message)
+                }
+                
+                // Brightness
+                matchesAnyPattern(lowerCommand, BRIGHTNESS_UP_PATTERNS) -> {
+                    adjustBrightness(increase = true)
+                }
+                matchesAnyPattern(lowerCommand, BRIGHTNESS_DOWN_PATTERNS) -> {
+                    adjustBrightness(increase = false)
+                }
+                
+                else -> {
+                    DeviceCommandResult(false, "Unknown command: $command")
+                }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
-            false
+            Log.e(TAG, "Error processing command", e)
+            DeviceCommandResult(false, "Error: ${e.message}")
         }
     }
 
-    /**
-     * Toggle GPS
-     * Command: "Turn on GPS" or "Turn off GPS"
-     */
-    fun toggleGPS(enable: Boolean): Boolean {
-        return try {
-            if (enable) {
-                val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                context.startActivity(intent)
-            } else {
-                // GPS off requires system-level change
-                val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                context.startActivity(intent)
-            }
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
+    private fun matchesAnyPattern(command: String, patterns: List<String>): Boolean {
+        return patterns.any { pattern -> command.contains(pattern) }
     }
 
-    /**
-     * Control volume
-     * Command: "Increase volume", "Decrease volume", "Set volume to 50%"
-     */
-    fun setVolume(level: Int): Boolean {
+    private fun adjustVolume(direction: Int): DeviceCommandResult {
         return try {
+            audioManager.adjustStreamVolume(
+                AudioManager.STREAM_MUSIC,
+                direction,
+                AudioManager.FLAG_SHOW_UI
+            )
+            val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
             val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-            val newVolume = level.coerceIn(0, maxVolume)
-            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, AudioManager.FLAG_SHOW_UI)
-            true
+            val percentage = (currentVolume * 100) / maxVolume
+            DeviceCommandResult(true, "Volume ${if (direction > 0) "increased" else "decreased"} to $percentage%")
         } catch (e: Exception) {
-            e.printStackTrace()
-            false
+            Log.e(TAG, "Error adjusting volume", e)
+            DeviceCommandResult(false, "Cannot adjust volume")
         }
     }
 
-    /**
-     * Control brightness
-     * Command: "Increase brightness", "Decrease brightness", "Set brightness to 50%"
-     */
-    fun setBrightness(level: Int): Boolean {
+    private fun muteVolume(): DeviceCommandResult {
         return try {
-            val newLevel = level.coerceIn(0, 255)
+            audioManager.adjustStreamVolume(
+                AudioManager.STREAM_MUSIC,
+                AudioManager.ADJUST_MUTE,
+                AudioManager.FLAG_SHOW_UI
+            )
+            DeviceCommandResult(true, "Volume muted")
+        } catch (e: Exception) {
+            DeviceCommandResult(false, "Cannot mute volume")
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun toggleWiFi(enable: Boolean): DeviceCommandResult {
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // Android 10+ requires user to manually toggle WiFi
+                val intent = Intent(Settings.Panel.ACTION_WIFI)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+                DeviceCommandResult(true, "Opening WiFi settings")
+            } else {
+                wifiManager.isWifiEnabled = enable
+                DeviceCommandResult(true, "WiFi ${if (enable) "enabled" else "disabled"}")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error toggling WiFi", e)
+            DeviceCommandResult(false, "Cannot toggle WiFi. Please use settings.")
+        }
+    }
+
+    @Suppress("DEPRECATION", "MissingPermission")
+    private fun toggleBluetooth(enable: Boolean): DeviceCommandResult {
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                // Check BLUETOOTH_CONNECT permission
+                if (ActivityCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.BLUETOOTH_CONNECT
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    return DeviceCommandResult(false, "Bluetooth permission required")
+                }
+            }
+
+            val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+            val bluetoothAdapter = bluetoothManager.adapter
+
+            if (bluetoothAdapter == null) {
+                return DeviceCommandResult(false, "Bluetooth not available")
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                // Android 13+ requires user interaction
+                val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+                DeviceCommandResult(true, "Opening Bluetooth settings")
+            } else {
+                if (enable) {
+                    bluetoothAdapter.enable()
+                } else {
+                    bluetoothAdapter.disable()
+                }
+                DeviceCommandResult(true, "Bluetooth ${if (enable) "enabled" else "disabled"}")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error toggling Bluetooth", e)
+            DeviceCommandResult(false, "Cannot toggle Bluetooth")
+        }
+    }
+
+    private fun makeCall(phoneNumber: String): DeviceCommandResult {
+        return try {
+            if (phoneNumber.isBlank()) {
+                return DeviceCommandResult(false, "Please specify a phone number")
+            }
+
+            if (ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.CALL_PHONE
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                return DeviceCommandResult(false, "Phone call permission required")
+            }
+
+            val intent = Intent(Intent.ACTION_CALL).apply {
+                data = android.net.Uri.parse("tel:$phoneNumber")
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
+            DeviceCommandResult(true, "Calling $phoneNumber")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error making call", e)
+            DeviceCommandResult(false, "Cannot make call")
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun sendSMS(phoneNumber: String, message: String): DeviceCommandResult {
+        return try {
+            if (phoneNumber.isBlank() || message.isBlank()) {
+                return DeviceCommandResult(false, "Please specify phone number and message")
+            }
+
+            if (ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.SEND_SMS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                return DeviceCommandResult(false, "SMS permission required")
+            }
+
+            val smsManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                context.getSystemService(SmsManager::class.java)
+            } else {
+                SmsManager.getDefault()
+            }
+
+            smsManager.sendTextMessage(phoneNumber, null, message, null, null)
+            DeviceCommandResult(true, "SMS sent to $phoneNumber")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error sending SMS", e)
+            DeviceCommandResult(false, "Cannot send SMS")
+        }
+    }
+
+    private fun adjustBrightness(increase: Boolean): DeviceCommandResult {
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (!Settings.System.canWrite(context)) {
+                    return DeviceCommandResult(false, "Write settings permission required")
+                }
+            }
+
+            val currentBrightness = Settings.System.getInt(
+                context.contentResolver,
+                Settings.System.SCREEN_BRIGHTNESS,
+                128
+            )
+
+            val newBrightness = if (increase) {
+                (currentBrightness + 25).coerceAtMost(255)
+            } else {
+                (currentBrightness - 25).coerceAtLeast(0)
+            }
+
             Settings.System.putInt(
                 context.contentResolver,
                 Settings.System.SCREEN_BRIGHTNESS,
-                newLevel
-            )
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
-    }
-
-    /**
-     * Turn on/off flashlight
-     * Command: "Turn on flashlight" or "Turn off flashlight"
-     */
-    fun toggleFlashlight(enable: Boolean): Boolean {
-        return try {
-            val intent = Intent(MediaStore.INTENT_ACTION_VIDEO_CAMERA)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            
-            if (enable) {
-                // This will open camera for flashlight
-                context.startActivity(intent)
-            }
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
-    }
-
-    /**
-     * Take a screenshot/photo
-     * Command: "Take a photo" or "Take screenshot"
-     */
-    fun takePhoto(): Boolean {
-        return try {
-            val intent = Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            context.startActivity(intent)
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
-    }
-
-    /**
-     * Open app by package name
-     * Command: "Open WhatsApp" or "Launch Instagram"
-     */
-    fun openApp(appName: String): Boolean {
-        return try {
-            val appPackages = mapOf(
-                "whatsapp" to "com.whatsapp",
-                "instagram" to "com.instagram.android",
-                "facebook" to "com.facebook.katana",
-                "twitter" to "com.twitter.android",
-                "telegram" to "org.telegram.messenger",
-                "youtube" to "com.google.android.youtube",
-                "gmail" to "com.google.android.gm",
-                "maps" to "com.google.android.apps.maps",
-                "camera" to "com.android.camera",
-                "gallery" to "com.android.gallery3d"
+                newBrightness
             )
 
-            val packageName = appPackages[appName.lowercase()] ?: return false
-            val intent = context.packageManager.getLaunchIntentForPackage(packageName) ?: return false
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            context.startActivity(intent)
-            true
+            val percentage = (newBrightness * 100) / 255
+            DeviceCommandResult(true, "Brightness set to $percentage%")
         } catch (e: Exception) {
-            e.printStackTrace()
-            false
+            Log.e(TAG, "Error adjusting brightness", e)
+            DeviceCommandResult(false, "Cannot adjust brightness")
         }
     }
 
-    /**
-     * Set alarm
-     * Command: "Set alarm for 7 AM"
-     */
-    fun setAlarm(hourOfDay: Int, minute: Int): Boolean {
-        return try {
-            val intent = Intent(AlarmClock.ACTION_SET_ALARM).apply {
-                putExtra(AlarmClock.EXTRA_HOUR, hourOfDay)
-                putExtra(AlarmClock.EXTRA_MINUTES, minute)
-                putExtra(AlarmClock.EXTRA_MESSAGE, "David AI Alarm")
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            context.startActivity(intent)
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
+    private fun extractPhoneNumber(command: String): String {
+        // Extract phone number from command
+        // Format: "call 1234567890" or "phone 123-456-7890"
+        val numbers = command.replace("[^0-9]".toRegex(), "")
+        return if (numbers.length >= 10) numbers else ""
+    }
+
+    private fun extractSMSDetails(command: String): Pair<String, String> {
+        // Extract phone number and message
+        // Format: "send sms 1234567890 hello there"
+        val parts = command.split(" ", limit = 4)
+        if (parts.size >= 4) {
+            val number = parts[2].replace("[^0-9]".toRegex(), "")
+            val message = parts[3]
+            return Pair(number, message)
         }
+        return Pair("", "")
     }
 
     /**
-     * Enable silent mode
-     * Command: "Silent mode" or "Enable vibrate"
+     * Get list of supported commands
      */
-    fun setSilentMode(silent: Boolean): Boolean {
-        return try {
-            if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_NOTIFICATION_POLICY) ==
-                PackageManager.PERMISSION_GRANTED
-            ) {
-                audioManager.ringerMode = if (silent) {
-                    AudioManager.RINGER_MODE_SILENT
-                } else {
-                    AudioManager.RINGER_MODE_NORMAL
-                }
-                true
-            } else {
-                false
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
-    }
-
-    /**
-     * Vibrate device
-     * Command: "Vibrate"
-     */
-    fun vibrate(duration: Long = 500): Boolean {
-        return try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                vibrator.vibrate(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE))
-            } else {
-                @Suppress("DEPRECATION")
-                vibrator.vibrate(duration)
-            }
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
+    fun getSupportedCommands(): List<String> {
+        return listOf(
+            "Volume up/down/mute",
+            "WiFi on/off",
+            "Bluetooth on/off",
+            "Call [number]",
+            "Send SMS [number] [message]",
+            "Brightness up/down",
+            "Flashlight on/off"
+        )
     }
 }
+
+data class DeviceCommandResult(
+    val success: Boolean,
+    val message: String
+)
