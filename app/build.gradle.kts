@@ -3,6 +3,8 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
     id("kotlin-parcelize")
+    // Hilt for dependency injection
+    id("com.google.dagger.hilt.android")
     // Remove Firebase for now - add back when google-services.json is ready
     // id("com.google.gms.google-services")
 }
@@ -25,6 +27,11 @@ android {
 
         // Multidex support for large app
         multiDexEnabled = true
+        
+        // Room schema export
+        ksp {
+            arg("room.schemaLocation", "$projectDir/schemas")
+        }
     }
 
     buildTypes {
@@ -135,11 +142,25 @@ dependencies {
     // Google Tink for encryption (EncryptionManager)
     implementation("com.google.crypto.tink:tink-android:1.10.0")
     
-    // Google Sign-In (GoogleSignInScreen)
+    // Google Sign-In (GoogleSignInScreen, GoogleAuthManager)
     implementation("com.google.android.gms:play-services-auth:20.7.0")
     
     // Jsoup for web scraping (WebSearchEngine)
     implementation("org.jsoup:jsoup:1.17.2")
+    
+    // Hilt for dependency injection (AppModule, AuthModule)
+    implementation("com.google.dagger:hilt-android:2.48.1")
+    ksp("com.google.dagger:hilt-compiler:2.48.1")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    
+    // Room Database (ChatHistoryManager)
+    val roomVersion = "2.6.1"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
+    
+    // MediaPipe for gesture recognition (GestureController)
+    implementation("com.google.mediapipe:tasks-vision:0.10.8")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
