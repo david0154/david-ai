@@ -51,9 +51,10 @@ class ModelDownloadActivity : ComponentActivity() {
             // Check if model already downloaded
             val prefs = getSharedPreferences("david_prefs", MODE_PRIVATE)
             val modelDownloaded = prefs.getBoolean("model_downloaded", false)
+            val skipDownload = prefs.getBoolean("skip_model_download", false)
 
-            if (modelDownloaded) {
-                Log.d(TAG, "Model already downloaded, navigating to main")
+            if (modelDownloaded || skipDownload) {
+                Log.d(TAG, "Model downloaded or skipped, navigating to main")
                 navigateToMain()
                 return
             }
@@ -326,11 +327,16 @@ class ModelDownloadActivity : ComponentActivity() {
                         }
                     }
                     
-                    // Skip button
+                    // Skip button - PROPERLY SAVES STATE
                     OutlinedButton(
                         onClick = {
+                            Log.d(TAG, "User clicked Skip - proceeding to app")
                             val prefs = getSharedPreferences("david_prefs", MODE_PRIVATE)
-                            prefs.edit().putBoolean("model_downloaded", true).apply()
+                            prefs.edit().apply {
+                                putBoolean("skip_model_download", true)
+                                putBoolean("model_downloaded", true)  // Mark as done
+                                apply()
+                            }
                             navigateToMain()
                         },
                         modifier = Modifier
@@ -356,6 +362,7 @@ class ModelDownloadActivity : ComponentActivity() {
                         onClick = {
                             hasError = false
                             downloadProgress = 0f
+                            isDownloading = false
                         }
                     ) {
                         Text(
@@ -373,7 +380,7 @@ class ModelDownloadActivity : ComponentActivity() {
                     text = if (isDownloading) {
                         "Please keep the app open while downloading"
                     } else {
-                        "Download AI model from Hugging Face for offline use"
+                        "Download AI model from Hugging Face for offline use\n(You can also skip and use online mode)"
                     },
                     fontSize = 11.sp,
                     color = Color(0xFF4B5563),
@@ -458,8 +465,13 @@ class ModelDownloadActivity : ComponentActivity() {
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(
                     onClick = {
+                        Log.d(TAG, "Error screen - Skip to App clicked")
                         val prefs = getSharedPreferences("david_prefs", MODE_PRIVATE)
-                        prefs.edit().putBoolean("model_downloaded", true).apply()
+                        prefs.edit().apply {
+                            putBoolean("model_downloaded", true)
+                            putBoolean("skip_model_download", true)
+                            apply()
+                        }
                         navigateToMain()
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -476,7 +488,7 @@ class ModelDownloadActivity : ComponentActivity() {
         try {
             Log.d(TAG, "Navigating to SafeMainActivity")
             val intent = Intent(this, SafeMainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
         } catch (e: Exception) {
