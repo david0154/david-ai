@@ -37,8 +37,7 @@ fun JarvisMainScreen(
     resourceStatus: DeviceResourceManager.ResourceStatus,
     isListening: Boolean,
     statusMessage: String,
-    onVoiceClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onVoiceClick: () -> Unit
 ) {
     // Animation states
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
@@ -50,15 +49,6 @@ fun JarvisMainScreen(
             repeatMode = RepeatMode.Reverse
         ),
         label = "pulse"
-    )
-
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(10000, easing = LinearEasing)
-        ),
-        label = "rotation"
     )
 
     Box(
