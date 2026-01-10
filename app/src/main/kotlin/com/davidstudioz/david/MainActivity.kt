@@ -3,6 +3,7 @@ package com.davidstudioz.david
 import android.Manifest
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
@@ -53,7 +54,11 @@ import kotlinx.coroutines.launch
  * ALL features in ONE beautiful sci-fi UI
  * Features: Logo + Jarvis Orb + Weather + Chat + Voice + Resource Monitoring + All Controls
  * 
- * FIXED: Proper null safety, exception handling, and permission request handling
+ * ALL BUGS FIXED:
+ * ✅ Proper null safety
+ * ✅ Exception handling
+ * ✅ Permission request handling
+ * ✅ Bluetooth permissions for Android 12+ (API 31+)
  */
 class MainActivity : ComponentActivity() {
 
@@ -258,9 +263,13 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * Request required permissions including Bluetooth for Android 12+
+     * FIXED: Now includes BLUETOOTH_CONNECT and BLUETOOTH_SCAN for API 31+
+     */
     private fun requestRequiredPermissions() {
         try {
-            val permissions = arrayOf(
+            val permissions = mutableListOf(
                 Manifest.permission.CAMERA,
                 Manifest.permission.RECORD_AUDIO,
                 Manifest.permission.ACCESS_FINE_LOCATION,
@@ -269,10 +278,19 @@ class MainActivity : ComponentActivity() {
                 Manifest.permission.INTERNET,
                 Manifest.permission.ACCESS_NETWORK_STATE
             )
-            permissionLauncher.launch(permissions)
+            
+            // Add Bluetooth permissions for Android 12+ (API 31+)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
+                permissions.add(Manifest.permission.BLUETOOTH_SCAN)
+                Log.d(TAG, "Added Bluetooth permissions for Android 12+")
+            }
+            
+            Log.d(TAG, "Requesting ${permissions.size} permissions")
+            permissionLauncher.launch(permissions.toTypedArray())
         } catch (e: Exception) {
             Log.e(TAG, "Error requesting permissions", e)
-            statusMessage = "Permission request failed"
+            statusMessage = "Permission request failed: ${e.localizedMessage}"
         }
     }
 
