@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import androidx.work.*
-import com.davidstudioz.david.MainActivity
 import com.davidstudioz.david.R
 import com.davidstudioz.david.workers.ModelDownloadWorker
 import kotlinx.coroutines.delay
@@ -143,13 +142,13 @@ class SplashActivity : ComponentActivity() {
                     delay(remaining)
                 }
 
-                navigateToMain()
+                navigateToLogin()
             } catch (e: Exception) {
                 Log.e(TAG, "Fatal error in splash screen", e)
                 hasError = true
                 errorMessage = e.localizedMessage ?: "Unknown error"
                 delay(2000)
-                navigateToMain()
+                navigateToLogin()
             }
         }
 
@@ -463,14 +462,14 @@ class SplashActivity : ComponentActivity() {
         }
     }
 
-    private fun navigateToMain() {
+    private fun navigateToLogin() {
         try {
-            val intent = Intent(this@SplashActivity, MainActivity::class.java)
+            val intent = Intent(this@SplashActivity, LoginActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             finish()
         } catch (e: Exception) {
-            Log.e(TAG, "Error navigating to MainActivity", e)
+            Log.e(TAG, "Error navigating to LoginActivity", e)
             try {
                 finish()
             } catch (ex: Exception) {

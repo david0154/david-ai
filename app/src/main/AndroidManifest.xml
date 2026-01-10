@@ -3,110 +3,69 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!-- ====== CORE PERMISSIONS ====== -->
-    <!-- Microphone for voice input (speech-to-text) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <!-- Camera for gesture recognition -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <!-- Internet for weather, model download, etc. -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Network status checking -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- Check WiFi state -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <!-- ====== LOCATION PERMISSIONS ====== -->
-    <!-- Fine location (GPS) for weather, location services -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <!-- Coarse location (WiFi/network) -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <!-- ====== DEVICE CONTROL PERMISSIONS ====== -->
-    <!-- Make phone calls -->
     <uses-permission android:name="android.permission.CALL_PHONE" />
-    <!-- Send SMS messages -->
     <uses-permission android:name="android.permission.SEND_SMS" />
-    <!-- Read SMS -->
     <uses-permission android:name="android.permission.READ_SMS" />
-    <!-- Read phone state -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <!-- ====== CONNECTIVITY CONTROL ====== -->
-    <!-- Control WiFi -->
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <!-- Change network state -->
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
-    <!-- Bluetooth control -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <!-- Connect to paired Bluetooth devices -->
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <!-- Discover Bluetooth devices -->
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
 
     <!-- ====== MEDIA & STORAGE ====== -->
-    <!-- Read external storage for files/models -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-    <!-- Write external storage for saving data -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-    <!-- Manage all files -->
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
-    <!-- Access media files -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
 
     <!-- ====== CONTACT & COMMUNICATION ====== -->
-    <!-- Read contacts for SMS/call functions -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
-    <!-- Write contacts -->
     <uses-permission android:name="android.permission.WRITE_CONTACTS" />
-    <!-- Read call log -->
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
-    <!-- Write call log -->
     <uses-permission android:name="android.permission.WRITE_CALL_LOG" />
 
     <!-- ====== SECURITY & ADMIN ====== -->
-    <!-- Battery optimization whitelist -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-    <!-- Notification access -->
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
-    <!-- System alert window for overlay (pointer) -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <!-- ====== BACKGROUND & SYSTEM ====== -->
-    <!-- Background service -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
-    <!-- Wake lock for background processing -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <!-- ====== BIOMETRIC & AUTHENTICATION ====== -->
-    <!-- Biometric authentication -->
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
     <!-- ====== WEAR OS PERMISSIONS ====== -->
-    <!-- Body sensors for health tracking on Wear OS -->
     <uses-permission android:name="android.permission.BODY_SENSORS" />
-    <!-- Vibrate for haptic feedback on watches -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <!-- Required features -->
-    <uses-feature
-        android:name="android.hardware.camera"
-        android:required="false" />
-    <uses-feature
-        android:name="android.hardware.microphone"
-        android:required="true" />
-    <uses-feature
-        android:name="android.hardware.location.gps"
-        android:required="false" />
-    <uses-feature
-        android:name="android.hardware.bluetooth"
-        android:required="false" />
-    <!-- Wear OS feature declaration -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.microphone" android:required="true" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
     <uses-feature android:name="android.hardware.type.watch" android:required="false" />
 
     <!-- ====== APPLICATION CONFIGURATION ====== -->
@@ -138,12 +97,25 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!-- Wear OS launcher intent -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="com.google.android.wearable.category.WEARABLE_LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Login Activity -->
+        <activity
+            android:name=".ui.LoginActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.DavidAI" />
+
+        <!-- Model Download Activity -->
+        <activity
+            android:name=".ui.ModelDownloadActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.DavidAI" />
 
         <!-- Main Activity -->
         <activity
