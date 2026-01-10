@@ -18,7 +18,7 @@ data class VoiceProfile(
 )
 
 @Singleton
-class VoiceProfile @Inject constructor(
+class VoiceProfileManager @Inject constructor(
     private val context: Context
 ) {
     
