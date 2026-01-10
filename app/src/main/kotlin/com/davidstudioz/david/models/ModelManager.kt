@@ -21,8 +21,8 @@ data class AIModel(
 
 /**
  * ModelManager - Downloads and manages AI models
- * REAL WORKING DOWNLOAD LINKS from Hugging Face
- * Supports: Chat, Voice, Vision, Languages (English + 11 Indian), Gesture
+ * ALL MODELS BRANDED AS "D.A.V.I.D"
+ * REAL WORKING DOWNLOAD LINKS from Hugging Face & Google
  */
 class ModelManager(private val context: Context) {
     
@@ -46,12 +46,12 @@ class ModelManager(private val context: Context) {
     }
     
     /**
-     * Available D.A.V.I.D AI Models - REAL WORKING LINKS
+     * D.A.V.I.D AI Models - ALL BRANDED
      */
     private val availableModels = listOf(
-        // ===== CHAT MODELS (LLM) =====
+        // ===== D.A.V.I.D CHAT MODELS =====
         AIModel(
-            name = "D.A.V.I.D Chat Light (1.1B)",
+            name = "D.A.V.I.D Chat Light",
             url = "https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf",
             size = "669 MB",
             minRamGB = 2,
@@ -59,25 +59,25 @@ class ModelManager(private val context: Context) {
             format = "GGUF"
         ),
         AIModel(
-            name = "D.A.V.I.D Chat Pro (2.7B)",
-            url = "https://huggingface.co/TheBloke/phi-2-GGUF/resolve/main/phi-2.Q4_K_M.gguf",
-            size = "1.6 GB",
-            minRamGB = 3,
-            type = "LLM",
-            format = "GGUF"
-        ),
-        AIModel(
-            name = "D.A.V.I.D Chat Standard (1.8B)",
+            name = "D.A.V.I.D Chat Standard",
             url = "https://huggingface.co/second-state/Qwen1.5-1.8B-Chat-GGUF/resolve/main/qwen1.5-1.8b-chat-q4_k_m.gguf",
             size = "1.1 GB",
             minRamGB = 2,
             type = "LLM",
             format = "GGUF"
         ),
-        
-        // ===== VOICE RECOGNITION MODELS =====
         AIModel(
-            name = "Whisper Tiny (Voice)",
+            name = "D.A.V.I.D Chat Pro",
+            url = "https://huggingface.co/TheBloke/phi-2-GGUF/resolve/main/phi-2.Q4_K_M.gguf",
+            size = "1.6 GB",
+            minRamGB = 3,
+            type = "LLM",
+            format = "GGUF"
+        ),
+        
+        // ===== D.A.V.I.D VOICE MODELS =====
+        AIModel(
+            name = "D.A.V.I.D Voice Tiny",
             url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en.bin",
             size = "75 MB",
             minRamGB = 1,
@@ -85,7 +85,7 @@ class ModelManager(private val context: Context) {
             format = "GGML"
         ),
         AIModel(
-            name = "Whisper Base (Voice)",
+            name = "D.A.V.I.D Voice Base",
             url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin",
             size = "142 MB",
             minRamGB = 1,
@@ -93,7 +93,7 @@ class ModelManager(private val context: Context) {
             format = "GGML"
         ),
         AIModel(
-            name = "Whisper Small (Voice)",
+            name = "D.A.V.I.D Voice Small",
             url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.en.bin",
             size = "466 MB",
             minRamGB = 2,
@@ -101,9 +101,9 @@ class ModelManager(private val context: Context) {
             format = "GGML"
         ),
         
-        // ===== VISION MODELS =====
+        // ===== D.A.V.I.D VISION MODELS =====
         AIModel(
-            name = "MobileNet V2 (Vision)",
+            name = "D.A.V.I.D Vision Lite",
             url = "https://huggingface.co/google/mobilenet_v2_1.0_224/resolve/main/tf_model.h5",
             size = "14 MB",
             minRamGB = 1,
@@ -111,7 +111,7 @@ class ModelManager(private val context: Context) {
             format = "H5"
         ),
         AIModel(
-            name = "CLIP Vision",
+            name = "D.A.V.I.D Vision Pro",
             url = "https://huggingface.co/openai/clip-vit-base-patch32/resolve/main/pytorch_model.bin",
             size = "338 MB",
             minRamGB = 2,
@@ -119,19 +119,17 @@ class ModelManager(private val context: Context) {
             format = "PyTorch"
         ),
         
-        // ===== ENGLISH LANGUAGE MODEL =====
+        // ===== D.A.V.I.D LANGUAGE MODELS =====
         AIModel(
-            name = "English BERT",
+            name = "D.A.V.I.D Language English",
             url = "https://huggingface.co/bert-base-uncased/resolve/main/pytorch_model.bin",
             size = "440 MB",
             minRamGB = 1,
             type = "Language",
             format = "PyTorch"
         ),
-        
-        // ===== INDIAN LANGUAGE MODELS =====
         AIModel(
-            name = "Hindi BERT",
+            name = "D.A.V.I.D Language Hindi",
             url = "https://huggingface.co/ai4bharat/indic-bert/resolve/main/hindi/pytorch_model.bin",
             size = "420 MB",
             minRamGB = 1,
@@ -139,7 +137,7 @@ class ModelManager(private val context: Context) {
             format = "PyTorch"
         ),
         AIModel(
-            name = "Tamil BERT",
+            name = "D.A.V.I.D Language Tamil",
             url = "https://huggingface.co/ai4bharat/indic-bert/resolve/main/tamil/pytorch_model.bin",
             size = "420 MB",
             minRamGB = 1,
@@ -147,7 +145,7 @@ class ModelManager(private val context: Context) {
             format = "PyTorch"
         ),
         AIModel(
-            name = "Telugu BERT",
+            name = "D.A.V.I.D Language Telugu",
             url = "https://huggingface.co/ai4bharat/indic-bert/resolve/main/telugu/pytorch_model.bin",
             size = "420 MB",
             minRamGB = 1,
@@ -155,7 +153,7 @@ class ModelManager(private val context: Context) {
             format = "PyTorch"
         ),
         AIModel(
-            name = "Bengali BERT",
+            name = "D.A.V.I.D Language Bengali",
             url = "https://huggingface.co/ai4bharat/indic-bert/resolve/main/bengali/pytorch_model.bin",
             size = "420 MB",
             minRamGB = 1,
@@ -163,7 +161,7 @@ class ModelManager(private val context: Context) {
             format = "PyTorch"
         ),
         AIModel(
-            name = "Marathi BERT",
+            name = "D.A.V.I.D Language Marathi",
             url = "https://huggingface.co/ai4bharat/indic-bert/resolve/main/marathi/pytorch_model.bin",
             size = "420 MB",
             minRamGB = 1,
@@ -171,7 +169,7 @@ class ModelManager(private val context: Context) {
             format = "PyTorch"
         ),
         AIModel(
-            name = "Gujarati BERT",
+            name = "D.A.V.I.D Language Gujarati",
             url = "https://huggingface.co/ai4bharat/indic-bert/resolve/main/gujarati/pytorch_model.bin",
             size = "420 MB",
             minRamGB = 1,
@@ -179,7 +177,7 @@ class ModelManager(private val context: Context) {
             format = "PyTorch"
         ),
         AIModel(
-            name = "Kannada BERT",
+            name = "D.A.V.I.D Language Kannada",
             url = "https://huggingface.co/ai4bharat/indic-bert/resolve/main/kannada/pytorch_model.bin",
             size = "420 MB",
             minRamGB = 1,
@@ -187,7 +185,7 @@ class ModelManager(private val context: Context) {
             format = "PyTorch"
         ),
         AIModel(
-            name = "Malayalam BERT",
+            name = "D.A.V.I.D Language Malayalam",
             url = "https://huggingface.co/ai4bharat/indic-bert/resolve/main/malayalam/pytorch_model.bin",
             size = "420 MB",
             minRamGB = 1,
@@ -195,7 +193,7 @@ class ModelManager(private val context: Context) {
             format = "PyTorch"
         ),
         AIModel(
-            name = "Punjabi BERT",
+            name = "D.A.V.I.D Language Punjabi",
             url = "https://huggingface.co/ai4bharat/indic-bert/resolve/main/punjabi/pytorch_model.bin",
             size = "420 MB",
             minRamGB = 1,
@@ -203,7 +201,7 @@ class ModelManager(private val context: Context) {
             format = "PyTorch"
         ),
         AIModel(
-            name = "Urdu BERT",
+            name = "D.A.V.I.D Language Urdu",
             url = "https://huggingface.co/ai4bharat/indic-bert/resolve/main/urdu/pytorch_model.bin",
             size = "420 MB",
             minRamGB = 1,
@@ -211,9 +209,9 @@ class ModelManager(private val context: Context) {
             format = "PyTorch"
         ),
         
-        // ===== GESTURE RECOGNITION =====
+        // ===== D.A.V.I.D GESTURE MODELS =====
         AIModel(
-            name = "MediaPipe Hand Landmarker",
+            name = "D.A.V.I.D Gesture Hand",
             url = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task",
             size = "25 MB",
             minRamGB = 1,
@@ -221,7 +219,7 @@ class ModelManager(private val context: Context) {
             format = "TFLite"
         ),
         AIModel(
-            name = "MediaPipe Gesture Recognizer",
+            name = "D.A.V.I.D Gesture Recognition",
             url = "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/latest/gesture_recognizer.task",
             size = "31 MB",
             minRamGB = 1,
@@ -300,7 +298,12 @@ class ModelManager(private val context: Context) {
      * Get vision model
      */
     fun getVisionModel(): AIModel? {
-        return availableModels.find { it.type == "Vision" && it.name.contains("MobileNet") }
+        val deviceRam = getDeviceRamGB()
+        val visionModels = availableModels.filter { it.type == "Vision" }
+        return when {
+            deviceRam >= 2 -> visionModels.find { it.name.contains("Pro") }
+            else -> visionModels.find { it.name.contains("Lite") }
+        } ?: visionModels.firstOrNull()
     }
     
     /**
