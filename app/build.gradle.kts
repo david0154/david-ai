@@ -61,6 +61,10 @@ android {
         compose = true
         viewBinding = true
         buildConfig = true
+        aidl = false
+        renderScript = false
+        resValues = false
+        shaders = false
     }
 
     composeOptions {
@@ -79,6 +83,7 @@ android {
     lint {
         abortOnError = false
         checkReleaseBuilds = false
+        missingDimensionStrategy("store", "play")
     }
 }
 
