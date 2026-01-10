@@ -44,6 +44,7 @@ class SplashActivity : ComponentActivity() {
 
     private var splashMinDuration = 3000L // 3 second beautiful splash
     private var splashStartTime = 0L
+    private var initializationError by mutableStateOf<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,23 +56,20 @@ class SplashActivity : ComponentActivity() {
             startModelDownloadWorker()
         } catch (e: Exception) {
             Log.e(TAG, "Error starting model download", e)
+            initializationError = "Model download error: ${e.localizedMessage}"
         }
 
-        try {
-            setContent {
-                MaterialTheme(
-                    colorScheme = darkColorScheme(
-                        primary = Color(0xFF00E5FF),
-                        secondary = Color(0xFF9CA3AF),
-                        background = Color(0xFF0A0E27)
-                    )
-                ) {
-                    BeautifulSplashScreen()
-                }
+        // Set content without try-catch (Compose requirement)
+        setContent {
+            MaterialTheme(
+                colorScheme = darkColorScheme(
+                    primary = Color(0xFF00E5FF),
+                    secondary = Color(0xFF9CA3AF),
+                    background = Color(0xFF0A0E27)
+                )
+            ) {
+                BeautifulSplashScreen()
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error setting content", e)
-            navigateToMain()
         }
     }
 
@@ -81,6 +79,14 @@ class SplashActivity : ComponentActivity() {
         var statusText by remember { mutableStateOf("Initializing") }
         var hasError by remember { mutableStateOf(false) }
         var errorMessage by remember { mutableStateOf("") }
+
+        // Check for initialization errors
+        LaunchedEffect(initializationError) {
+            initializationError?.let {
+                hasError = true
+                errorMessage = it
+            }
+        }
 
         // Animations
         val infiniteTransition = rememberInfiniteTransition(label = "splash_animation")
@@ -360,18 +366,18 @@ class SplashActivity : ComponentActivity() {
             }
         }
 
-        if (logoResourceId != 0) {
-            try {
-                Image(
-                    painter = painterResource(id = logoResourceId),
-                    contentDescription = "D.A.V.I.D Logo",
-                    modifier = modifier.clip(CircleShape),
-                    contentScale = ContentScale.Fit,
-                    colorFilter = tint?.let { ColorFilter.tint(it) }
-                )
-            } catch (e: Exception) {
-                LogoFallback(modifier, tint)
-            }
+        val imageLoadSuccess = remember { mutableStateOf(true) }
+
+        if (logoResourceId != 0 && imageLoadSuccess.value) {
+            // Use runCatching to handle errors in Composable context
+            Image(
+                painter = painterResource(id = logoResourceId),
+                contentDescription = "D.A.V.I.D Logo",
+                modifier = modifier.clip(CircleShape),
+                contentScale = ContentScale.Fit,
+                colorFilter = tint?.let { ColorFilter.tint(it) },
+                onError = { imageLoadSuccess.value = false }
+            )
         } else {
             LogoFallback(modifier, tint)
         }
