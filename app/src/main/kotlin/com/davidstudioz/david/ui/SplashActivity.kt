@@ -5,34 +5,44 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import androidx.work.*
 import com.davidstudioz.david.MainActivity
+import com.davidstudioz.david.R
 import com.davidstudioz.david.workers.ModelDownloadWorker
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 /**
- * Splash Activity - First screen shown
- * - Shows logo and app name
- * - Downloads AI models in background (with proper error handling)
- * - Shows progress
- * - Prevents crash if model download fails
+ * D.A.V.I.D Splash Screen - Beautiful Modern Design
+ * Shows branding, logo, and initialization progress
+ * Digital Assistant Voice Intelligence Device
  */
 class SplashActivity : ComponentActivity() {
 
-    private var splashMinDuration = 2000L // Minimum 2 second splash screen
+    private var splashMinDuration = 3000L // 3 second beautiful splash
     private var splashStartTime = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,12 +55,19 @@ class SplashActivity : ComponentActivity() {
             startModelDownloadWorker()
         } catch (e: Exception) {
             Log.e(TAG, "Error starting model download", e)
-            // Continue without crashing
         }
 
         try {
             setContent {
-                SplashScreen()
+                MaterialTheme(
+                    colorScheme = darkColorScheme(
+                        primary = Color(0xFF00E5FF),
+                        secondary = Color(0xFF9CA3AF),
+                        background = Color(0xFF0A0E27)
+                    )
+                ) {
+                    BeautifulSplashScreen()
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error setting content", e)
@@ -59,29 +76,67 @@ class SplashActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun SplashScreen() {
+    private fun BeautifulSplashScreen() {
         var progress by remember { mutableStateOf(0f) }
-        var statusText by remember { mutableStateOf("Initializing DAVID AI...") }
+        var statusText by remember { mutableStateOf("Initializing") }
         var hasError by remember { mutableStateOf(false) }
         var errorMessage by remember { mutableStateOf("") }
 
+        // Animations
+        val infiniteTransition = rememberInfiniteTransition(label = "splash_animation")
+        
+        val pulseScale by infiniteTransition.animateFloat(
+            initialValue = 0.95f,
+            targetValue = 1.05f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(2000, easing = EaseInOutCubic),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "pulse"
+        )
+
+        val rotationAngle by infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 360f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(20000, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            ),
+            label = "rotation"
+        )
+
+        val glowAlpha by infiniteTransition.animateFloat(
+            initialValue = 0.3f,
+            targetValue = 0.8f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1500, easing = EaseInOutCubic),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "glow"
+        )
+
         LaunchedEffect(Unit) {
             try {
-                // Simulate initialization with proper error handling
-                for (i in 0..100) {
-                    try {
-                        progress = i / 100f
-                        when (i) {
-                            20 -> statusText = "Checking device capabilities..."
-                            40 -> statusText = "Preparing AI models..."
-                            60 -> statusText = "Setting up voice recognition..."
-                            80 -> statusText = "Finalizing setup..."
-                            100 -> statusText = "Ready!"
-                        }
-                        delay(30)
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error during initialization step", e)
-                        // Continue with next iteration
+                // Progressive initialization
+                val steps = listOf(
+                    0.2f to "Loading core systems",
+                    0.4f to "Initializing AI models",
+                    0.6f to "Setting up voice recognition",
+                    0.8f to "Preparing interface",
+                    1.0f to "Ready to launch"
+                )
+
+                steps.forEach { (targetProgress, message) ->
+                    statusText = message
+                    val startProgress = progress
+                    val duration = 600L
+                    val startTime = System.currentTimeMillis()
+
+                    while (progress < targetProgress) {
+                        val elapsed = System.currentTimeMillis() - startTime
+                        progress = (startProgress + (targetProgress - startProgress) * 
+                                   (elapsed.toFloat() / duration)).coerceAtMost(targetProgress)
+                        delay(16)
                     }
                 }
 
@@ -92,13 +147,11 @@ class SplashActivity : ComponentActivity() {
                     delay(remaining)
                 }
 
-                // Navigate to MainActivity
                 navigateToMain()
             } catch (e: Exception) {
                 Log.e(TAG, "Fatal error in splash screen", e)
                 hasError = true
                 errorMessage = e.localizedMessage ?: "Unknown error"
-                // Try to continue after delay
                 delay(2000)
                 navigateToMain()
             }
@@ -107,92 +160,286 @@ class SplashActivity : ComponentActivity() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF1F2937)),
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF0A0E27),
+                            Color(0xFF1A1F3A),
+                            Color(0xFF0A0E27)
+                        )
+                    )
+                ),
             contentAlignment = Alignment.Center
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(16.dp)
-            ) {
-                if (!hasError) {
-                    // Normal splash screen
-                    Text(
-                        text = "🤖",
-                        fontSize = 80.sp
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "DAVID AI",
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF00D4FF)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Voice-First AI Assistant",
-                        fontSize = 14.sp,
-                        color = Color(0xFF9CA3AF)
-                    )
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    // Progress bar
-                    LinearProgressIndicator(
-                        progress = progress,
+            if (!hasError) {
+                // Beautiful Normal Splash
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp)
+                ) {
+                    // Animated Logo Container
+                    Box(
                         modifier = Modifier
-                            .width(250.dp)
-                            .height(4.dp),
-                        color = Color(0xFF00D4FF),
-                        trackColor = Color(0xFF374151)
+                            .size(180.dp)
+                            .scale(pulseScale),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        // Outer glow ring
+                        Box(
+                            modifier = Modifier
+                                .size(180.dp)
+                                .alpha(glowAlpha)
+                                .clip(CircleShape)
+                                .background(
+                                    Brush.radialGradient(
+                                        colors = listOf(
+                                            Color(0xFF00E5FF).copy(alpha = 0.3f),
+                                            Color.Transparent
+                                        )
+                                    )
+                                )
+                        )
+
+                        // Middle ring
+                        Box(
+                            modifier = Modifier
+                                .size(140.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    Brush.radialGradient(
+                                        colors = listOf(
+                                            Color(0xFF00E5FF).copy(alpha = 0.15f),
+                                            Color(0xFF1E88E5).copy(alpha = 0.05f)
+                                        )
+                                    )
+                                )
+                        )
+
+                        // Logo or Emoji
+                        LogoOrEmoji(
+                            modifier = Modifier.size(100.dp),
+                            tint = Color(0xFF00E5FF)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(40.dp))
+
+                    // D.A.V.I.D Title with letter spacing
+                    Text(
+                        text = "D.A.V.I.D",
+                        fontSize = 48.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color(0xFF00E5FF),
+                        letterSpacing = 8.sp,
+                        style = MaterialTheme.typography.displayLarge
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = statusText,
-                        fontSize = 12.sp,
-                        color = Color(0xFF9CA3AF)
-                    )
-                } else {
-                    // Error splash screen
-                    Text(
-                        text = "⚠️",
-                        fontSize = 64.sp
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Initialization Error",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFF6E40)
-                    )
                     Spacer(modifier = Modifier.height(12.dp))
+
+                    // Full form with gradient
                     Text(
-                        text = errorMessage,
+                        text = "Digital Assistant Voice\nIntelligence Device",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF64B5F6),
+                        letterSpacing = 2.sp,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 20.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Divider line
+                    Box(
+                        modifier = Modifier
+                            .width(200.dp)
+                            .height(1.dp)
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        Color(0xFF00E5FF).copy(alpha = 0.5f),
+                                        Color.Transparent
+                                    )
+                                )
+                            )
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Tagline
+                    Text(
+                        text = "Your AI-Powered Voice Assistant",
                         fontSize = 12.sp,
                         color = Color(0xFF9CA3AF),
-                        modifier = Modifier.padding(12.dp)
+                        letterSpacing = 1.sp
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Spacer(modifier = Modifier.height(48.dp))
+
+                    // Modern Progress bar
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.width(280.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(6.dp)
+                                .clip(MaterialTheme.shapes.small)
+                                .background(Color(0xFF1E293B))
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(progress)
+                                    .fillMaxHeight()
+                                    .background(
+                                        Brush.horizontalGradient(
+                                            colors = listOf(
+                                                Color(0xFF00E5FF),
+                                                Color(0xFF1E88E5),
+                                                Color(0xFF00E5FF)
+                                            )
+                                        )
+                                    )
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Status text
+                        Text(
+                            text = statusText,
+                            fontSize = 13.sp,
+                            color = Color(0xFF64B5F6),
+                            letterSpacing = 0.5.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Percentage
+                        Text(
+                            text = "${(progress * 100).toInt()}%",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF00E5FF)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(60.dp))
+
+                    // Footer - Developer credit
                     Text(
-                        text = "Continuing to app...",
-                        fontSize = 11.sp,
-                        color = Color(0xFF64B5F6)
+                        text = "Developed by David Studioz",
+                        fontSize = 10.sp,
+                        color = Color(0xFF4B5563),
+                        letterSpacing = 1.sp
                     )
                 }
+            } else {
+                // Error screen
+                ErrorSplashScreen(errorMessage)
             }
         }
     }
 
-    /**
-     * Start background worker to download AI models
-     * This is non-blocking and won't crash the app if it fails
-     */
+    @Composable
+    private fun LogoOrEmoji(
+        modifier: Modifier = Modifier,
+        tint: Color? = null
+    ) {
+        val logoResourceId = remember {
+            try {
+                resources.getIdentifier("logo", "drawable", packageName)
+            } catch (e: Exception) {
+                0
+            }
+        }
+
+        if (logoResourceId != 0) {
+            try {
+                Image(
+                    painter = painterResource(id = logoResourceId),
+                    contentDescription = "D.A.V.I.D Logo",
+                    modifier = modifier.clip(CircleShape),
+                    contentScale = ContentScale.Fit,
+                    colorFilter = tint?.let { ColorFilter.tint(it) }
+                )
+            } catch (e: Exception) {
+                LogoFallback(modifier, tint)
+            }
+        } else {
+            LogoFallback(modifier, tint)
+        }
+    }
+
+    @Composable
+    private fun LogoFallback(modifier: Modifier = Modifier, tint: Color? = null) {
+        Box(
+            modifier = modifier
+                .clip(CircleShape)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            tint ?: Color(0xFF00E5FF),
+                            (tint ?: Color(0xFF00E5FF)).copy(alpha = 0.3f)
+                        )
+                    )
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "🤖",
+                fontSize = 48.sp
+            )
+        }
+    }
+
+    @Composable
+    private fun ErrorSplashScreen(errorMsg: String) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(32.dp)
+        ) {
+            Text(
+                text = "⚠️",
+                fontSize = 64.sp
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = "Initialization Error",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFFF6E40)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = errorMsg,
+                fontSize = 12.sp,
+                color = Color(0xFF9CA3AF),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = "Continuing to app...",
+                fontSize = 11.sp,
+                color = Color(0xFF64B5F6)
+            )
+        }
+    }
+
     private fun startModelDownloadWorker() {
         try {
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
-                .setRequiresBatteryNotLow(false) // Don't require good battery
-                .setRequiresDeviceIdle(false)    // Can run even if device is in use
+                .setRequiresBatteryNotLow(false)
+                .setRequiresDeviceIdle(false)
                 .build()
 
             val downloadWork = OneTimeWorkRequestBuilder<ModelDownloadWorker>()
@@ -207,23 +454,18 @@ class SplashActivity : ComponentActivity() {
             try {
                 WorkManager.getInstance(this).enqueueUniqueWork(
                     "model_download",
-                    ExistingWorkPolicy.KEEP, // Don't requeue if already exists
+                    ExistingWorkPolicy.KEEP,
                     downloadWork
                 )
                 Log.d(TAG, "Model download worker enqueued")
             } catch (e: Exception) {
                 Log.e(TAG, "Error enqueuing work", e)
-                // Don't crash if WorkManager fails
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error starting model download worker", e)
-            // Gracefully handle error - app can still work without background downloads
         }
     }
 
-    /**
-     * Navigate to main activity safely
-     */
     private fun navigateToMain() {
         try {
             val intent = Intent(this@SplashActivity, MainActivity::class.java)
@@ -232,7 +474,6 @@ class SplashActivity : ComponentActivity() {
             finish()
         } catch (e: Exception) {
             Log.e(TAG, "Error navigating to MainActivity", e)
-            // If even this fails, still try to finish
             try {
                 finish()
             } catch (ex: Exception) {
