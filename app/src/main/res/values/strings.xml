@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- App Name -->
-    <string name="app_name">DAVID AI</string>
-    <string name="app_full_name">D.A.V.I.D - Digital Assistant Voice Intelligence Device</string>
+    <!-- App Name & Branding -->
+    <string name="app_name">D.A.V.I.D</string>
+    <string name="app_full_name">D.A.V.I.D</string>
+    <string name="app_tagline">Digital Assistant Voice Intelligence Device</string>
+    <string name="app_description">Your AI-Powered Voice Assistant</string>
+    <string name="developed_by">Developed by David Studioz</string>
     
     <!-- Main Screen -->
-    <string name="title_digital_assistant">Digital Assistant</string>
+    <string name="title_digital_assistant">Digital Assistant Voice Intelligence Device</string>
     <string name="greeting_message">Hi %1$s, I\'m ready!</string>
-    <string name="initializing">Initializing DAVID AI…</string>
+    <string name="initializing">Initializing D.A.V.I.D…</string>
     <string name="systems_online">Voice systems online</string>
     <string name="ready">Ready</string>
     
@@ -89,13 +92,13 @@
     <string name="error_weather">Weather error</string>
     
     <!-- Content Descriptions -->
-    <string name="cd_logo">DAVID AI Logo</string>
+    <string name="cd_logo">D.A.V.I.D Logo</string>
     <string name="cd_ai_orb">AI Orb Animation</string>
     <string name="cd_voice_button">Voice Control Button</string>
     <string name="cd_resource_ring">Resource Usage Ring</string>
     
     <!-- Welcome Messages -->
-    <string name="welcome_first_launch">Hello %1$s, DAVID systems are online!</string>
+    <string name="welcome_first_launch">Hello %1$s, D.A.V.I.D systems are online!</string>
     <string name="welcome_greeting">Hello %1$s, I\'m ready to help!</string>
     
     <!-- Settings (for future use) -->
