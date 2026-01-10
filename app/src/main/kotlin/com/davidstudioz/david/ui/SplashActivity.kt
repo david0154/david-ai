@@ -51,6 +51,7 @@ import java.util.concurrent.TimeUnit
  * ✅ Activity verification
  * ✅ Image loading without onError (fixed)
  * ✅ PackageManager deprecation fixed
+ * ✅ Try-catch around composable removed
  */
 class SplashActivity : ComponentActivity() {
 
@@ -398,25 +399,21 @@ class SplashActivity : ComponentActivity() {
         modifier: Modifier = Modifier,
         tint: Color? = null
     ) {
-        var showFallback by remember { mutableStateOf(false) }
+        // State to track if we should use fallback
+        var useLogoResource by remember { mutableStateOf(true) }
         
-        if (!showFallback) {
-            try {
-                // Try to load logo from resources - FIXED: Removed onError parameter
-                Image(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                    contentDescription = "D.A.V.I.D Logo",
-                    modifier = modifier.clip(CircleShape),
-                    contentScale = ContentScale.Fit,
-                    colorFilter = tint?.let { ColorFilter.tint(it) }
-                )
-            } catch (e: Exception) {
-                Log.w(TAG, "Logo not found, using fallback")
-                showFallback = true
-            }
-        }
-        
-        if (showFallback) {
+        // FIXED: No try-catch around composable - use conditional rendering
+        if (useLogoResource) {
+            // Attempt to show launcher icon
+            Image(
+                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                contentDescription = "D.A.V.I.D Logo",
+                modifier = modifier.clip(CircleShape),
+                contentScale = ContentScale.Fit,
+                colorFilter = tint?.let { ColorFilter.tint(it) }
+            )
+        } else {
+            // Fallback emoji
             LogoFallback(modifier, tint)
         }
     }
