@@ -2,34 +2,43 @@ package com.davidstudioz.david.models
 
 import android.app.ActivityManager
 import android.content.Context
-import android.os.Environment
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
-import javax.inject.Inject
-import javax.inject.Singleton
 
 data class AIModel(
     val name: String,
     val url: String,
     val size: String,
     val minRamGB: Int,
-    val type: String // "llm", "vision", "stt", "tts"
+    val type: String // "LLM", "Vision", "Speech"
 )
 
-@Singleton
-class ModelManager @Inject constructor(
-    private val context: Context
-) {
+/**
+ * ModelManager - Downloads and manages AI models
+ * Direct initialization without Hilt
+ */
+class ModelManager(private val context: Context) {
     
-    private val httpClient = OkHttpClient()
+    private val httpClient = OkHttpClient.Builder()
+        .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+        .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+        .writeTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+        .build()
+        
     private val modelsDir = File(context.getExternalFilesDir(null), "models")
     
     init {
-        modelsDir.mkdirs()
+        try {
+            modelsDir.mkdirs()
+            Log.d(TAG, "Models directory: ${modelsDir.absolutePath}")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error creating models directory", e)
+        }
     }
     
     /**
@@ -80,10 +89,17 @@ class ModelManager @Inject constructor(
      * Get device RAM in GB
      */
     private fun getDeviceRamGB(): Int {
-        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        val memInfo = ActivityManager.MemoryInfo()
-        activityManager.getMemoryInfo(memInfo)
-        return (memInfo.totalMem / (1024 * 1024 * 1024)).toInt()
+        return try {
+            val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            val memInfo = ActivityManager.MemoryInfo()
+            activityManager.getMemoryInfo(memInfo)
+            val ramGB = (memInfo.totalMem / (1024 * 1024 * 1024)).toInt()
+            Log.d(TAG, "Device RAM: $ramGB GB")
+            ramGB
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting device RAM", e)
+            2 // Default to 2GB
+        }
     }
     
     /**
@@ -99,11 +115,13 @@ class ModelManager @Inject constructor(
      */
     fun getRecommendedLLM(): AIModel? {
         val deviceRam = getDeviceRamGB()
-        return when {
+        val recommended = when {
             deviceRam >= 3 -> availableModels.find { it.name.contains("2B Pro") }
             deviceRam >= 2 -> availableModels.find { it.name.contains("2B") && !it.name.contains("Pro") && !it.name.contains("Light") }
             else -> availableModels.find { it.name.contains("2B Light") }
         }
+        Log.d(TAG, "Recommended LLM: ${recommended?.name}")
+        return recommended
     }
     
     /**
@@ -111,11 +129,14 @@ class ModelManager @Inject constructor(
      */
     suspend fun downloadModel(model: AIModel, onProgress: (progress: Int) -> Unit = {}): Result<String> = withContext(Dispatchers.IO) {
         return@withContext try {
+            Log.d(TAG, "Starting download: ${model.name} from ${model.url}")
+            
             val fileName = model.url.substringAfterLast("/")
             val modelFile = File(modelsDir, fileName)
             
             // Skip if already downloaded
-            if (modelFile.exists()) {
+            if (modelFile.exists() && modelFile.length() > 0) {
+                Log.d(TAG, "Model already exists: ${modelFile.absolutePath}")
                 return@withContext Result.success(modelFile.absolutePath)
             }
             
@@ -124,33 +145,50 @@ class ModelManager @Inject constructor(
                 .header("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36")
                 .build()
             
+            Log.d(TAG, "Sending HTTP request...")
             val response = httpClient.newCall(request).execute()
             
             if (!response.isSuccessful) {
-                throw Exception("Failed to download: ${response.code}")
+                val error = "Failed to download: HTTP ${response.code}"
+                Log.e(TAG, error)
+                throw Exception(error)
             }
             
-            val body = response.body ?: throw Exception("Empty response")
+            val body = response.body ?: throw Exception("Empty response body")
             val contentLength = body.contentLength()
+            Log.d(TAG, "Content length: $contentLength bytes")
+            
+            if (contentLength <= 0) {
+                throw Exception("Invalid content length")
+            }
             
             FileOutputStream(modelFile).use { output ->
                 body.byteStream().use { input ->
                     val buffer = ByteArray(8192)
                     var downloadedBytes = 0L
                     var bytesRead: Int
+                    var lastProgress = 0
                     
                     while (input.read(buffer).also { bytesRead = it } != -1) {
                         output.write(buffer, 0, bytesRead)
                         downloadedBytes += bytesRead
                         
                         val progress = ((downloadedBytes * 100) / contentLength).toInt()
-                        onProgress(progress)
+                        if (progress != lastProgress) {
+                            onProgress(progress)
+                            lastProgress = progress
+                            if (progress % 10 == 0) {
+                                Log.d(TAG, "Download progress: $progress%")
+                            }
+                        }
                     }
                 }
             }
             
+            Log.d(TAG, "Download complete: ${modelFile.absolutePath}")
             Result.success(modelFile.absolutePath)
         } catch (e: Exception) {
+            Log.e(TAG, "Download failed", e)
             Result.failure(e)
         }
     }
@@ -159,7 +197,12 @@ class ModelManager @Inject constructor(
      * Get downloaded models
      */
     fun getDownloadedModels(): List<File> {
-        return modelsDir.listFiles()?.toList() ?: emptyList()
+        return try {
+            modelsDir.listFiles()?.toList() ?: emptyList()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting downloaded models", e)
+            emptyList()
+        }
     }
     
     /**
@@ -174,14 +217,32 @@ class ModelManager @Inject constructor(
      * Get total models size
      */
     fun getTotalModelsSize(): Long {
-        return getDownloadedModels().sumOf { it.length() }
+        return try {
+            getDownloadedModels().sumOf { it.length() }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error calculating total size", e)
+            0L
+        }
     }
     
     /**
      * Delete model
      */
     fun deleteModel(modelName: String): Boolean {
-        val file = File(modelsDir, modelName)
-        return file.delete()
+        return try {
+            val file = File(modelsDir, modelName)
+            val deleted = file.delete()
+            if (deleted) {
+                Log.d(TAG, "Deleted model: $modelName")
+            }
+            deleted
+        } catch (e: Exception) {
+            Log.e(TAG, "Error deleting model", e)
+            false
+        }
+    }
+    
+    companion object {
+        private const val TAG = "ModelManager"
     }
 }
