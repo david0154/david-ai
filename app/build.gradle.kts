@@ -23,11 +23,13 @@ android {
             useSupportLibrary = true
         }
         
-        // Add resource configurations to avoid conflicts
-        resourceConfigurations += listOf("en", "hi")
-        
         // Resolve dimension conflicts from Firebase and Google Play Services
         missingDimensionStrategy("store", "play")
+    }
+
+    // Modern way to configure resource locales (replaces deprecated resourceConfigurations)
+    androidResources {
+        localeFilters += listOf("en", "hi")
     }
 
     buildTypes {
