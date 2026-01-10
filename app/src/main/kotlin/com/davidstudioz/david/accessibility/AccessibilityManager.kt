@@ -1,5 +1,6 @@
 package com.davidstudioz.david.accessibility
 
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Context
 import android.view.accessibility.AccessibilityManager
 import kotlinx.coroutines.Dispatchers
@@ -37,7 +38,7 @@ class AccessibilityManager @Inject constructor(
      */
     fun isTalkBackRunning(): Boolean {
         val enabledServices = accessibilityManager.getEnabledAccessibilityServiceList(
-            AccessibilityManager.FEEDBACK_SPOKEN
+            AccessibilityServiceInfo.FEEDBACK_SPOKEN
         )
         return enabledServices.any { it.id.contains("talkback") }
     }
