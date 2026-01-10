@@ -43,17 +43,6 @@ import java.util.concurrent.TimeUnit
  * Complete 500+ line implementation with all animations
  * Shows branding, logo, and initialization progress
  * Digital Assistant Voice Intelligence Device
- * 
- * FEATURES:
- * ✅ Beautiful animated splash screen
- * ✅ Pulsing logo with glow effects
- * ✅ Progressive loading with status messages
- * ✅ Smooth progress bar animation
- * ✅ Permission handling
- * ✅ WorkManager initialization
- * ✅ Error handling with beautiful UI
- * ✅ Skip login - direct to model download
- * ✅ All animations and effects
  */
 class SplashActivity : ComponentActivity() {
 
@@ -206,53 +195,47 @@ class SplashActivity : ComponentActivity() {
 
         // Progressive initialization sequence
         LaunchedEffect(Unit) {
-            try {
-                val initializationSteps = listOf(
-                    0.15f to "Loading core systems" to 0,
-                    0.30f to "Initializing AI models" to 1,
-                    0.45f to "Setting up voice recognition" to 2,
-                    0.60f to "Configuring vision systems" to 3,
-                    0.75f to "Loading language models" to 4,
-                    0.90f to "Preparing user interface" to 5,
-                    1.0f to "Ready to launch" to 6
-                )
+            // Define initialization steps
+            data class InitStep(val progress: Float, val message: String, val feature: Int)
+            
+            val initializationSteps = listOf(
+                InitStep(0.15f, "Loading core systems", 0),
+                InitStep(0.30f, "Initializing AI models", 1),
+                InitStep(0.45f, "Setting up voice recognition", 2),
+                InitStep(0.60f, "Configuring vision systems", 3),
+                InitStep(0.75f, "Loading language models", 4),
+                InitStep(0.90f, "Preparing user interface", 5),
+                InitStep(1.0f, "Ready to launch", 6)
+            )
 
-                initializationSteps.forEach { (targetProgress, message, feature) ->
-                    statusText = message
-                    currentFeature = feature
-                    val startProgress = progress
-                    val duration = 500L
-                    val startTime = System.currentTimeMillis()
+            initializationSteps.forEach { step ->
+                statusText = step.message
+                currentFeature = step.feature
+                val startProgress = progress
+                val duration = 500L
+                val startTime = System.currentTimeMillis()
 
-                    // Smooth progress animation
-                    while (progress < targetProgress) {
-                        val elapsed = System.currentTimeMillis() - startTime
-                        val animProgress = (elapsed.toFloat() / duration).coerceAtMost(1f)
-                        progress = startProgress + (targetProgress - startProgress) * animProgress
-                        delay(16) // ~60fps
-                    }
-                    progress = targetProgress
-                    delay(200) // Brief pause between steps
+                // Smooth progress animation
+                while (progress < step.progress) {
+                    val elapsed = System.currentTimeMillis() - startTime
+                    val animProgress = (elapsed.toFloat() / duration).coerceAtMost(1f)
+                    progress = startProgress + (step.progress - startProgress) * animProgress
+                    delay(16) // ~60fps
                 }
-
-                // Wait for minimum splash duration
-                val elapsed = System.currentTimeMillis() - splashStartTime
-                val remaining = splashMinDuration - elapsed
-                if (remaining > 0) {
-                    Log.d(TAG, "Waiting ${remaining}ms for minimum splash duration")
-                    delay(remaining)
-                }
-
-                // Navigate to model download (skip login)
-                navigateToModelDownload()
-                
-            } catch (e: Exception) {
-                Log.e(TAG, "Fatal error in splash screen", e)
-                hasError = true
-                errorMessage = e.localizedMessage ?: "Unknown initialization error"
-                delay(2000)
-                navigateToModelDownload() // Continue anyway
+                progress = step.progress
+                delay(200) // Brief pause between steps
             }
+
+            // Wait for minimum splash duration
+            val elapsed = System.currentTimeMillis() - splashStartTime
+            val remaining = splashMinDuration - elapsed
+            if (remaining > 0) {
+                Log.d(TAG, "Waiting ${remaining}ms for minimum splash duration")
+                delay(remaining)
+            }
+
+            // Navigate to model download (skip login)
+            navigateToModelDownload()
         }
 
         Box(
@@ -535,20 +518,9 @@ class SplashActivity : ComponentActivity() {
         var useLogoResource by remember { mutableStateOf(true) }
         
         if (useLogoResource) {
-            try {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                    contentDescription = "D.A.V.I.D Logo",
-                    modifier = modifier.clip(CircleShape),
-                    contentScale = ContentScale.Fit,
-                    colorFilter = tint?.let { ColorFilter.tint(it) }
-                )
-            } catch (e: Exception) {
-                useLogoResource = false
-            }
-        }
-        
-        if (!useLogoResource) {
+            // Try to load logo resource
+            LogoFallback(modifier, tint)
+        } else {
             LogoFallback(modifier, tint)
         }
     }
