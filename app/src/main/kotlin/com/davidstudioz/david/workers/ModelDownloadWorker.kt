@@ -1,215 +1,162 @@
 package com.davidstudioz.david.workers
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import com.davidstudioz.david.config.ModelConfig
-import com.davidstudioz.david.utils.DeviceResourceManager
+import com.davidstudioz.david.models.ModelManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.FileOutputStream
-import java.net.HttpURLConnection
-import java.net.URL
 
 /**
- * Smart AI Model Downloader
- * - Uses DeviceResourceManager for resource-aware downloads
- * - Respects 50-60% resource usage limits
- * - Downloads real models from Hugging Face (via ModelConfig)
- * - Integrates with existing LLMEngine model selection
+ * Background worker for downloading AI models
+ * Runs on background thread with proper network checks
+ * 
+ * FIXED: Added network availability check
+ * FIXED: Better error handling
  */
 class ModelDownloadWorker(
-    context: Context,
-    params: WorkerParameters
-) : CoroutineWorker(context, params) {
+    private val context: Context,
+    workerParams: WorkerParameters
+) : CoroutineWorker(context, workerParams) {
 
-    private val resourceManager = DeviceResourceManager(context)
+    private val modelManager = ModelManager(context)
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        try {
-            Log.d(TAG, "=".repeat(50))
-            Log.d(TAG, "Starting Smart Model Download")
-            Log.d(TAG, "=".repeat(50))
+        return@withContext try {
+            Log.d(TAG, "ModelDownloadWorker started")
             
-            // Get current resource status
-            val resourceStatus = resourceManager.getResourceStatus()
-            
-            // Log resource information
-            Log.d(TAG, "Device Resources:")
-            Log.d(TAG, "  RAM: ${resourceStatus.usedRamMB / 1024}GB / ${resourceStatus.totalRamMB / 1024}GB (${resourceStatus.ramUsagePercent.toInt()}%)")
-            Log.d(TAG, "  Storage: ${resourceStatus.usedStorageGB}GB / ${resourceStatus.totalStorageGB}GB (${resourceStatus.storageUsagePercent.toInt()}%)")
-            Log.d(TAG, "  CPU: ${resourceStatus.cpuCores} cores (${resourceStatus.cpuUsagePercent.toInt()}% usage)")
-            Log.d(TAG, "")
-            
-            // Check if download is allowed
-            val availability = resourceStatus.canUseForAI
-            Log.d(TAG, "Resource Availability Check:")
-            Log.d(TAG, "  Can Download: ${availability.canDownloadModel}")
-            Log.d(TAG, "  Max Model Size: ${availability.maxModelSizeMB}MB")
-            Log.d(TAG, "  Max RAM Usage: ${availability.maxRamUsageMB}MB")
-            Log.d(TAG, "  Reason: ${availability.reason}")
-            Log.d(TAG, "")
-            
-            // Don't download if resources are constrained (usage > 50%)
-            if (!availability.canDownloadModel) {
-                Log.w(TAG, "Download blocked: ${availability.reason}")
-                Log.w(TAG, "Current RAM usage (${resourceStatus.ramUsagePercent.toInt()}%) or Storage usage (${resourceStatus.storageUsagePercent.toInt()}%) exceeds 50% limit")
+            // Check network availability first
+            if (!isNetworkAvailable(context)) {
+                Log.e(TAG, "No network available")
                 return@withContext Result.failure(
                     workDataOf(
-                        "error" to "Insufficient resources",
-                        "reason" to availability.reason
+                        "error" to "No internet connection",
+                        "error_code" to "NETWORK_UNAVAILABLE"
                     )
                 )
             }
-            
-            // Select model based on available RAM (matching LLMEngine logic)
-            val availableMemGB = resourceStatus.totalRamMB / 1024
-            val modelInfo = selectModelBasedOnRAM(availableMemGB)
-            
-            Log.d(TAG, "Selected Model: ${modelInfo.name}")
-            Log.d(TAG, "  URL: ${modelInfo.url}")
-            Log.d(TAG, "  Size: ${modelInfo.sizeStr}")
-            Log.d(TAG, "  Min RAM: ${modelInfo.minRamGB}GB")
-            Log.d(TAG, "")
-            
-            // Download model
-            val success = downloadModel(modelInfo)
-            
-            if (success) {
-                Log.d(TAG, "✓ Model downloaded successfully: ${modelInfo.name}")
-                Log.d(TAG, "=".repeat(50))
-                Result.success(workDataOf(
-                    "model_name" to modelInfo.name,
-                    "model_size" to modelInfo.sizeStr,
-                    "min_ram_gb" to modelInfo.minRamGB
-                ))
-            } else {
-                Log.e(TAG, "✗ Model download failed: ${modelInfo.name}")
-                Log.d(TAG, "=".repeat(50))
-                Result.retry()
+
+            // Check if WiFi is available for large downloads
+            if (!isWifiConnected(context)) {
+                Log.w(TAG, "Not on WiFi - may use mobile data")
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error in model download worker", e)
-            Result.failure(workDataOf("error" to e.message))
-        }
-    }
 
-    /**
-     * Model information
-     */
-    data class ModelInfo(
-        val name: String,
-        val url: String,
-        val sizeStr: String,
-        val minRamGB: Int
-    )
-
-    /**
-     * Select model based on available RAM
-     * Matches logic from LLMEngine.kt
-     */
-    private fun selectModelBasedOnRAM(availableMemGB: Long): ModelInfo {
-        return when {
-            availableMemGB >= 6 -> ModelInfo(
-                name = "phi-3-8b",
-                url = "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-q8_0.gguf",
-                sizeStr = "2.4 GB",
-                minRamGB = 6
-            )
-            availableMemGB >= 4 -> ModelInfo(
-                name = "phi-3-4b",
-                url = "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-q4_k_m.gguf",
-                sizeStr = "1.2 GB",
-                minRamGB = 4
-            )
-            availableMemGB >= 3 -> ModelInfo(
-                name = "qwen-1.8b",
-                url = ModelConfig.LLM_QWEN_URL,
-                sizeStr = ModelConfig.LLM_QWEN_SIZE,
-                minRamGB = ModelConfig.LLM_QWEN_MIN_RAM
-            )
-            availableMemGB >= 2 -> ModelInfo(
-                name = "phi-2",
-                url = ModelConfig.LLM_PHI2_URL,
-                sizeStr = ModelConfig.LLM_PHI2_SIZE,
-                minRamGB = ModelConfig.LLM_PHI2_MIN_RAM
-            )
-            else -> ModelInfo(
-                name = "tinyllama-1b",
-                url = ModelConfig.LLM_TINYLLAMA_URL,
-                sizeStr = ModelConfig.LLM_TINYLLAMA_SIZE,
-                minRamGB = ModelConfig.LLM_TINYLLAMA_MIN_RAM
-            )
-        }
-    }
-
-    /**
-     * Download AI model from Hugging Face
-     */
-    private suspend fun downloadModel(modelInfo: ModelInfo): Boolean = withContext(Dispatchers.IO) {
-        try {
-            // Model filename from name
-            val modelFile = File(applicationContext.filesDir, "${modelInfo.name}.gguf")
-            
-            // Check if model already exists
-            if (modelFile.exists() && modelFile.length() > 0) {
-                Log.d(TAG, "Model already exists: ${modelFile.absolutePath}")
-                return@withContext true
+            // Get recommended model
+            val recommendedModel = modelManager.getRecommendedLLM()
+            if (recommendedModel == null) {
+                Log.e(TAG, "No suitable model found for device")
+                return@withContext Result.failure(
+                    workDataOf(
+                        "error" to "No suitable AI model for your device",
+                        "error_code" to "NO_MODEL"
+                    )
+                )
             }
-            
-            Log.d(TAG, "Downloading from Hugging Face...")
-            Log.d(TAG, "URL: ${modelInfo.url}")
-            Log.d(TAG, "Destination: ${modelFile.absolutePath}")
-            
+
+            Log.d(TAG, "Downloading model: ${recommendedModel.name}")
+
             // Download with progress
-            val url = URL(modelInfo.url)
-            val connection = url.openConnection() as HttpURLConnection
-            connection.requestMethod = "GET"
-            connection.connectTimeout = 30000
-            connection.readTimeout = 30000
-            connection.connect()
-            
-            if (connection.responseCode == HttpURLConnection.HTTP_OK) {
-                val totalSize = connection.contentLength
-                Log.d(TAG, "Total size: ${totalSize / (1024 * 1024)}MB")
-                
-                connection.inputStream.use { input ->
-                    FileOutputStream(modelFile).use { output ->
-                        val buffer = ByteArray(8192)
-                        var bytesRead: Int
-                        var totalBytesRead = 0L
-                        var lastProgress = 0
-                        
-                        while (input.read(buffer).also { bytesRead = it } != -1) {
-                            output.write(buffer, 0, bytesRead)
-                            totalBytesRead += bytesRead
-                            
-                            // Log progress every 10%
-                            val progress = ((totalBytesRead * 100) / totalSize).toInt()
-                            if (progress >= lastProgress + 10) {
-                                Log.d(TAG, "Download progress: $progress%")
-                                lastProgress = progress
-                            }
-                        }
-                    }
+            var lastProgress = 0
+            val downloadResult = modelManager.downloadModel(recommendedModel) { progress ->
+                if (progress - lastProgress >= 10) {
+                    Log.d(TAG, "Download progress: $progress%")
+                    lastProgress = progress
+                    // Update progress in WorkManager
+                    setProgressAsync(
+                        workDataOf(
+                            "progress" to progress,
+                            "model_name" to recommendedModel.name
+                        )
+                    )
                 }
-                
-                Log.d(TAG, "Model downloaded: ${modelFile.length() / (1024 * 1024)}MB")
-                true
-            } else {
-                Log.e(TAG, "Download failed: HTTP ${connection.responseCode}")
-                false
             }
+
+            downloadResult.fold(
+                onSuccess = { modelPath ->
+                    Log.d(TAG, "Model downloaded successfully: $modelPath")
+                    
+                    // Save download info
+                    val prefs = context.getSharedPreferences("david_prefs", Context.MODE_PRIVATE)
+                    prefs.edit().apply {
+                        putBoolean("model_downloaded", true)
+                        putString("downloaded_model", recommendedModel.name)
+                        putString("model_path", modelPath)
+                        putLong("download_timestamp", System.currentTimeMillis())
+                        apply()
+                    }
+                    
+                    Result.success(
+                        workDataOf(
+                            "model_path" to modelPath,
+                            "model_name" to recommendedModel.name,
+                            "success" to true
+                        )
+                    )
+                },
+                onFailure = { error ->
+                    Log.e(TAG, "Model download failed", error)
+                    Result.failure(
+                        workDataOf(
+                            "error" to (error.message ?: "Download failed"),
+                            "error_code" to "DOWNLOAD_FAILED"
+                        )
+                    )
+                }
+            )
         } catch (e: Exception) {
-            Log.e(TAG, "Error downloading model", e)
+            Log.e(TAG, "Worker exception", e)
+            Result.failure(
+                workDataOf(
+                    "error" to (e.message ?: "Unknown error"),
+                    "error_code" to "EXCEPTION"
+                )
+            )
+        }
+    }
+
+    /**
+     * Check if network is available
+     */
+    private fun isNetworkAvailable(context: Context): Boolean {
+        return try {
+            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) 
+                as? ConnectivityManager ?: return false
+            
+            val network = connectivityManager.activeNetwork ?: return false
+            val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+            
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking network", e)
+            false
+        }
+    }
+
+    /**
+     * Check if connected to WiFi
+     */
+    private fun isWifiConnected(context: Context): Boolean {
+        return try {
+            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) 
+                as? ConnectivityManager ?: return false
+            
+            val network = connectivityManager.activeNetwork ?: return false
+            val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+            
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking WiFi", e)
             false
         }
     }
 
     companion object {
         private const val TAG = "ModelDownloadWorker"
+        const val WORK_NAME = "model_download"
     }
 }
