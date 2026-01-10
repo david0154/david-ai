@@ -6,13 +6,8 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
-data class WeatherData(
-    val temperature: Float,
-    val condition: String,
-    val humidity: Int,
-    val windSpeed: Float,
-    val location: String
-)
+// REMOVED: WeatherData declaration (now only in WeatherTimeProvider.kt)
+// Import WeatherData from same package
 
 data class WeatherDataResponse(
     val temperature: Float,
@@ -29,6 +24,7 @@ class WeatherManager @Inject constructor(
     
     /**
      * Get current weather for location
+     * Uses WeatherData from WeatherTimeProvider
      */
     suspend fun getCurrentWeather(location: String): Result<WeatherData?> = withContext(Dispatchers.IO) {
         return@withContext try {
