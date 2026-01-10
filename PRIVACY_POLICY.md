@@ -118,10 +118,11 @@ We request certain permissions to provide functionality. Here's exactly what we 
 - Not transmitted anywhere
 
 ### Location Permission
-**Why:** To control GPS settings via voice
+**Why:** To control GPS settings via voice and support location-based features (e.g., weather)
 **Usage:**
 - Turning GPS on/off via voice command
-- Location data is never collected or stored
+- Providing location-based responses such as weather when explicitly requested
+- Location data is only used on-device when needed and is never collected, stored, or transmitted
 
 ### Bluetooth Permission
 **Why:** To control Bluetooth via voice
