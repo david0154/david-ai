@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.davidstudioz.david">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- ====== CORE PERMISSIONS ====== -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -70,6 +69,7 @@
     <uses-feature android:name="android.hardware.type.watch" android:required="false" />
 
     <!-- ====== APPLICATION CONFIGURATION ====== -->
+    <!-- Note: package attribute removed - namespace is defined in app/build.gradle.kts -->
     <application
         android:name="com.davidstudioz.david.DavidAIApp"
         android:allowBackup="true"
