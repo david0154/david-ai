@@ -5,14 +5,12 @@ import android.content.Context
 import android.util.Log
 import androidx.work.Configuration
 import androidx.work.WorkManager
-import dagger.hilt.android.HiltAndroidApp
 
 /**
  * DAVID AI Application Class
  * Main entry point for the app
- * Initializes all core systems and services
+ * Simple initialization without Hilt to prevent crashes
  */
-@HiltAndroidApp
 class DavidAIApp : Application(), Configuration.Provider {
 
     companion object {
@@ -28,11 +26,15 @@ class DavidAIApp : Application(), Configuration.Provider {
         instance = this
         
         try {
-            // Initialize WorkManager with custom configuration
-            WorkManager.initialize(this, workManagerConfiguration)
+            Log.d(TAG, "D.A.V.I.D AI Application starting...")
             
-            // Initialize app systems
-            initializeApp()
+            // Initialize WorkManager with custom configuration
+            try {
+                WorkManager.initialize(this, workManagerConfiguration)
+                Log.d(TAG, "WorkManager initialized")
+            } catch (e: Exception) {
+                Log.e(TAG, "WorkManager init error (non-fatal)", e)
+            }
             
             // Set up global exception handler to prevent app crashes
             setupExceptionHandler()
@@ -42,23 +44,6 @@ class DavidAIApp : Application(), Configuration.Provider {
         } catch (e: Exception) {
             Log.e(TAG, "Error during Application initialization", e)
             // Don't crash, try to continue
-        }
-    }
-    
-    private fun initializeApp() {
-        try {
-            // Initialize all core services here
-            Log.d(TAG, "Initializing D.A.V.I.D core systems...")
-            
-            // TODO: Initialize any global services needed
-            // - AI Model Manager
-            // - Voice Recognition Service
-            // - Device Controller
-            // - etc.
-            
-            Log.d(TAG, "Core systems initialized")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error initializing core systems", e)
         }
     }
     
@@ -79,9 +64,6 @@ class DavidAIApp : Application(), Configuration.Provider {
                     """.trimIndent()
                     Log.e(TAG, errorMsg)
                     
-                    // In production, send to crash reporting service
-                    // For now, just log it
-                    
                 } catch (e: Exception) {
                     Log.e(TAG, "Error in exception handler", e)
                 }
@@ -96,18 +78,10 @@ class DavidAIApp : Application(), Configuration.Provider {
 
     /**
      * Configure WorkManager for background model downloads
-     * Uses proper error handling and constraints
      */
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setMinimumLoggingLevel(Log.INFO)
-            .setTaskExecutor { command ->
-                try {
-                    command.run()
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error executing work task", e)
-                }
-            }
             .build()
 
     override fun onTerminate() {

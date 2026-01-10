@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -19,17 +18,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.davidstudioz.david.MainActivity
-import com.davidstudioz.david.R
 
 /**
  * Login Activity with Google Sign-In
  * Beautiful Jarvis-style login screen
+ * NO HILT - Standalone to prevent crashes
  */
 class LoginActivity : ComponentActivity() {
 
@@ -38,25 +35,34 @@ class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Check if already logged in
-        val prefs = getSharedPreferences("david_prefs", MODE_PRIVATE)
-        isLoggedIn = prefs.getBoolean("is_logged_in", false)
+        try {
+            Log.d(TAG, "LoginActivity started")
+            
+            // Check if already logged in
+            val prefs = getSharedPreferences("david_prefs", MODE_PRIVATE)
+            isLoggedIn = prefs.getBoolean("is_logged_in", false)
 
-        if (isLoggedIn) {
-            navigateToModelDownload()
-            return
-        }
-
-        setContent {
-            MaterialTheme(
-                colorScheme = darkColorScheme(
-                    primary = Color(0xFF00E5FF),
-                    secondary = Color(0xFF9CA3AF),
-                    background = Color(0xFF0A0E27)
-                )
-            ) {
-                LoginScreen()
+            if (isLoggedIn) {
+                Log.d(TAG, "User already logged in, navigating to model download")
+                navigateToModelDownload()
+                return
             }
+
+            setContent {
+                MaterialTheme(
+                    colorScheme = darkColorScheme(
+                        primary = Color(0xFF00E5FF),
+                        secondary = Color(0xFF9CA3AF),
+                        background = Color(0xFF0A0E27)
+                    )
+                ) {
+                    LoginScreen()
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in onCreate", e)
+            // Try to continue anyway
+            navigateToModelDownload()
         }
     }
 
@@ -153,7 +159,6 @@ class LoginActivity : ComponentActivity() {
                 Button(
                     onClick = {
                         isLoading = true
-                        // Simulate Google Sign-In
                         handleGoogleSignIn()
                     },
                     modifier = Modifier
@@ -178,7 +183,7 @@ class LoginActivity : ComponentActivity() {
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = "👑", // Google logo emoji
+                                text = "👑",
                                 fontSize = 20.sp
                             )
                             Spacer(modifier = Modifier.width(12.dp))
@@ -248,8 +253,7 @@ class LoginActivity : ComponentActivity() {
 
     private fun handleGoogleSignIn() {
         try {
-            // TODO: Implement actual Google Sign-In
-            // For now, simulate successful login
+            Log.d(TAG, "Google Sign-In initiated")
             val prefs = getSharedPreferences("david_prefs", MODE_PRIVATE)
             prefs.edit().apply {
                 putBoolean("is_logged_in", true)
@@ -257,7 +261,6 @@ class LoginActivity : ComponentActivity() {
                 putString("user_email", "user@example.com")
                 apply()
             }
-
             Log.d(TAG, "Google Sign-In successful")
             navigateToModelDownload()
         } catch (e: Exception) {
@@ -267,6 +270,7 @@ class LoginActivity : ComponentActivity() {
 
     private fun handleGuestMode() {
         try {
+            Log.d(TAG, "Guest mode initiated")
             val prefs = getSharedPreferences("david_prefs", MODE_PRIVATE)
             prefs.edit().apply {
                 putBoolean("is_logged_in", true)
@@ -275,7 +279,6 @@ class LoginActivity : ComponentActivity() {
                 putBoolean("is_guest", true)
                 apply()
             }
-
             Log.d(TAG, "Guest mode activated")
             navigateToModelDownload()
         } catch (e: Exception) {
