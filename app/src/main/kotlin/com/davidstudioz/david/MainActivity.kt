@@ -9,9 +9,11 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -23,6 +25,9 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,9 +49,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * DAVID AI - Unified Jarvis-Style Interface
+ * DAVID AI - Unified Jarvis-Style Interface with Logo
  * ALL features in ONE beautiful sci-fi UI
- * Features: Jarvis Orb + Weather + Chat + Voice + Resource Monitoring + All Controls
+ * Features: Logo + Jarvis Orb + Weather + Chat + Voice + Resource Monitoring + All Controls
  */
 class MainActivity : ComponentActivity() {
 
@@ -220,7 +225,7 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * UNIFIED JARVIS UI - ALL Features Combined!
+     * UNIFIED JARVIS UI - ALL Features Combined with Logo!
      */
     @Composable
     private fun UnifiedDavidAIScreen() {
@@ -249,26 +254,34 @@ class MainActivity : ComponentActivity() {
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Header with time
+                // Header with LOGO and time
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
-                        Text(
-                            text = "D.A.V.I.D",
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF00E5FF),
-                            letterSpacing = 6.sp
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        // LOGO HERE!
+                        LogoImage(
+                            modifier = Modifier.size(40.dp),
+                            tint = Color(0xFF00E5FF)
                         )
-                        Text(
-                            text = "Digital Assistant",
-                            fontSize = 9.sp,
-                            color = Color(0xFF64B5F6),
-                            letterSpacing = 1.sp
-                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "D.A.V.I.D",
+                                fontSize = 28.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF00E5FF),
+                                letterSpacing = 6.sp
+                            )
+                            Text(
+                                text = "Digital Assistant",
+                                fontSize = 9.sp,
+                                color = Color(0xFF64B5F6),
+                                letterSpacing = 1.sp
+                            )
+                        }
                     }
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
@@ -287,12 +300,21 @@ class MainActivity : ComponentActivity() {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // AI Orb with status
+                // AI Orb with LOGO inside
                 Box(
                     modifier = Modifier.size(140.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    JarvisComponents.AIOrb(isListening = isListening)
+                    JarvisComponents.AIOrb(
+                        isListening = isListening,
+                        centerContent = {
+                            // LOGO INSIDE ORB!
+                            LogoImage(
+                                modifier = Modifier.size(50.dp),
+                                tint = Color.White.copy(alpha = 0.8f)
+                            )
+                        }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -485,6 +507,61 @@ class MainActivity : ComponentActivity() {
                         fontSize = 28.sp
                     )
                 }
+            }
+        }
+    }
+
+    /**
+     * Logo Image Component
+     * Displays logo.png from drawable folder
+     * Falls back to robot emoji if not found
+     */
+    @Composable
+    private fun LogoImage(
+        modifier: Modifier = Modifier,
+        tint: Color? = null
+    ) {
+        try {
+            // Try to load logo.png from drawable
+            val logoResourceId = resources.getIdentifier("logo", "drawable", packageName)
+            if (logoResourceId != 0) {
+                Image(
+                    painter = painterResource(id = logoResourceId),
+                    contentDescription = "DAVID AI Logo",
+                    modifier = modifier.clip(CircleShape),
+                    contentScale = ContentScale.Fit,
+                    colorFilter = tint?.let { ColorFilter.tint(it) }
+                )
+            } else {
+                // Fallback: Show robot emoji
+                Box(
+                    modifier = modifier
+                        .clip(CircleShape)
+                        .background(
+                            Brush.radialGradient(
+                                colors = listOf(
+                                    tint ?: Color(0xFF00E5FF),
+                                    (tint ?: Color(0xFF00E5FF)).copy(alpha = 0.5f)
+                                )
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "🤖",
+                        fontSize = 24.sp
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            // Fallback on error
+            Box(
+                modifier = modifier
+                    .clip(CircleShape)
+                    .background(Color(0xFF00E5FF).copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "🤖", fontSize = 20.sp)
             }
         }
     }

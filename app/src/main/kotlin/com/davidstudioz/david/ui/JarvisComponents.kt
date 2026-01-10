@@ -25,14 +25,17 @@ import kotlin.math.sin
 
 /**
  * Reusable Jarvis UI Components
- * - AI Orb with animations
+ * - AI Orb with animations and center content support
  * - Resource rings
  * - Animated grid background
  */
 object JarvisComponents {
 
     @Composable
-    fun AIOrb(isListening: Boolean) {
+    fun AIOrb(
+        isListening: Boolean,
+        centerContent: @Composable () -> Unit = {}
+    ) {
         val infiniteTransition = rememberInfiniteTransition(label = "pulse")
         val pulseScale by infiniteTransition.animateFloat(
             initialValue = 1f,
@@ -86,8 +89,12 @@ object JarvisComponents {
                             )
                         )
                     )
-                    .blur(if (isListening) 8.dp else 0.dp)
-            )
+                    .blur(if (isListening) 8.dp else 0.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                // Center content (logo or custom content)
+                centerContent()
+            }
 
             // Voice wave when listening
             if (isListening) {
