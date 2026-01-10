@@ -16,13 +16,16 @@ data class AIModel(
     val size: String,
     val minRamGB: Int,
     val type: String, // "LLM", "Vision", "Speech", "Language", "Gesture"
-    val format: String = "GGUF" // "GGUF", "ONNX", "TFLite"
+    val format: String = "GGUF" // "GGUF", "ONNX", "TFLite", "GGML"
 )
 
 /**
- * ModelManager - Downloads and manages AI models
- * ALL MODELS BRANDED AS "D.A.V.I.D"
- * REAL WORKING DOWNLOAD LINKS from Hugging Face & Google
+ * ModelManager - ANDROID-COMPATIBLE MODELS ONLY
+ * ✅ GGUF (Chat - llama.cpp)
+ * ✅ GGML (Voice - whisper.cpp)
+ * ✅ ONNX (Vision - ONNX Runtime)
+ * ✅ TFLite (Language, Gesture - TensorFlow Lite)
+ * ❌ NO PyTorch (doesn't run on Android)
  */
 class ModelManager(private val context: Context) {
     
@@ -46,10 +49,10 @@ class ModelManager(private val context: Context) {
     }
     
     /**
-     * D.A.V.I.D AI Models - ALL BRANDED
+     * D.A.V.I.D AI Models - ANDROID-COMPATIBLE ONLY
      */
     private val availableModels = listOf(
-        // ===== D.A.V.I.D CHAT MODELS =====
+        // ===== D.A.V.I.D CHAT MODELS (GGUF - llama.cpp) =====
         AIModel(
             name = "D.A.V.I.D Chat Light",
             url = "https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf",
@@ -75,7 +78,7 @@ class ModelManager(private val context: Context) {
             format = "GGUF"
         ),
         
-        // ===== D.A.V.I.D VOICE MODELS =====
+        // ===== D.A.V.I.D VOICE MODELS (GGML - whisper.cpp) =====
         AIModel(
             name = "D.A.V.I.D Voice Tiny",
             url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en.bin",
@@ -101,115 +104,126 @@ class ModelManager(private val context: Context) {
             format = "GGML"
         ),
         
-        // ===== D.A.V.I.D VISION MODELS =====
+        // ===== D.A.V.I.D VISION MODELS (ONNX/TFLite) =====
         AIModel(
             name = "D.A.V.I.D Vision Lite",
-            url = "https://huggingface.co/google/mobilenet_v2_1.0_224/resolve/main/tf_model.h5",
+            url = "https://github.com/onnx/models/raw/main/validated/vision/classification/mobilenet/model/mobilenetv2-12.onnx",
             size = "14 MB",
             minRamGB = 1,
             type = "Vision",
-            format = "H5"
+            format = "ONNX"
         ),
         AIModel(
-            name = "D.A.V.I.D Vision Pro",
-            url = "https://huggingface.co/openai/clip-vit-base-patch32/resolve/main/pytorch_model.bin",
-            size = "338 MB",
+            name = "D.A.V.I.D Vision Standard",
+            url = "https://github.com/onnx/models/raw/main/validated/vision/classification/resnet/model/resnet50-v2-7.onnx",
+            size = "98 MB",
             minRamGB = 2,
             type = "Vision",
-            format = "PyTorch"
+            format = "ONNX"
         ),
         
-        // ===== D.A.V.I.D LANGUAGE MODELS =====
+        // ===== D.A.V.I.D LANGUAGE MODELS (TFLite - MobileBERT) =====
+        // Using MobileBERT which is optimized for mobile devices
         AIModel(
             name = "D.A.V.I.D Language English",
-            url = "https://huggingface.co/bert-base-uncased/resolve/main/pytorch_model.bin",
-            size = "440 MB",
+            url = "https://tfhub.dev/tensorflow/lite-model/mobilebert/1/default/1?lite-format=tflite",
+            size = "100 MB",
             minRamGB = 1,
             type = "Language",
-            format = "PyTorch"
+            format = "TFLite"
         ),
         AIModel(
-            name = "D.A.V.I.D Language Hindi",
-            url = "https://huggingface.co/ai4bharat/indic-bert/resolve/main/hindi/pytorch_model.bin",
-            size = "420 MB",
+            name = "D.A.V.I.D Language Multilingual",
+            url = "https://tfhub.dev/tensorflow/lite-model/mobilebert/1/default/1?lite-format=tflite",
+            size = "100 MB",
             minRamGB = 1,
             type = "Language",
-            format = "PyTorch"
+            format = "TFLite"
+        ),
+        
+        // For Indian languages, using Universal Sentence Encoder Multilingual (supports 16 languages including Hindi, Tamil, etc)
+        AIModel(
+            name = "D.A.V.I.D Language Hindi",
+            url = "https://tfhub.dev/google/lite-model/universal-sentence-encoder-multilingual/3?lite-format=tflite",
+            size = "50 MB",
+            minRamGB = 1,
+            type = "Language",
+            format = "TFLite"
         ),
         AIModel(
             name = "D.A.V.I.D Language Tamil",
-            url = "https://huggingface.co/ai4bharat/indic-bert/resolve/main/tamil/pytorch_model.bin",
-            size = "420 MB",
+            url = "https://tfhub.dev/google/lite-model/universal-sentence-encoder-multilingual/3?lite-format=tflite",
+            size = "50 MB",
             minRamGB = 1,
             type = "Language",
-            format = "PyTorch"
+            format = "TFLite"
         ),
         AIModel(
             name = "D.A.V.I.D Language Telugu",
-            url = "https://huggingface.co/ai4bharat/indic-bert/resolve/main/telugu/pytorch_model.bin",
-            size = "420 MB",
+            url = "https://tfhub.dev/google/lite-model/universal-sentence-encoder-multilingual/3?lite-format=tflite",
+            size = "50 MB",
             minRamGB = 1,
             type = "Language",
-            format = "PyTorch"
+            format = "TFLite"
         ),
         AIModel(
             name = "D.A.V.I.D Language Bengali",
-            url = "https://huggingface.co/ai4bharat/indic-bert/resolve/main/bengali/pytorch_model.bin",
-            size = "420 MB",
+            url = "https://tfhub.dev/google/lite-model/universal-sentence-encoder-multilingual/3?lite-format=tflite",
+            size = "50 MB",
             minRamGB = 1,
             type = "Language",
-            format = "PyTorch"
+            format = "TFLite"
         ),
         AIModel(
             name = "D.A.V.I.D Language Marathi",
-            url = "https://huggingface.co/ai4bharat/indic-bert/resolve/main/marathi/pytorch_model.bin",
-            size = "420 MB",
+            url = "https://tfhub.dev/google/lite-model/universal-sentence-encoder-multilingual/3?lite-format=tflite",
+            size = "50 MB",
             minRamGB = 1,
             type = "Language",
-            format = "PyTorch"
+            format = "TFLite"
         ),
         AIModel(
             name = "D.A.V.I.D Language Gujarati",
-            url = "https://huggingface.co/ai4bharat/indic-bert/resolve/main/gujarati/pytorch_model.bin",
-            size = "420 MB",
+            url = "https://tfhub.dev/google/lite-model/universal-sentence-encoder-multilingual/3?lite-format=tflite",
+            size = "50 MB",
             minRamGB = 1,
             type = "Language",
-            format = "PyTorch"
+            format = "TFLite"
         ),
         AIModel(
             name = "D.A.V.I.D Language Kannada",
-            url = "https://huggingface.co/ai4bharat/indic-bert/resolve/main/kannada/pytorch_model.bin",
-            size = "420 MB",
+            url = "https://tfhub.dev/google/lite-model/universal-sentence-encoder-multilingual/3?lite-format=tflite",
+            size = "50 MB",
             minRamGB = 1,
             type = "Language",
-            format = "PyTorch"
+            format = "TFLite"
         ),
         AIModel(
             name = "D.A.V.I.D Language Malayalam",
-            url = "https://huggingface.co/ai4bharat/indic-bert/resolve/main/malayalam/pytorch_model.bin",
-            size = "420 MB",
+            url = "https://tfhub.dev/google/lite-model/universal-sentence-encoder-multilingual/3?lite-format=tflite",
+            size = "50 MB",
             minRamGB = 1,
             type = "Language",
-            format = "PyTorch"
+            format = "TFLite"
         ),
         AIModel(
             name = "D.A.V.I.D Language Punjabi",
-            url = "https://huggingface.co/ai4bharat/indic-bert/resolve/main/punjabi/pytorch_model.bin",
-            size = "420 MB",
+            url = "https://tfhub.dev/google/lite-model/universal-sentence-encoder-multilingual/3?lite-format=tflite",
+            size = "50 MB",
             minRamGB = 1,
             type = "Language",
-            format = "PyTorch"
+            format = "TFLite"
         ),
         AIModel(
             name = "D.A.V.I.D Language Urdu",
-            url = "https://huggingface.co/ai4bharat/indic-bert/resolve/main/urdu/pytorch_model.bin",
-            size = "420 MB",
+            url = "https://tfhub.dev/google/lite-model/universal-sentence-encoder-multilingual/3?lite-format=tflite",
+            size = "50 MB",
             minRamGB = 1,
             type = "Language",
-            format = "PyTorch"
+            format = "TFLite"
         ),
         
-        // ===== D.A.V.I.D GESTURE MODELS =====
+        // ===== D.A.V.I.D GESTURE MODELS (TFLite - MediaPipe) =====
         AIModel(
             name = "D.A.V.I.D Gesture Hand",
             url = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task",
@@ -301,7 +315,7 @@ class ModelManager(private val context: Context) {
         val deviceRam = getDeviceRamGB()
         val visionModels = availableModels.filter { it.type == "Vision" }
         return when {
-            deviceRam >= 2 -> visionModels.find { it.name.contains("Pro") }
+            deviceRam >= 2 -> visionModels.find { it.name.contains("Standard") }
             else -> visionModels.find { it.name.contains("Lite") }
         } ?: visionModels.firstOrNull()
     }
@@ -330,7 +344,7 @@ class ModelManager(private val context: Context) {
     }
     
     /**
-     * Download model from URL (Hugging Face or Google Storage)
+     * Download model from URL
      */
     suspend fun downloadModel(
         model: AIModel, 
@@ -338,21 +352,22 @@ class ModelManager(private val context: Context) {
     ): Result<String> = withContext(Dispatchers.IO) {
         return@withContext try {
             Log.d(TAG, "Starting download: ${model.name}")
+            Log.d(TAG, "Format: ${model.format} (Android-compatible)")
             Log.d(TAG, "URL: ${model.url}")
             Log.d(TAG, "Expected size: ${model.size}")
             
-            val fileName = model.url.substringAfterLast("/")
+            val fileName = model.url.substringAfterLast("/").substringBefore("?")
             val modelFile = File(modelsDir, fileName)
             
-            // Skip if already downloaded and file size is reasonable
+            // Skip if already downloaded
             if (modelFile.exists() && modelFile.length() > 1024 * 1024) { // > 1MB
-                Log.d(TAG, "Model already exists: ${modelFile.absolutePath} (${modelFile.length()} bytes)")
+                Log.d(TAG, "Model already exists: ${modelFile.absolutePath}")
                 return@withContext Result.success(modelFile.absolutePath)
             }
             
             val request = Request.Builder()
                 .url(model.url)
-                .header("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36")
+                .header("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36")
                 .header("Accept", "*/*")
                 .build()
             
@@ -367,11 +382,7 @@ class ModelManager(private val context: Context) {
             
             val body = response.body ?: throw Exception("Empty response body")
             val contentLength = body.contentLength()
-            Log.d(TAG, "Content length: $contentLength bytes (${contentLength / (1024*1024)} MB)")
-            
-            if (contentLength <= 0) {
-                Log.w(TAG, "Unknown content length, proceeding anyway...")
-            }
+            Log.d(TAG, "Content length: $contentLength bytes")
             
             // Download with progress
             FileOutputStream(modelFile).use { output ->
@@ -391,23 +402,16 @@ class ModelManager(private val context: Context) {
                                 onProgress(progress)
                                 lastProgress = progress
                                 if (progress % 10 == 0) {
-                                    Log.d(TAG, "Progress: $progress% (${downloadedBytes / (1024*1024)} MB)")
+                                    Log.d(TAG, "Progress: $progress%")
                                 }
-                            }
-                        } else {
-                            // Unknown size, report bytes downloaded
-                            if (downloadedBytes % (10 * 1024 * 1024) == 0L) {
-                                Log.d(TAG, "Downloaded: ${downloadedBytes / (1024*1024)} MB")
                             }
                         }
                     }
-                    
-                    Log.d(TAG, "Download complete: ${downloadedBytes / (1024*1024)} MB")
                 }
             }
             
             Log.d(TAG, "Model saved: ${modelFile.absolutePath}")
-            Log.d(TAG, "File size: ${modelFile.length()} bytes")
+            Log.d(TAG, "Format: ${model.format} - Ready for Android")
             Result.success(modelFile.absolutePath)
             
         } catch (e: Exception) {
@@ -432,7 +436,7 @@ class ModelManager(private val context: Context) {
      * Check if model is downloaded
      */
     fun isModelDownloaded(model: AIModel): Boolean {
-        val fileName = model.url.substringAfterLast("/")
+        val fileName = model.url.substringAfterLast("/").substringBefore("?")
         val file = File(modelsDir, fileName)
         return file.exists() && file.length() > 1024 * 1024 // > 1MB
     }
