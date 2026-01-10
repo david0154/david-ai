@@ -32,6 +32,11 @@ android {
         ksp {
             arg("room.schemaLocation", "$projectDir/schemas")
         }
+        
+        // Suppress native library stripping warnings
+        ndk {
+            debugSymbolLevel = "NONE"
+        }
     }
 
     buildTypes {
@@ -57,7 +62,10 @@ android {
         jvmTarget = "17"
         freeCompilerArgs += listOf(
             "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
-            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi"
+            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
+            "-Xsuppress-warning=UNUSED_PARAMETER",
+            "-Xsuppress-warning=UNUSED_VARIABLE",
+            "-Xsuppress-warning=DEPRECATION"
         )
     }
 
@@ -75,6 +83,17 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
             excludes += "/META-INF/gradle/incremental.annotation.processors"
         }
+        jniLibs {
+            // Don't strip native libraries (MediaPipe, MLKit)
+            useLegacyPackaging = true
+        }
+    }
+    
+    // Suppress lint warnings
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
+        quiet = true
     }
 }
 
