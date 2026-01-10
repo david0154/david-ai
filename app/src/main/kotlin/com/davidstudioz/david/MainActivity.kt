@@ -52,24 +52,26 @@ import kotlinx.coroutines.launch
  * DAVID AI - Unified Jarvis-Style Interface with Logo
  * ALL features in ONE beautiful sci-fi UI
  * Features: Logo + Jarvis Orb + Weather + Chat + Voice + Resource Monitoring + All Controls
+ * 
+ * FIXED: Proper null safety, exception handling, and permission request handling
  */
 class MainActivity : ComponentActivity() {
 
-    // Core components
-    private lateinit var userProfile: UserProfile
-    private lateinit var hotWordDetector: HotWordDetector
-    private lateinit var textToSpeechEngine: TextToSpeechEngine
-    private lateinit var deviceController: DeviceController
-    private lateinit var gestureController: GestureController
-    private lateinit var chatManager: ChatManager
-    private lateinit var weatherTimeProvider: WeatherTimeProvider
-    private lateinit var deviceLockManager: DeviceLockManager
-    private lateinit var pointerController: PointerController
-    private lateinit var permissionManager: PermissionManager
-    private lateinit var deviceAccess: DeviceAccessManager
-    private lateinit var resourceManager: DeviceResourceManager
+    // Core components - nullable for safe initialization
+    private var userProfile: UserProfile? = null
+    private var hotWordDetector: HotWordDetector? = null
+    private var textToSpeechEngine: TextToSpeechEngine? = null
+    private var deviceController: DeviceController? = null
+    private var gestureController: GestureController? = null
+    private var chatManager: ChatManager? = null
+    private var weatherTimeProvider: WeatherTimeProvider? = null
+    private var deviceLockManager: DeviceLockManager? = null
+    private var pointerController: PointerController? = null
+    private var permissionManager: PermissionManager? = null
+    private var deviceAccess: DeviceAccessManager? = null
+    private var resourceManager: DeviceResourceManager? = null
 
-    // UI State
+    // UI State - with default values to prevent null crashes
     private var isListening by mutableStateOf(false)
     private var statusMessage by mutableStateOf("Initializing DAVID AI...")
     private var userInput by mutableStateOf("")
@@ -78,90 +80,151 @@ class MainActivity : ComponentActivity() {
     private var currentTime by mutableStateOf("00:00:00")
     private var devicePermissions by mutableStateOf<Map<String, Boolean>>(emptyMap())
     private var resourceStatus by mutableStateOf<DeviceResourceManager.ResourceStatus?>(null)
+    private var showPermissionDialog by mutableStateOf(false)
+    private var missingPermissions by mutableStateOf<List<String>>(emptyList())
 
-    // Permission launcher
+    // Permission launcher with proper error handling
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        permissions.forEach { (permission, granted) ->
-            Log.d("MainActivity", "$permission: $granted")
+        try {
+            permissions.forEach { (permission, granted) ->
+                Log.d(TAG, "$permission: $granted")
+            }
+            
+            // Update UI with permission results
+            val denied = permissions.filter { !it.value }.keys.toList()
+            if (denied.isNotEmpty()) {
+                missingPermissions = denied
+                showPermissionDialog = true
+                statusMessage = "Some permissions were denied. App may not work fully."
+            } else {
+                statusMessage = "All permissions granted!"
+            }
+            
+            initializeWeather()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error handling permission result", e)
+            statusMessage = "Error processing permissions"
         }
-        initializeWeather()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Initialize all components
-        initializeComponents()
+        try {
+            // Initialize all components with error handling
+            initializeComponents()
 
-        // Set up unified UI
-        setContent {
-            DavidAITheme {
-                UnifiedDavidAIScreen()
+            // Set up unified UI
+            setContent {
+                DavidAITheme {
+                    if (showPermissionDialog) {
+                        PermissionDenialDialog(missingPermissions) {
+                            showPermissionDialog = false
+                        }
+                    } else {
+                        UnifiedDavidAIScreen()
+                    }
+                }
+            }
+
+            // Start resource monitoring
+            startResourceMonitoring()
+        } catch (e: Exception) {
+            Log.e(TAG, "Fatal error in onCreate", e)
+            statusMessage = "Fatal initialization error: ${e.message}"
+            // Show error screen instead of crashing
+            setContent {
+                DavidAITheme {
+                    ErrorScreen(e.message ?: "Unknown error")
+                }
             }
         }
-
-        // Start resource monitoring
-        startResourceMonitoring()
     }
 
     private fun initializeComponents() {
         try {
+            // Initialize resource manager
             resourceManager = DeviceResourceManager(this)
-            resourceStatus = resourceManager.getResourceStatus()
+            resourceStatus = resourceManager?.getResourceStatus()
             
+            // Initialize device access manager
             deviceAccess = DeviceAccessManager(this)
             updatePermissions()
 
-            userProfile = UserProfile(this)
-            if (userProfile.isFirstLaunch) {
-                userProfile.nickname = "Friend"
-                userProfile.isFirstLaunch = false
+            // Initialize user profile
+            userProfile = UserProfile(this).apply {
+                if (isFirstLaunch) {
+                    nickname = "Friend"
+                    isFirstLaunch = false
+                }
+                statusMessage = "Hi $nickname, I'm initializing..."
             }
-            statusMessage = "Hi ${userProfile.nickname}, I'm ready!"
 
+            // Initialize permission manager
             permissionManager = PermissionManager(this)
             requestRequiredPermissions()
 
+            // Initialize text to speech
             textToSpeechEngine = TextToSpeechEngine(this) {
-                statusMessage = "Voice systems online"
-                textToSpeechEngine.speak(
-                    "Hello ${userProfile.nickname}, DAVID systems are online!",
-                    TextToSpeechEngine.SupportedLanguage.ENGLISH
-                )
+                try {
+                    statusMessage = "Voice systems online"
+                    textToSpeechEngine?.speak(
+                        "Hello ${userProfile?.nickname}, DAVID systems are online!",
+                        TextToSpeechEngine.SupportedLanguage.ENGLISH
+                    )
+                } catch (e: Exception) {
+                    Log.e(TAG, "TTS error", e)
+                }
             }
 
+            // Initialize device controller
             deviceController = DeviceController(this)
+            
+            // Initialize chat manager
             chatManager = ChatManager(this)
+            
+            // Initialize weather provider
             weatherTimeProvider = WeatherTimeProvider(this)
+            
+            // Initialize device lock manager
             deviceLockManager = DeviceLockManager(this)
             
+            // Initialize pointer controller
             pointerController = PointerController(this)
-            pointerController.setOnClickListener { x, y ->
+            pointerController?.setOnClickListener { x, y ->
                 statusMessage = "Clicked at ($x, $y)"
             }
 
+            // Initialize gesture controller
             gestureController = GestureController(this)
 
+            // Initialize hot word detector
             hotWordDetector = HotWordDetector(this)
-            hotWordDetector.startListening(
+            hotWordDetector?.startListening(
                 hotWords = listOf("hey david", "ok david", "jarvis"),
                 callback = { word ->
-                    statusMessage = "Wake word detected: $word"
-                    activateListeningMode()
-                    textToSpeechEngine.speak(
-                        "Yes, I'm listening...",
-                        TextToSpeechEngine.SupportedLanguage.ENGLISH
-                    )
+                    try {
+                        statusMessage = "Wake word detected: $word"
+                        activateListeningMode()
+                        textToSpeechEngine?.speak(
+                            "Yes, I'm listening...",
+                            TextToSpeechEngine.SupportedLanguage.ENGLISH
+                        )
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error in hotword callback", e)
+                    }
                 }
             )
 
             initializeWeather()
+            statusMessage = "DAVID systems ready!"
             Log.d(TAG, "All systems operational")
         } catch (e: Exception) {
-            statusMessage = "Error: ${e.message}"
             Log.e(TAG, "Initialization error", e)
+            statusMessage = "Error: ${e.localizedMessage ?: e.message ?: "Unknown error"}"
+            // Continue without crashing
         }
     }
 
@@ -169,11 +232,12 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             while (true) {
                 try {
-                    resourceStatus = resourceManager.getResourceStatus()
+                    resourceStatus = resourceManager?.getResourceStatus()
+                    delay(2000)
                 } catch (e: Exception) {
                     Log.e(TAG, "Error updating resources", e)
+                    delay(2000)
                 }
-                delay(2000)
             }
         }
     }
@@ -181,36 +245,53 @@ class MainActivity : ComponentActivity() {
     private fun initializeWeather() {
         lifecycleScope.launch {
             try {
-                currentWeather = weatherTimeProvider.getWeatherVoiceReport()
+                weatherTimeProvider?.let {
+                    currentWeather = it.getWeatherVoiceReport()
+                }
             } catch (e: Exception) {
-                currentWeather = "Weather unavailable"
+                Log.e(TAG, "Weather error", e)
+                currentWeather = "Weather unavailable: ${e.localizedMessage}"
             }
         }
     }
 
     private fun requestRequiredPermissions() {
-        val permissions = arrayOf(
-            Manifest.permission.CAMERA,
-            Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.CALL_PHONE,
-            Manifest.permission.SEND_SMS,
-            Manifest.permission.INTERNET
-        )
-        permissionLauncher.launch(permissions)
+        try {
+            val permissions = arrayOf(
+                Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.CALL_PHONE,
+                Manifest.permission.SEND_SMS,
+                Manifest.permission.INTERNET,
+                Manifest.permission.ACCESS_NETWORK_STATE
+            )
+            permissionLauncher.launch(permissions)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error requesting permissions", e)
+            statusMessage = "Permission request failed"
+        }
     }
 
     private fun updatePermissions() {
-        devicePermissions = deviceAccess.getAccessStatus()
+        try {
+            devicePermissions = deviceAccess?.getAccessStatus() ?: emptyMap()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating permissions", e)
+        }
     }
 
     private fun activateListeningMode() {
-        isListening = true
-        statusMessage = "Listening for command..."
-        lifecycleScope.launch {
-            delay(5000)
-            isListening = false
-            statusMessage = "Ready"
+        try {
+            isListening = true
+            statusMessage = "Listening for command..."
+            lifecycleScope.launch {
+                delay(5000)
+                isListening = false
+                statusMessage = "Ready"
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error activating listening mode", e)
         }
     }
 
@@ -218,10 +299,101 @@ class MainActivity : ComponentActivity() {
     private fun TimeUpdater() {
         LaunchedEffect(Unit) {
             while (true) {
-                currentTime = weatherTimeProvider.getCurrentTime()
-                kotlinx.coroutines.delay(1000)
+                try {
+                    currentTime = weatherTimeProvider?.getCurrentTime() ?: "00:00:00"
+                    kotlinx.coroutines.delay(1000)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error updating time", e)
+                    delay(1000)
+                }
             }
         }
+    }
+
+    /**
+     * Error screen to show when initialization fails
+     */
+    @Composable
+    private fun ErrorScreen(errorMsg: String) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF0A0E27)),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = "⚠️ Initialization Error",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFFF6E40)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = errorMsg,
+                    fontSize = 14.sp,
+                    color = Color(0xFF9CA3AF),
+                    modifier = Modifier.padding(16.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { finish() },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF00E5FF)
+                    )
+                ) {
+                    Text("Close", color = Color.Black)
+                }
+            }
+        }
+    }
+
+    /**
+     * Permission denial dialog
+     */
+    @Composable
+    private fun PermissionDenialDialog(deniedPermissions: List<String>, onDismiss: () -> Unit) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text("Permissions Denied", color = Color(0xFF00E5FF)) },
+            text = {
+                Column {
+                    Text(
+                        "The following permissions were not granted:",
+                        color = Color(0xFF9CA3AF)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    deniedPermissions.forEach { permission ->
+                        Text(
+                            "• ${permission.substring(permission.lastIndexOf(".") + 1)}",
+                            fontSize = 12.sp,
+                            color = Color(0xFF9CA3AF)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "App will work with limited functionality.",
+                        fontSize = 10.sp,
+                        color = Color(0xFFFF6E40)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF00E5FF)
+                    )
+                ) {
+                    Text("Continue", color = Color.Black)
+                }
+            },
+            containerColor = Color(0xFF1F2937),
+            textContentColor = Color(0xFF9CA3AF)
+        )
     }
 
     /**
@@ -231,6 +403,7 @@ class MainActivity : ComponentActivity() {
     private fun UnifiedDavidAIScreen() {
         TimeUpdater()
         val currentResourceStatus = resourceStatus
+        val currentNickname = userProfile?.nickname ?: "Friend"
 
         Box(
             modifier = Modifier
@@ -291,7 +464,7 @@ class MainActivity : ComponentActivity() {
                             color = Color(0xFF00E5FF)
                         )
                         Text(
-                            text = "User: ${userProfile.nickname}",
+                            text = "User: $currentNickname",
                             fontSize = 10.sp,
                             color = Color(0xFF64B5F6)
                         )
@@ -414,7 +587,11 @@ class MainActivity : ComponentActivity() {
                         text = "🌤",
                         onClick = {
                             lifecycleScope.launch {
-                                currentWeather = weatherTimeProvider.getWeatherVoiceReport()
+                                try {
+                                    currentWeather = weatherTimeProvider?.getWeatherVoiceReport() ?: "Unavailable"
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Weather error", e)
+                                }
                             }
                         },
                         modifier = Modifier.weight(1f)
@@ -423,21 +600,37 @@ class MainActivity : ComponentActivity() {
                         text = "📅",
                         onClick = {
                             lifecycleScope.launch {
-                                val forecast = weatherTimeProvider.getForecastVoiceReport(3)
-                                textToSpeechEngine.speak(forecast, TextToSpeechEngine.SupportedLanguage.ENGLISH)
+                                try {
+                                    val forecast = weatherTimeProvider?.getForecastVoiceReport(3) ?: "Forecast unavailable"
+                                    textToSpeechEngine?.speak(forecast, TextToSpeechEngine.SupportedLanguage.ENGLISH)
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Forecast error", e)
+                                }
                             }
                         },
                         modifier = Modifier.weight(1f)
                     )
                     GlassButton(
                         text = "🔒",
-                        onClick = { deviceLockManager.lockDevice() },
+                        onClick = {
+                            try {
+                                deviceLockManager?.lockDevice()
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Lock error", e)
+                            }
+                        },
                         modifier = Modifier.weight(1f),
                         color = Color(0xFFFF6E40)
                     )
                     GlassButton(
                         text = "🖱",
-                        onClick = { pointerController.showPointer() },
+                        onClick = {
+                            try {
+                                pointerController?.showPointer()
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Pointer error", e)
+                            }
+                        },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -487,15 +680,19 @@ class MainActivity : ComponentActivity() {
                 // Voice Button
                 FloatingActionButton(
                     onClick = {
-                        if (isListening) {
-                            isListening = false
-                            statusMessage = "Listening stopped"
-                        } else {
-                            activateListeningMode()
-                            textToSpeechEngine.speak(
-                                "I'm listening",
-                                TextToSpeechEngine.SupportedLanguage.ENGLISH
-                            )
+                        try {
+                            if (isListening) {
+                                isListening = false
+                                statusMessage = "Listening stopped"
+                            } else {
+                                activateListeningMode()
+                                textToSpeechEngine?.speak(
+                                    "I'm listening",
+                                    TextToSpeechEngine.SupportedLanguage.ENGLISH
+                                )
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Voice button error", e)
                         }
                     },
                     modifier = Modifier.size(64.dp),
@@ -526,38 +723,48 @@ class MainActivity : ComponentActivity() {
             try {
                 resources.getIdentifier("logo", "drawable", packageName)
             } catch (e: Exception) {
+                Log.w(TAG, "Logo resource not found", e)
                 0
             }
         }
         
         if (logoResourceId != 0) {
-            Image(
-                painter = painterResource(id = logoResourceId),
-                contentDescription = "DAVID AI Logo",
-                modifier = modifier.clip(CircleShape),
-                contentScale = ContentScale.Fit,
-                colorFilter = tint?.let { ColorFilter.tint(it) }
-            )
-        } else {
-            // Fallback: Show robot emoji
-            Box(
-                modifier = modifier
-                    .clip(CircleShape)
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(
-                                tint ?: Color(0xFF00E5FF),
-                                (tint ?: Color(0xFF00E5FF)).copy(alpha = 0.5f)
-                            )
-                        )
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "🤖",
-                    fontSize = 24.sp
+            try {
+                Image(
+                    painter = painterResource(id = logoResourceId),
+                    contentDescription = "DAVID AI Logo",
+                    modifier = modifier.clip(CircleShape),
+                    contentScale = ContentScale.Fit,
+                    colorFilter = tint?.let { ColorFilter.tint(it) }
                 )
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading logo image", e)
+                LogoFallback(modifier, tint)
             }
+        } else {
+            LogoFallback(modifier, tint)
+        }
+    }
+
+    @Composable
+    private fun LogoFallback(modifier: Modifier = Modifier, tint: Color? = null) {
+        Box(
+            modifier = modifier
+                .clip(CircleShape)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            tint ?: Color(0xFF00E5FF),
+                            (tint ?: Color(0xFF00E5FF)).copy(alpha = 0.5f)
+                        )
+                    )
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "🤖",
+                fontSize = 24.sp
+            )
         }
     }
 
@@ -617,9 +824,13 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        hotWordDetector.stopListening()
-        textToSpeechEngine.release()
-        pointerController.release()
+        try {
+            hotWordDetector?.stopListening()
+            textToSpeechEngine?.release()
+            pointerController?.release()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error cleaning up resources", e)
+        }
     }
 
     companion object {
