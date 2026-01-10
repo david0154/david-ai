@@ -131,6 +131,15 @@ dependencies {
 
     // Lottie for animations
     implementation("com.airbnb.android:lottie-compose:6.2.0")
+    
+    // Google Tink for encryption (EncryptionManager)
+    implementation("com.google.crypto.tink:tink-android:1.10.0")
+    
+    // Google Sign-In (GoogleSignInScreen)
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+    
+    // Jsoup for web scraping (WebSearchEngine)
+    implementation("org.jsoup:jsoup:1.17.2")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
