@@ -25,6 +25,9 @@ android {
         
         // Add resource configurations to avoid conflicts
         resourceConfigurations += listOf("en", "hi")
+        
+        // Resolve dimension conflicts from Firebase and Google Play Services
+        missingDimensionStrategy("store", "play")
     }
 
     buildTypes {
@@ -83,7 +86,6 @@ android {
     lint {
         abortOnError = false
         checkReleaseBuilds = false
-        missingDimensionStrategy("store", "play")
     }
 }
 
