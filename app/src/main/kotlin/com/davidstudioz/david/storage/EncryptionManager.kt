@@ -1,61 +1,89 @@
 package com.davidstudioz.david.storage
 
 import android.content.Context
-import android.security.keystore.KeyGenParameterSpec
-import android.security.keystore.KeyProperties
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
-import javax.crypto.Cipher
-import javax.crypto.KeyGenerator
-import javax.crypto.SecretKey
-import javax.crypto.spec.IvParameterSpec
+import com.google.crypto.tink.Aead
+import com.google.crypto.tink.KeysetHandle
+import com.google.crypto.tink.aead.AeadConfig
+import com.google.crypto.tink.aead.AeadKeyTemplates
+import com.google.crypto.tink.integration.android.AndroidKeysetManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class EncryptionManager @Inject constructor(private val context: Context) {
+class EncryptionManager @Inject constructor(
+    private val context: Context
+) {
     
-    private val masterKey = MasterKey.Builder(context)
-        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-        .build()
-    
-    private val encryptedPreferences = EncryptedSharedPreferences.create(
-        context,
-        "david_ai_secure",
-        masterKey,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
-    
-    fun saveSecureString(key: String, value: String) {
-        encryptedPreferences.edit().putString(key, value).apply()
+    init {
+        // Register AEAD configuration
+        AeadConfig.register()
     }
     
-    fun getSecureString(key: String, defaultValue: String = ""): String {
-        return encryptedPreferences.getString(key, defaultValue) ?: defaultValue
+    // FIXED: Initialize keysetHandle properly
+    private val keysetHandle: KeysetHandle by lazy {
+        try {
+            AndroidKeysetManager.Builder()
+                .withSharedPref(context, "david_keyset", "david_prefs")
+                .withKeyTemplate(AeadKeyTemplates.AES256_GCM)
+                .withMasterKeyUri("android-keystore://david_master_key")
+                .build()
+                .keysetHandle
+        } catch (e: Exception) {
+            // Fallback to memory-only keyset if Android Keystore fails
+            KeysetHandle.generateNew(AeadKeyTemplates.AES256_GCM)
+        }
     }
     
-    fun saveSecureInt(key: String, value: Int) {
-        encryptedPreferences.edit().putInt(key, value).apply()
+    /**
+     * Encrypt data
+     */
+    suspend fun encrypt(data: ByteArray): Result<ByteArray> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val aead = keysetHandle.getPrimitive(Aead::class.java)
+            val encryptedData = aead.encrypt(data, null)
+            Result.success(encryptedData)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
     
-    fun getSecureInt(key: String, defaultValue: Int = 0): Int {
-        return encryptedPreferences.getInt(key, defaultValue)
+    /**
+     * Decrypt data
+     */
+    suspend fun decrypt(encryptedData: ByteArray): Result<ByteArray> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val aead = keysetHandle.getPrimitive(Aead::class.java)
+            val decryptedData = aead.decrypt(encryptedData, null)
+            Result.success(decryptedData)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
     
-    fun deleteSecureKey(key: String) {
-        encryptedPreferences.edit().remove(key).apply()
+    /**
+     * Encrypt string
+     */
+    suspend fun encryptString(text: String): Result<String> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val encrypted = encrypt(text.toByteArray())
+            encrypted.map { android.util.Base64.encodeToString(it, android.util.Base64.DEFAULT) }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
     
-    fun encryptData(plaintext: String): ByteArray {
-        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        cipher.init(Cipher.ENCRYPT_MODE, masterKey.keysetHandle.primaryKey)
-        return cipher.doFinal(plaintext.toByteArray())
-    }
-    
-    fun decryptData(encryptedData: ByteArray): String {
-        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        cipher.init(Cipher.DECRYPT_MODE, masterKey.keysetHandle.primaryKey)
-        return String(cipher.doFinal(encryptedData))
+    /**
+     * Decrypt string
+     */
+    suspend fun decryptString(encryptedText: String): Result<String> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val encryptedBytes = android.util.Base64.decode(encryptedText, android.util.Base64.DEFAULT)
+            val decrypted = decrypt(encryptedBytes)
+            decrypted.map { String(it) }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }

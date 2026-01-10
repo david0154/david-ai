@@ -102,7 +102,7 @@ class PointerController(
             }
 
             windowManager?.updateViewLayout(pointerView, params)
-            pointerView?.setPosition(screenX, screenY)
+            pointerView?.setPosition(screenX.toFloat(), screenY.toFloat())  // FIXED: Convert Int to Float
         } catch (e: Exception) {
             Log.e(TAG, "Failed to move pointer", e)
         }
@@ -209,11 +209,13 @@ class PointerView(context: Context) : View(context) {
         position.set(x, y)
     }
 
-    fun performClick() {
+    // FIXED: Add override modifier
+    override fun performClick(): Boolean {
         super.performClick()
         // Visual feedback
         alpha = 0.5f
         postDelayed({ alpha = 1f }, 100)
+        return true
     }
 
     fun performLongPress(duration: Long) {
