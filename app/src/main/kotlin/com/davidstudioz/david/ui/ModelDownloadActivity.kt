@@ -38,14 +38,17 @@ import kotlinx.coroutines.launch
 
 /**
  * MANDATORY Model Download Activity - NO SKIP OPTION
- * Downloads ALL AI models with Indian language support
- * Complete 532+ line implementation with:
+ * Downloads ALL AI models with Indian language support + ENGLISH
+ * Complete 590+ line implementation with:
  * ✅ Voice Recognition (Whisper)
  * ✅ Vision & Gesture Recognition (MobileNet)
+ * ✅ ENGLISH Language Model (BERT)
  * ✅ 11 Indian Language Models
  * ✅ Detailed progress for each model
  * ✅ Beautiful animated UI
  * ✅ Feature activation indicators
+ * 
+ * TOTAL: 14 MODELS | 828 MB
  */
 class ModelDownloadActivity : ComponentActivity() {
 
@@ -106,7 +109,7 @@ class ModelDownloadActivity : ComponentActivity() {
         var totalDownloadedMB by remember { mutableStateOf(0f) }
         var downloadSpeed by remember { mutableStateOf("") }
 
-        // Define ALL models to download
+        // Define ALL models to download (INCLUDING ENGLISH!)
         val models = remember {
             listOf(
                 ModelInfo(
@@ -126,6 +129,15 @@ class ModelDownloadActivity : ComponentActivity() {
                     sizeMB = 28f,
                     modelId = "google/mobilenet_v2",
                     category = "Vision"
+                ),
+                ModelInfo(
+                    name = "English Language",
+                    description = "English BERT Base Model",
+                    icon = "🇬🇧",
+                    size = "110 MB",
+                    sizeMB = 110f,
+                    modelId = "bert-base-uncased",
+                    category = "Language"
                 ),
                 ModelInfo(
                     name = "Hindi Language",
@@ -318,10 +330,11 @@ class ModelDownloadActivity : ComponentActivity() {
                         putBoolean("model_downloaded", true)
                         putLong("download_timestamp", System.currentTimeMillis())
                         putFloat("total_size_mb", totalSize)
+                        putInt("model_count", models.size)
                         apply()
                     }
                     
-                    Log.d(TAG, "All models downloaded! Total: ${totalSize} MB")
+                    Log.d(TAG, "All ${models.size} models downloaded! Total: ${totalSize} MB")
                     delay(2000)
                     navigateToMain()
                     
@@ -487,7 +500,7 @@ class ModelDownloadActivity : ComponentActivity() {
                         if (isDownloading && !hasError) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "${totalDownloadedMB.toInt()} / ${totalSize.toInt()} MB",
+                                text = "${totalDownloadedMB.toInt()} / ${totalSize.toInt()} MB • ${models.size} models",
                                 fontSize = 12.sp,
                                 color = Color(0xFF9CA3AF)
                             )
@@ -575,7 +588,7 @@ class ModelDownloadActivity : ComponentActivity() {
                     } else if (isComplete) {
                         "Setup complete! Launching D.A.V.I.D..."
                     } else {
-                        "Preparing to download ${models.size} AI models (${totalSize.toInt()} MB)"
+                        "Preparing to download ${models.size} AI models (${totalSize.toInt()} MB)\nEnglish + 11 Indian Languages + Voice + Vision + Gesture"
                     },
                     fontSize = 10.sp,
                     color = Color(0xFF4B5563),
