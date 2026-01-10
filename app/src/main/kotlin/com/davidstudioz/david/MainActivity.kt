@@ -521,47 +521,42 @@ class MainActivity : ComponentActivity() {
         modifier: Modifier = Modifier,
         tint: Color? = null
     ) {
-        try {
-            // Try to load logo.png from drawable
-            val logoResourceId = resources.getIdentifier("logo", "drawable", packageName)
-            if (logoResourceId != 0) {
-                Image(
-                    painter = painterResource(id = logoResourceId),
-                    contentDescription = "DAVID AI Logo",
-                    modifier = modifier.clip(CircleShape),
-                    contentScale = ContentScale.Fit,
-                    colorFilter = tint?.let { ColorFilter.tint(it) }
-                )
-            } else {
-                // Fallback: Show robot emoji
-                Box(
-                    modifier = modifier
-                        .clip(CircleShape)
-                        .background(
-                            Brush.radialGradient(
-                                colors = listOf(
-                                    tint ?: Color(0xFF00E5FF),
-                                    (tint ?: Color(0xFF00E5FF)).copy(alpha = 0.5f)
-                                )
-                            )
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "🤖",
-                        fontSize = 24.sp
-                    )
-                }
+        // Try to load logo.png from drawable
+        val logoResourceId = remember {
+            try {
+                resources.getIdentifier("logo", "drawable", packageName)
+            } catch (e: Exception) {
+                0
             }
-        } catch (e: Exception) {
-            // Fallback on error
+        }
+        
+        if (logoResourceId != 0) {
+            Image(
+                painter = painterResource(id = logoResourceId),
+                contentDescription = "DAVID AI Logo",
+                modifier = modifier.clip(CircleShape),
+                contentScale = ContentScale.Fit,
+                colorFilter = tint?.let { ColorFilter.tint(it) }
+            )
+        } else {
+            // Fallback: Show robot emoji
             Box(
                 modifier = modifier
                     .clip(CircleShape)
-                    .background(Color(0xFF00E5FF).copy(alpha = 0.3f)),
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(
+                                tint ?: Color(0xFF00E5FF),
+                                (tint ?: Color(0xFF00E5FF)).copy(alpha = 0.5f)
+                            )
+                        )
+                    ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "🤖", fontSize = 20.sp)
+                Text(
+                    text = "🤖",
+                    fontSize = 24.sp
+                )
             }
         }
     }
