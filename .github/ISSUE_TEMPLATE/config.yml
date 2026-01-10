@@ -1,0 +1,14 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 💬 GitHub Discussions
+    url: https://github.com/david0154/david-ai/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 📧 Email Support
+    url: mailto:david@nexuzy.in
+    about: Direct email support from Nexuzy Tech Ltd.
+  - name: 📖 Documentation
+    url: https://github.com/david0154/david-ai/blob/main/README.md
+    about: Read the complete documentation
+  - name: 🔒 Privacy Policy
+    url: https://github.com/david0154/david-ai/blob/main/PRIVACY_POLICY.md
+    about: View our privacy policy
