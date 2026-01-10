@@ -33,46 +33,46 @@ class ModelManager @Inject constructor(
     }
     
     /**
-     * Available Open Source Models (GGUF Format)
+     * Available D.A.V.I.D AI Models (GGUF Format from Hugging Face)
      */
     private val availableModels = listOf(
-        // LLM Models
+        // LLM Models with D.A.V.I.D AI Branding
         AIModel(
-            name = "TinyLLaMA 1.1B",
+            name = "D.A.V.I.D AI 2B Light",
             url = "https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
             size = "1.5 GB",
             minRamGB = 2,
-            type = "llm"
+            type = "LLM"
         ),
         AIModel(
-            name = "Phi-2 7B",
+            name = "D.A.V.I.D AI 2B Pro",
             url = "https://huggingface.co/TheBloke/phi-2-GGUF/resolve/main/phi-2.Q8_0.gguf",
             size = "1.4 GB",
             minRamGB = 3,
-            type = "llm"
+            type = "LLM"
         ),
         AIModel(
-            name = "Qwen 1.8B",
+            name = "D.A.V.I.D AI 2B",
             url = "https://huggingface.co/second-state/Qwen1.5-1.8B-Chat-GGUF/resolve/main/qwen1.5-1.8b-chat-q8_0.gguf",
             size = "1.3 GB",
             minRamGB = 2,
-            type = "llm"
+            type = "LLM"
         ),
         // Vision Models
         AIModel(
-            name = "CLIP ViT-Base",
+            name = "D.A.V.I.D Vision",
             url = "https://huggingface.co/openai/CLIP-vit-base-patch32/resolve/main/model.onnx",
             size = "200 MB",
             minRamGB = 1,
-            type = "vision"
+            type = "Vision"
         ),
         // Speech Models
         AIModel(
-            name = "Whisper Tiny (STT)",
+            name = "D.A.V.I.D Voice",
             url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en.bin",
             size = "50 MB",
             minRamGB = 1,
-            type = "stt"
+            type = "Speech"
         )
     )
     
@@ -100,9 +100,9 @@ class ModelManager @Inject constructor(
     fun getRecommendedLLM(): AIModel? {
         val deviceRam = getDeviceRamGB()
         return when {
-            deviceRam >= 3 -> availableModels.find { it.name.contains("Phi-2") }
-            deviceRam >= 2 -> availableModels.find { it.name.contains("Qwen") }
-            else -> availableModels.find { it.name.contains("TinyLLaMA") }
+            deviceRam >= 3 -> availableModels.find { it.name.contains("2B Pro") }
+            deviceRam >= 2 -> availableModels.find { it.name.contains("2B") && !it.name.contains("Pro") && !it.name.contains("Light") }
+            else -> availableModels.find { it.name.contains("2B Light") }
         }
     }
     
