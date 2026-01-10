@@ -1,22 +1,70 @@
-Apache License
-Version 2.0, January 2004
+MIT License
 
-TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+Copyright (c) 2026 Nexuzy Tech Ltd.
 
-1. Definitions.
+D.A.V.I.D AI - Digital Assistant with Voice & Intelligent Decisions
 
-"License" shall mean the terms and conditions for use, reproduction, and distribution as defined in Sections 1 through 9 of this document.
+Developed by: David (Lead Developer)
+Company: Nexuzy Tech Ltd.
+Contact: david@nexuzy.in
+Website: https://github.com/david0154/david-ai
 
-"Licensor" shall mean the copyright owner or entity authorized by the copyright owner that is granting the License.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-"You" (or "Your") shall mean an individual or Legal Entity exercising permissions granted by this License.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-2. Grant of Copyright License.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
-Subject to the terms and conditions of this License, each Licensor hereby grants to You a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable copyright license to reproduce, prepare Derivative Works of, publicly display, publicly perform, sublicense, and distribute the Work and such Derivative Works in Source or Object form.
+---
 
-3. Grant of Patent License.
+BRAND NAME: D.A.V.I.D AI
+DEVELOPER: Nexuzy Tech Ltd.
+LEAD DEVELOPER: David (@david0154)
 
-Subject to the terms and conditions of this License, each Licensor hereby grants to You a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable (except as stated in this section) patent license to make, have made, use, offer to sell, sell, import, and otherwise transfer the Work.
+TRADEMARK NOTICE:
+The name "D.A.V.I.D AI" and "Nexuzy Tech Ltd." are trademarks of Nexuzy Tech Ltd.
+The D.A.V.I.D AI logo and branding elements are proprietary to Nexuzy Tech Ltd.
 
-For more details, see: https://www.apache.org/licenses/LICENSE-2.0
+PRIVACY COMMITMENT:
+This software is designed with privacy-first principles:
+- No data collection
+- No external servers
+- All processing happens locally on the user's device
+- No user tracking or analytics
+- Complete transparency in data handling
+
+AI MODELS:
+This software uses the following open-source AI models:
+- Whisper (OpenAI) - Speech Recognition
+- TinyLlama, Qwen, Phi-2 (HuggingFace) - Chat AI
+- ONNX Models (Microsoft) - Vision Processing
+- MediaPipe (Google) - Gesture Recognition
+- TensorFlow Lite (Google) - Language Processing
+
+All AI models are used in accordance with their respective licenses.
+
+CONTRIBUTIONS:
+Contributions are welcome! See CONTRIBUTING.md for guidelines.
+
+SUPPORT:
+For support, bug reports, or feature requests:
+- Email: david@nexuzy.in
+- GitHub Issues: https://github.com/david0154/david-ai/issues
+- GitHub Discussions: https://github.com/david0154/david-ai/discussions
+
+---
+
+Last Updated: January 11, 2026
+Version: 1.0.0
