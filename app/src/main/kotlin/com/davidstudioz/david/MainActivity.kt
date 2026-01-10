@@ -73,7 +73,7 @@ class MainActivity : ComponentActivity() {
 
     // UI State - with default values to prevent null crashes
     private var isListening by mutableStateOf(false)
-    private var statusMessage by mutableStateOf("Initializing DAVID AI...")
+    private var statusMessage by mutableStateOf("Initializing D.A.V.I.D...")
     private var userInput by mutableStateOf("")
     private var chatHistory by mutableStateOf<List<String>>(emptyList())
     private var currentWeather by mutableStateOf("Loading weather...")
@@ -82,6 +82,7 @@ class MainActivity : ComponentActivity() {
     private var resourceStatus by mutableStateOf<DeviceResourceManager.ResourceStatus?>(null)
     private var showPermissionDialog by mutableStateOf(false)
     private var missingPermissions by mutableStateOf<List<String>>(emptyList())
+    private var initError by mutableStateOf<String?>(null)
 
     // Permission launcher with proper error handling
     private val permissionLauncher = registerForActivityResult(
@@ -116,15 +117,16 @@ class MainActivity : ComponentActivity() {
             // Initialize all components with error handling
             initializeComponents()
 
-            // Set up unified UI
+            // Set up unified UI - move composable outside try-catch
             setContent {
                 DavidAITheme {
-                    if (showPermissionDialog) {
-                        PermissionDenialDialog(missingPermissions) {
+                    // Check for initialization error first
+                    when {
+                        initError != null -> ErrorScreen(initError!!)
+                        showPermissionDialog -> PermissionDenialDialog(missingPermissions) {
                             showPermissionDialog = false
                         }
-                    } else {
-                        UnifiedDavidAIScreen()
+                        else -> UnifiedDavidAIScreen()
                     }
                 }
             }
@@ -133,11 +135,12 @@ class MainActivity : ComponentActivity() {
             startResourceMonitoring()
         } catch (e: Exception) {
             Log.e(TAG, "Fatal error in onCreate", e)
+            initError = e.message ?: "Unknown error"
             statusMessage = "Fatal initialization error: ${e.message}"
-            // Show error screen instead of crashing
+            // Show error screen
             setContent {
                 DavidAITheme {
-                    ErrorScreen(e.message ?: "Unknown error")
+                    ErrorScreen(initError ?: "Unknown error")
                 }
             }
         }
@@ -171,7 +174,7 @@ class MainActivity : ComponentActivity() {
                 try {
                     statusMessage = "Voice systems online"
                     textToSpeechEngine?.speak(
-                        "Hello ${userProfile?.nickname}, DAVID systems are online!",
+                        "Hello ${userProfile?.nickname}, D.A.V.I.D systems are online!",
                         TextToSpeechEngine.SupportedLanguage.ENGLISH
                     )
                 } catch (e: Exception) {
@@ -219,7 +222,7 @@ class MainActivity : ComponentActivity() {
             )
 
             initializeWeather()
-            statusMessage = "DAVID systems ready!"
+            statusMessage = "D.A.V.I.D systems ready!"
             Log.d(TAG, "All systems operational")
         } catch (e: Exception) {
             Log.e(TAG, "Initialization error", e)
@@ -729,16 +732,19 @@ class MainActivity : ComponentActivity() {
         }
         
         if (logoResourceId != 0) {
-            try {
+            // Use runCatching to handle image loading errors
+            val imageLoadSuccess = remember { mutableStateOf(true) }
+            
+            if (imageLoadSuccess.value) {
                 Image(
                     painter = painterResource(id = logoResourceId),
-                    contentDescription = "DAVID AI Logo",
+                    contentDescription = "D.A.V.I.D Logo",
                     modifier = modifier.clip(CircleShape),
                     contentScale = ContentScale.Fit,
-                    colorFilter = tint?.let { ColorFilter.tint(it) }
+                    colorFilter = tint?.let { ColorFilter.tint(it) },
+                    onError = { imageLoadSuccess.value = false }
                 )
-            } catch (e: Exception) {
-                Log.e(TAG, "Error loading logo image", e)
+            } else {
                 LogoFallback(modifier, tint)
             }
         } else {
