@@ -2,7 +2,7 @@
 
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/david0154/david-ai/main/logo.png" alt="D.A.V.I.D AI Logo" width="150" height="150">
+<img src="https://raw.githubusercontent.com/david0154/david-ai/main/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" alt="D.A.V.I.D AI Logo" width="150" height="150">
 
 # D.A.V.I.D AI
 
@@ -10,7 +10,7 @@
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.0-7F52FF?style=flat&logo=kotlin)](https://kotlinlang.org/)
 [![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=flat&logo=android)](https://www.android.com/)
-[![License](https://img.shields.io/badge/License-Custom-orange?style=flat)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/david0154/david-ai?style=flat&logo=github)](https://github.com/david0154/david-ai/stargazers)
 [![GitHub Issues](https://img.shields.io/github/issues/david0154/david-ai?style=flat&logo=github)](https://github.com/david0154/david-ai/issues)
 [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/david0154/david-ai?style=flat&logo=github)](https://github.com/david0154/david-ai/pulls)
@@ -229,6 +229,8 @@ cd david-ai
 
 - [Privacy Policy](PRIVACY_POLICY.md)
 - [Complete Fixes Documentation](COMPLETE_FIXES_DOCUMENTATION.md)
+- [Android Studio Setup Guide](docs/ANDROID_STUDIO_SETUP.md)
+- [GitHub Wiki](https://github.com/david0154/david-ai/wiki)
 - [API Documentation](docs/API.md) _(coming soon)_
 - [Contributing Guidelines](CONTRIBUTING.md) _(coming soon)_
 
@@ -302,19 +304,96 @@ Thanks to all contributors who have helped make D.A.V.I.D AI better!
 
 </div>
 
-### Core Team
+### 👑 Core Team
 
-- **[David](https://github.com/david0154)** - Creator & Lead Developer
-- **Nexuzy Tech Ltd.** - Development & Support
+<table>
+<tr>
+<td align="center">
+<a href="https://github.com/david0154">
+<img src="https://github.com/david0154.png" width="100px;" alt="David"/><br />
+<sub><b>David</b></sub>
+</a><br />
+<sub>Creator & Lead Developer</sub><br />
+<sub>💻 💡 👁 📖</sub>
+</td>
+<td align="center">
+<a href="mailto:david@nexuzy.in">
+<img src="https://ui-avatars.com/api/?name=Nexuzy+Tech&background=0D8ABC&color=fff&size=100" width="100px;" alt="Nexuzy Tech Ltd."/><br />
+<sub><b>Nexuzy Tech Ltd.</b></sub>
+</a><br />
+<sub>Company & Support</sub><br />
+<sub>🏢 📧 🔒 🚀</sub>
+</td>
+</tr>
+</table>
 
-### Special Thanks
+**Roles:**
+- 💻 Code
+- 💡 Ideas & Planning
+- 👁 Review
+- 📖 Documentation
+- 🏢 Company/Organization
+- 📧 Support
+- 🔒 Security & Privacy
+- 🚀 Deployment
+
+### Developer Profile
+
+<div align="center">
+
+<table>
+<tr>
+<td align="center" width="400">
+
+#### David (@david0154)
+
+**Lead Developer & Creator**
+
+<img src="https://github.com/david0154.png" width="150" style="border-radius: 50%;"/>
+
+**About:**
+- 💻 Software Developer
+- 🤖 AI/ML Enthusiast
+- 🌏 Multi-language Support Advocate
+- 🔒 Privacy-First Developer
+
+**Contributions:**
+- Created D.A.V.I.D AI from scratch
+- Integrated 6 different AI models
+- Implemented 15 language support
+- Built privacy-first architecture
+- Voice & Gesture control systems
+
+**Skills:**
+- Kotlin, Java, Python
+- Android Development
+- AI/ML Integration
+- UI/UX Design
+- System Architecture
+
+**Contact:**
+
+[![GitHub](https://img.shields.io/badge/GitHub-david0154-181717?style=flat&logo=github)](https://github.com/david0154)
+[![Email](https://img.shields.io/badge/Email-david%40nexuzy.in-blue?style=flat&logo=gmail)](mailto:david@nexuzy.in)
+
+</td>
+</tr>
+</table>
+
+</div>
+
+### 🎉 Special Thanks
 
 To all users who:
-- 🐛 Report bugs
-- 💡 Suggest features
+- 🐛 Report bugs and issues
+- 💡 Suggest features and improvements
 - ⭐ Star the project
 - 📢 Share with others
 - 🌍 Contribute translations
+- 📝 Improve documentation
+- 🤝 Spread the word
+
+**Your support makes D.A.V.I.D AI better every day!**
 
 ---
 
@@ -356,7 +435,13 @@ To all users who:
 
 ## 📜 License
 
-This project is licensed under a custom license. See [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+**Copyright © 2026 Nexuzy Tech Ltd.**
+
+**Brand:** D.A.V.I.D AI  
+**Developer:** Nexuzy Tech Ltd.  
+**Lead Developer:** David (@david0154)
 
 ---
 
@@ -387,6 +472,14 @@ To create powerful AI tools that:
 - Work offline-first
 - Are accessible to everyone
 - Put users in control
+
+### Our Commitment
+
+🔒 **Privacy First**: No data collection, ever  
+🌍 **Inclusive**: 15 languages, accessible to all  
+📡 **Offline First**: Works without internet  
+🔓 **Open**: Transparent development  
+💚 **User-Focused**: Built for real people  
 
 ### Contact
 
@@ -440,5 +533,7 @@ If you find D.A.V.I.D AI useful, please consider:
 **© 2026 Nexuzy Tech Ltd. All rights reserved.**
 
 *Privacy-First AI • Your Device, Your Data • No Data Collection*
+
+**D.A.V.I.D AI** is a trademark of **Nexuzy Tech Ltd.**
 
 </div>
