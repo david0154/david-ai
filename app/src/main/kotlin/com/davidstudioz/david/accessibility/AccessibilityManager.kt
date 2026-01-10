@@ -46,7 +46,7 @@ class AccessibilityManager @Inject constructor(
     /**
      * Enable voice navigation
      */
-    suspend fun enableVoiceNavigation(userId: String): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend fun enableVoiceNavigation(@Suppress("UNUSED_PARAMETER") userId: String): Result<Unit> = withContext(Dispatchers.IO) {
         return@withContext try {
             // Enable voice guidance for all UI navigation
             Result.success(Unit)
@@ -58,7 +58,7 @@ class AccessibilityManager @Inject constructor(
     /**
      * Enable text-to-speech for all content
      */
-    suspend fun enableTextToSpeech(userId: String): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend fun enableTextToSpeech(@Suppress("UNUSED_PARAMETER") userId: String): Result<Unit> = withContext(Dispatchers.IO) {
         return@withContext try {
             // Enable TTS for all text content
             Result.success(Unit)
@@ -70,7 +70,7 @@ class AccessibilityManager @Inject constructor(
     /**
      * Enable high contrast mode
      */
-    suspend fun enableHighContrastMode(userId: String): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend fun enableHighContrastMode(@Suppress("UNUSED_PARAMETER") userId: String): Result<Unit> = withContext(Dispatchers.IO) {
         return@withContext try {
             // Switch to high contrast color scheme
             Result.success(Unit)
@@ -82,7 +82,10 @@ class AccessibilityManager @Inject constructor(
     /**
      * Set font size for large text
      */
-    suspend fun setFontSize(userId: String, scaleFactor: Float): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend fun setFontSize(
+        @Suppress("UNUSED_PARAMETER") userId: String,
+        scaleFactor: Float
+    ): Result<Unit> = withContext(Dispatchers.IO) {
         return@withContext try {
             // Apply font size scaling (1.0 to 2.0)
             require(scaleFactor in 1.0f..2.0f) { "Scale factor must be between 1.0 and 2.0" }
@@ -95,7 +98,7 @@ class AccessibilityManager @Inject constructor(
     /**
      * Enable haptic feedback
      */
-    suspend fun enableHapticFeedback(userId: String): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend fun enableHapticFeedback(@Suppress("UNUSED_PARAMETER") userId: String): Result<Unit> = withContext(Dispatchers.IO) {
         return@withContext try {
             // Enable vibration for all interactions
             Result.success(Unit)
@@ -107,7 +110,10 @@ class AccessibilityManager @Inject constructor(
     /**
      * Set color blind mode
      */
-    suspend fun setColorBlindMode(userId: String, mode: String): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend fun setColorBlindMode(
+        @Suppress("UNUSED_PARAMETER") userId: String,
+        @Suppress("UNUSED_PARAMETER") mode: String
+    ): Result<Unit> = withContext(Dispatchers.IO) {
         return@withContext try {
             // Apply color blindness simulation
             // Modes: none, deuteranopia (red-green), protanopia, tritanopia (blue-yellow)
@@ -138,8 +144,8 @@ class AccessibilityManager @Inject constructor(
      * Update accessibility settings
      */
     suspend fun updateAccessibilitySettings(
-        userId: String,
-        settings: AccessibilitySettings
+        @Suppress("UNUSED_PARAMETER") userId: String,
+        @Suppress("UNUSED_PARAMETER") settings: AccessibilitySettings
     ): Result<Unit> = withContext(Dispatchers.IO) {
         return@withContext try {
             // Apply all accessibility settings
@@ -152,7 +158,7 @@ class AccessibilityManager @Inject constructor(
     /**
      * Announce text to user (for TalkBack)
      */
-    fun announceForAccessibility(text: String) {
+    fun announceForAccessibility(@Suppress("UNUSED_PARAMETER") text: String) {
         // Use AccessibilityEvent to announce text
     }
     
