@@ -1,581 +1,620 @@
-# 🛠️ Building from Source
+# Building D.A.V.I.D AI from Source
 
 **Complete guide to building D.A.V.I.D AI from source code**
 
 ---
 
-## 📋 Prerequisites
+## 📋 Table of Contents
+
+1. [Prerequisites](#prerequisites)
+2. [Environment Setup](#environment-setup)
+3. [Clone Repository](#clone-repository)
+4. [Android Studio Setup](#android-studio-setup)
+5. [Build Configuration](#build-configuration)
+6. [Building the App](#building-the-app)
+7. [Running on Device](#running-on-device)
+8. [Troubleshooting](#troubleshooting)
+
+---
+
+## Prerequisites
 
 ### System Requirements
 
-**Operating System:**
-- ✅ macOS 10.15+ (Catalina or later)
-- ✅ Windows 10/11 (64-bit)
-- ✅ Linux (Ubuntu 18.04+, Debian 10+, or equivalent)
-
 **Hardware:**
-- **CPU**: Intel i5/AMD Ryzen 5 or better
-- **RAM**: 8GB minimum (16GB recommended)
-- **Storage**: 10GB free space
-- **Internet**: For downloading dependencies
+- 8GB RAM minimum (16GB recommended)
+- 10GB free disk space
+- Intel i5 or equivalent processor
 
----
+**Operating System:**
+- Windows 10/11 (64-bit)
+- macOS 10.15 (Catalina) or later
+- Linux (Ubuntu 20.04+ or equivalent)
 
 ### Required Software
 
-#### 1. Android Studio
+#### 1. Java Development Kit (JDK)
 
-**Download:** https://developer.android.com/studio
-
-**Version:** Hedgehog (2023.1.1) or later
-
-**Installation:**
-```bash
-# macOS (via Homebrew)
-brew install --cask android-studio
-
-# Linux (Snap)
-sudo snap install android-studio --classic
-
-# Windows: Download installer from website
-```
-
----
-
-#### 2. Java Development Kit (JDK)
-
-**Required:** JDK 17 or later
+**Install JDK 17:**
 
 ```bash
-# macOS (via Homebrew)
+# macOS (using Homebrew)
 brew install openjdk@17
 
-# Linux (Ubuntu/Debian)
+# Ubuntu/Debian
 sudo apt-get update
 sudo apt-get install openjdk-17-jdk
 
-# Linux (Fedora)
-sudo dnf install java-17-openjdk-devel
-
-# Windows: Download from https://adoptium.net/
-```
-
-**Verify Installation:**
-```bash
+# Verify installation
 java -version
 # Should show: openjdk version "17.x.x"
 ```
 
----
+**Windows:**
+- Download from [Adoptium](https://adoptium.net/)
+- Install and add to PATH
 
-#### 3. Git
+#### 2. Git
 
 ```bash
-# macOS (via Homebrew)
+# macOS
 brew install git
 
-# Linux (Ubuntu/Debian)
+# Ubuntu/Debian
 sudo apt-get install git
 
-# Linux (Fedora)
-sudo dnf install git
+# Windows
+# Download from https://git-scm.com/download/win
 
-# Windows: Download from https://git-scm.com/
-```
-
-**Verify Installation:**
-```bash
+# Verify
 git --version
 ```
 
+#### 3. Android Studio
+
+**Download and Install:**
+- Visit [Android Studio Download](https://developer.android.com/studio)
+- Download latest stable version (Hedgehog 2023.1.1+)
+- Install with default settings
+
+**Required Components:**
+- Android SDK Platform 34 (Android 14)
+- Android SDK Platform 26 (Android 8.0)
+- Android SDK Build-Tools 34.0.0
+- Android SDK Platform-Tools
+- Android Emulator
+- NDK (Side by side)
+- CMake
+
 ---
 
-## 📥 Getting the Source Code
+## Environment Setup
 
-### Clone Repository
+### Configure Android SDK
+
+1. Open Android Studio
+2. Go to `Settings/Preferences → Languages & Frameworks → Android SDK`
+3. **SDK Platforms** tab:
+   - ✅ Android 14.0 (API 34)
+   - ✅ Android 8.0 (API 26)
+4. **SDK Tools** tab:
+   - ✅ Android SDK Build-Tools 34.0.0
+   - ✅ NDK (Side by side)
+   - ✅ CMake
+   - ✅ Android Emulator
+5. Click **Apply** and wait for downloads
+
+### Set Environment Variables
+
+**Linux/macOS:**
+
+Add to `~/.bashrc` or `~/.zshrc`:
+
+```bash
+export ANDROID_HOME=$HOME/Android/Sdk
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+export PATH=$PATH:$ANDROID_HOME/tools
+export PATH=$PATH:$ANDROID_HOME/tools/bin
+
+# Apply changes
+source ~/.bashrc  # or ~/.zshrc
+```
+
+**Windows:**
+
+1. Open System Properties → Environment Variables
+2. Add new User Variable:
+   - Variable: `ANDROID_HOME`
+   - Value: `C:\Users\YourUsername\AppData\Local\Android\Sdk`
+3. Edit PATH and add:
+   - `%ANDROID_HOME%\platform-tools`
+   - `%ANDROID_HOME%\tools`
+
+---
+
+## Clone Repository
+
+### Using HTTPS
 
 ```bash
 # Clone the repository
 git clone https://github.com/david0154/david-ai.git
 
-# Navigate to project directory
+# Navigate to directory
 cd david-ai
 
 # Check current branch
 git branch
-
-# Switch to main branch (if not already)
-git checkout main
 ```
 
-### Fork Repository (Optional)
+### Using SSH (Recommended for Contributors)
 
-If you plan to contribute:
+```bash
+# Clone via SSH
+git clone git@github.com:david0154/david-ai.git
+cd david-ai
+```
 
-1. Go to https://github.com/david0154/david-ai
-2. Click "Fork" button (top right)
-3. Clone your fork:
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/david-ai.git
-   cd david-ai
-   git remote add upstream https://github.com/david0154/david-ai.git
-   ```
+### Verify Clone
+
+```bash
+# Check repository status
+git status
+
+# View remote
+git remote -v
+
+# List files
+ls -la
+```
 
 ---
 
-## ⚙️ Android Studio Setup
+## Android Studio Setup
 
-### 1. Open Project
+### Open Project
 
-**Method 1: From Android Studio**
 1. Launch Android Studio
-2. Click "Open"
+2. Click **Open** (or File → Open)
 3. Navigate to `david-ai` folder
-4. Click "OK"
+4. Click **OK**
 
-**Method 2: From Command Line**
+### Gradle Sync
+
+**First-time sync:**
+- Android Studio automatically starts Gradle sync
+- Progress shown at bottom of window
+- Takes 5-10 minutes (downloading dependencies)
+- Wait for "BUILD SUCCESSFUL" message
+
+**If sync fails:**
+
 ```bash
-# macOS
-open -a "Android Studio" .
-
-# Linux
-android-studio .
-
-# Windows
-start "" "C:\Program Files\Android\Android Studio\bin\studio64.exe" .
-```
-
----
-
-### 2. Gradle Sync
-
-**Automatic:**
-- Android Studio automatically syncs Gradle on project open
-- Wait for "Gradle sync successful" message
-- First sync takes 5-10 minutes (downloads dependencies)
-
-**Manual:**
-- Click "Sync Project with Gradle Files" button (toolbar)
-- Or: `File > Sync Project with Gradle Files`
-
-**Troubleshooting:**
-```bash
-# If sync fails, try:
+# Clean Gradle cache
 ./gradlew clean
-./gradlew build --refresh-dependencies
+
+# Sync again
+./gradlew --refresh-dependencies
 ```
 
----
+### Configure JDK
 
-### 3. SDK Configuration
-
-**Required SDKs:**
-- Android SDK 34 (Android 14) - Compile SDK
-- Android SDK 26 (Android 8.0) - Minimum SDK
-
-**To Install:**
-1. Open `Tools > SDK Manager`
-2. Select `SDK Platforms` tab
-3. Check:
-   - ✅ Android 14.0 (API 34)
-   - ✅ Android 8.0 (API 26)
-4. Select `SDK Tools` tab
-5. Check:
-   - ✅ Android SDK Build-Tools 34.0.0
-   - ✅ NDK (Side by side)
-   - ✅ CMake
-   - ✅ Android SDK Platform-Tools
-6. Click "Apply" and wait for downloads
+1. Go to `Settings → Build, Execution, Deployment → Build Tools → Gradle`
+2. **Gradle JDK**: Select `JDK 17` or `Embedded JDK 17`
+3. Click **Apply**
 
 ---
 
-### 4. JDK Configuration
-
-**Set Gradle JDK:**
-1. Open `File > Settings` (Windows/Linux) or `Android Studio > Preferences` (macOS)
-2. Navigate to `Build, Execution, Deployment > Build Tools > Gradle`
-3. Set `Gradle JDK` to `JDK 17` or higher
-4. Click "Apply" and "OK"
-
----
-
-## 🔧 Build Configuration
+## Build Configuration
 
 ### Build Variants
 
-D.A.V.I.D AI has two build variants:
-
-**Debug:**
-- Debugging enabled
-- No code optimization
-- Larger APK size
+**Debug Build:**
+- For development and testing
 - Includes debug symbols
-- Package: `com.nexuzy.david.debug`
+- Not optimized
+- Larger APK size
 
-**Release:**
-- Debugging disabled
-- Code optimized (R8/ProGuard)
-- Smaller APK size
+**Release Build:**
+- For production
+- Optimized and minified
 - Requires signing key
-- Package: `com.nexuzy.david`
+- Smaller APK size
 
-**Switch Variant:**
-- `Build > Select Build Variant`
-- Choose `debug` or `release`
+### Select Build Variant
+
+1. Open **Build Variants** panel (bottom left)
+2. Select:
+   - `debug` for development
+   - `release` for production
 
 ---
 
-### Signing Configuration
+## Building the App
 
-#### Debug Signing (Automatic)
+### Build Debug APK
 
-- Uses debug keystore automatically
-- No configuration needed
-- Debug keystore location:
-  - macOS/Linux: `~/.android/debug.keystore`
-  - Windows: `C:\Users\USERNAME\.android\debug.keystore`
+**Using Android Studio:**
+1. Menu: `Build → Build Bundle(s) / APK(s) → Build APK(s)`
+2. Wait for build to complete
+3. Click **locate** in notification
 
-#### Release Signing (Manual)
-
-**1. Create Keystore:**
+**Using Command Line:**
 
 ```bash
-keytool -genkey -v -keystore david_release.keystore \
+# Clean previous builds
+./gradlew clean
+
+# Build debug APK
+./gradlew assembleDebug
+
+# Output location:
+# app/build/outputs/apk/debug/app-debug.apk
+```
+
+### Build Release APK
+
+**Generate Signing Key (First Time):**
+
+```bash
+# Create keystore directory
+mkdir -p app/keystore
+
+# Generate keystore
+keytool -genkey -v -keystore app/keystore/david_keystore.jks \
   -keyalg RSA -keysize 2048 -validity 10000 \
   -alias david-release-key
+
+# Follow prompts:
+# - Enter keystore password
+# - Re-enter password
+# - Enter your details
+# - Enter key password
 ```
 
-**Enter details:**
-```
-Password: [your secure password]
-First and Last Name: Nexuzy Tech Ltd.
-Organizational Unit: Development
-Organization: Nexuzy Tech Ltd.
-City: [Your City]
-State: [Your State]
-Country Code: IN
-```
-
-**2. Configure Signing:**
+**Configure Signing:**
 
 Create `keystore.properties` in project root:
 
 ```properties
-storePassword=[your keystore password]
-keyPassword=[your key password]
+storePassword=YOUR_KEYSTORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
 keyAlias=david-release-key
-storeFile=./david_release.keystore
+storeFile=keystore/david_keystore.jks
 ```
 
-**⚠️ Important:** Add `keystore.properties` to `.gitignore`
-
----
-
-## 🏗️ Building the Project
-
-### Using Android Studio
-
-#### Build Debug APK
-
-1. `Build > Make Project` (Ctrl+F9 / Cmd+F9)
-2. Wait for build completion
-3. APK location: `app/build/outputs/apk/debug/app-debug.apk`
-
-#### Build Release APK
-
-1. `Build > Build Bundle(s) / APK(s) > Build APK(s)`
-2. Wait for build completion
-3. APK location: `app/build/outputs/apk/release/app-release.apk`
-
-#### Build Release AAB (for Play Store)
-
-1. `Build > Build Bundle(s) / APK(s) > Build Bundle(s)`
-2. Wait for build completion
-3. AAB location: `app/build/outputs/bundle/release/app-release.aab`
-
----
-
-### Using Command Line (Gradle)
-
-#### Setup
-
+⚠️ **Add to `.gitignore`:**
 ```bash
-# Make gradlew executable (macOS/Linux)
-chmod +x gradlew
-
-# Verify Gradle
-./gradlew --version
+echo "keystore.properties" >> .gitignore
+echo "app/keystore/*.jks" >> .gitignore
 ```
 
-#### Clean Build
+**Build Release:**
 
 ```bash
-# Clean all build artifacts
-./gradlew clean
-
-# Or clean and build
-./gradlew clean build
-```
-
-#### Build Debug
-
-```bash
-# Build debug APK
-./gradlew assembleDebug
-
-# Output: app/build/outputs/apk/debug/app-debug.apk
-
-# Install on connected device
-./gradlew installDebug
-```
-
-#### Build Release
-
-```bash
-# Set environment variables (for signing)
+# Set environment variables
 export KEYSTORE_PASSWORD="your_password"
 export KEY_PASSWORD="your_password"
 
 # Build release APK
 ./gradlew assembleRelease
 
-# Output: app/build/outputs/apk/release/app-release.apk
+# Output:
+# app/build/outputs/apk/release/app-release.apk
+```
 
-# Build release AAB
+### Build AAB (Android App Bundle)
+
+**For Google Play Store:**
+
+```bash
+# Build release bundle
 ./gradlew bundleRelease
 
-# Output: app/build/outputs/bundle/release/app-release.aab
-```
-
-#### Run Tests
-
-```bash
-# Unit tests
-./gradlew test
-
-# Instrumented tests (requires device/emulator)
-./gradlew connectedAndroidTest
-
-# Test coverage
-./gradlew jacocoTestReport
-```
-
-#### Code Analysis
-
-```bash
-# Lint checks
-./gradlew lint
-
-# Lint report: app/build/reports/lint-results.html
-
-# Code style checks (if configured)
-./gradlew ktlintCheck
+# Output:
+# app/build/outputs/bundle/release/app-release.aab
 ```
 
 ---
 
-## 📱 Testing & Running
+## Running on Device
 
 ### Using Android Emulator
 
-#### Create Emulator
+**Create Emulator:**
 
-1. `Tools > Device Manager`
-2. Click "Create Device"
-3. Select device (e.g., Pixel 6 Pro)
-4. Select system image (Android 14, API 34)
-5. Configure AVD:
-   - RAM: 4GB (for AI models)
-   - Internal Storage: 8GB
+1. Open **Device Manager** (`Tools → Device Manager`)
+2. Click **Create Device**
+3. Select:
+   - **Phone**: Pixel 6 Pro
+   - **System Image**: Android 14 (API 34) with Google Play
+   - **AVD Name**: D.A.V.I.D_AI_Emulator
+4. **Advanced Settings**:
+   - RAM: 4096 MB
+   - Internal Storage: 8192 MB
    - Graphics: Hardware - GLES 2.0
-6. Click "Finish"
+5. Click **Finish**
 
-#### Start Emulator
+**Run on Emulator:**
 
-**From Android Studio:**
-- Click device dropdown (toolbar)
-- Select your emulator
-- Click "Run" (Shift+F10 / Ctrl+R)
-
-**From Command Line:**
 ```bash
 # List available emulators
 emulator -list-avds
 
 # Start emulator
-emulator -avd Pixel_6_Pro_API_34 -memory 4096 -gpu on &
-
-# Install APK
-adb install app/build/outputs/apk/debug/app-debug.apk
-
-# Launch app
-adb shell am start -n com.nexuzy.david.debug/.MainActivity
-```
-
----
-
-### Using Physical Device
-
-#### Enable USB Debugging
-
-1. **Enable Developer Options:**
-   - Go to `Settings > About Phone`
-   - Tap `Build Number` 7 times
-   - Enter PIN/password if prompted
-
-2. **Enable USB Debugging:**
-   - Go to `Settings > Developer Options`
-   - Enable `USB Debugging`
-   - Enable `Install via USB`
-
-3. **Connect Device:**
-   - Connect via USB cable
-   - Accept "Allow USB debugging" prompt
-   - Check "Always allow from this computer"
-
-#### Run on Device
-
-**From Android Studio:**
-- Device appears in device dropdown
-- Select device
-- Click "Run"
-
-**From Command Line:**
-```bash
-# Verify device connected
-adb devices
+emulator -avd D.A.V.I.D_AI_Emulator -memory 4096 -gpu on &
 
 # Install and run
 ./gradlew installDebug
-adb shell am start -n com.nexuzy.david.debug/.MainActivity
+adb shell am start -n com.nexuzy.david/.MainActivity
 ```
 
----
+### Using Physical Device
 
-## 🐛 Debugging
+**Enable Developer Mode:**
 
-### Logcat
+1. Go to **Settings → About Phone**
+2. Tap **Build Number** 7 times
+3. Developer mode enabled!
 
-**Android Studio:**
-- `View > Tool Windows > Logcat`
-- Filter by package: `com.nexuzy.david`
+**Enable USB Debugging:**
 
-**Command Line:**
-```bash
-# View all logs
-adb logcat
+1. Go to **Settings → Developer Options**
+2. Enable **USB Debugging**
+3. Enable **Install via USB**
 
-# Filter by tag
-adb logcat -s DAVID_AI
-
-# Clear and follow
-adb logcat -c && adb logcat
-```
-
-### Breakpoints
-
-1. Open Kotlin/Java file
-2. Click left gutter to add breakpoint
-3. Run in debug mode (Shift+F9 / Cmd+D)
-4. App pauses at breakpoint
-5. Use debug controls to step through
-
----
-
-## 📦 Dependencies
-
-### Core Dependencies
-
-```kotlin
-// Android
-implementation("androidx.core:core-ktx:1.12.0")
-implementation("androidx.appcompat:appcompat:1.6.1")
-implementation("com.google.android.material:material:1.11.0")
-
-// Jetpack Compose
-implementation("androidx.compose.ui:ui:1.6.0")
-implementation("androidx.compose.material3:material3:1.2.0")
-
-// AI Models
-implementation("com.microsoft.onnxruntime:onnxruntime-android:1.17.0")
-implementation("com.google.mediapipe:tasks-vision:0.10.9")
-implementation("org.tensorflow:tensorflow-lite:2.14.0")
-
-// Networking
-implementation("com.squareup.okhttp3:okhttp:4.12.0")
-implementation("com.squareup.retrofit2:retrofit:2.9.0")
-
-// Database
-implementation("androidx.room:room-runtime:2.6.1")
-```
-
-**See `app/build.gradle.kts` for complete list**
-
----
-
-## 🔍 Troubleshooting
-
-### Common Build Issues
-
-#### Issue: Gradle Sync Failed
+**Connect and Run:**
 
 ```bash
-# Solution 1: Clean and rebuild
+# Connect device via USB
+
+# Check device connection
+adb devices
+# Should show: <device-id>  device
+
+# Install debug APK
+adb install app/build/outputs/apk/debug/app-debug.apk
+
+# Or use Gradle
+./gradlew installDebug
+
+# Launch app
+adb shell am start -n com.nexuzy.david/.MainActivity
+```
+
+---
+
+## Build Commands Reference
+
+### Common Gradle Commands
+
+```bash
+# Clean build
 ./gradlew clean
-./gradlew build --refresh-dependencies
 
-# Solution 2: Delete .gradle folder
-rm -rf .gradle
-./gradlew build
+# Build debug APK
+./gradlew assembleDebug
 
-# Solution 3: Invalidate caches
-# Android Studio: File > Invalidate Caches / Restart
+# Build release APK
+./gradlew assembleRelease
+
+# Build debug AAB
+./gradlew bundleDebug
+
+# Build release AAB
+./gradlew bundleRelease
+
+# Install debug on device
+./gradlew installDebug
+
+# Uninstall from device
+./gradlew uninstallDebug
+
+# Run unit tests
+./gradlew test
+
+# Run instrumented tests
+./gradlew connectedAndroidTest
+
+# Generate lint report
+./gradlew lint
+
+# Check dependencies
+./gradlew dependencies
+
+# List all tasks
+./gradlew tasks
 ```
 
-#### Issue: Out of Memory
+### Build with Options
 
-**Edit `gradle.properties`:**
+```bash
+# Build with stacktrace
+./gradlew assembleDebug --stacktrace
+
+# Build with info logging
+./gradlew assembleDebug --info
+
+# Build with debug logging
+./gradlew assembleDebug --debug
+
+# Build offline (no internet)
+./gradlew assembleDebug --offline
+
+# Refresh dependencies
+./gradlew assembleDebug --refresh-dependencies
+
+# Build with parallel execution
+./gradlew assembleDebug --parallel
+```
+
+---
+
+## Troubleshooting
+
+### Gradle Sync Failed
+
+**Problem:** Gradle sync fails with dependency errors
+
+**Solution:**
+```bash
+# Clear Gradle cache
+rm -rf ~/.gradle/caches/
+
+# Delete build folders
+rm -rf build app/build
+
+# Re-sync
+./gradlew clean
+./gradlew --refresh-dependencies
+```
+
+### Build Failed - Memory Issues
+
+**Problem:** `OutOfMemoryError` during build
+
+**Solution:**
+
+Edit `gradle.properties`:
+
 ```properties
 org.gradle.jvmargs=-Xmx8192m -XX:MaxMetaspaceSize=512m
 org.gradle.parallel=true
 org.gradle.caching=true
+org.gradle.configureondemand=true
 ```
 
-#### Issue: SDK Not Found
+### SDK Not Found
 
-**Edit `local.properties`:**
+**Problem:** `SDK location not found`
+
+**Solution:**
+
+Create `local.properties`:
+
 ```properties
-sdk.dir=/path/to/Android/Sdk
+# macOS/Linux
+sdk.dir=/Users/YOUR_USERNAME/Library/Android/sdk
 
-# macOS: /Users/USERNAME/Library/Android/sdk
-# Linux: /home/USERNAME/Android/Sdk
-# Windows: C:\Users\USERNAME\AppData\Local\Android\Sdk
+# Windows
+sdk.dir=C:\\Users\\YOUR_USERNAME\\AppData\\Local\\Android\\Sdk
 ```
 
-#### Issue: NDK Not Found
+### Device Not Detected
 
-1. Open SDK Manager
-2. Install NDK (Side by side)
-3. Sync project
+**Problem:** `adb devices` shows no devices
+
+**Solution:**
+```bash
+# Restart adb server
+adb kill-server
+adb start-server
+
+# Check device again
+adb devices
+
+# macOS: Check System Preferences → Security
+# Windows: Install device drivers
+```
+
+### Build Too Slow
+
+**Solution:**
+
+1. **Enable Gradle Daemon:**
+   ```properties
+   # gradle.properties
+   org.gradle.daemon=true
+   org.gradle.parallel=true
+   org.gradle.caching=true
+   ```
+
+2. **Increase Heap Size:**
+   ```properties
+   org.gradle.jvmargs=-Xmx8192m
+   ```
+
+3. **Use Build Cache:**
+   ```bash
+   ./gradlew assembleDebug --build-cache
+   ```
 
 ---
 
-## 📚 Related Documentation
+## Build Optimization
 
-- [Android Studio Setup Guide](../docs/ANDROID_STUDIO_SETUP.md)
-- [Contributing Guidelines](Contributing)
-- [Architecture](Architecture)
-- [API Reference](API-Reference)
+### Speed Up Builds
+
+**gradle.properties:**
+
+```properties
+# Use parallel execution
+org.gradle.parallel=true
+
+# Enable caching
+org.gradle.caching=true
+
+# Configure on demand
+org.gradle.configureondemand=true
+
+# Increase heap
+org.gradle.jvmargs=-Xmx8192m -XX:MaxMetaspaceSize=512m
+
+# Enable Kotlin incremental compilation
+kotlin.incremental=true
+
+# Use AndroidX
+android.useAndroidX=true
+android.enableJetifier=true
+```
+
+### Reduce APK Size
+
+**app/build.gradle.kts:**
+
+```kotlin
+android {
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+}
+```
 
 ---
 
-## 🆘 Need Help?
+## Next Steps
+
+1. ✅ Build successful
+2. 📱 Install on device
+3. 🧪 Test all features
+4. 🐛 Report any issues
+5. 🤝 Contribute improvements
+
+---
+
+## Additional Resources
+
+- 📖 [Android Studio Guide](https://github.com/david0154/david-ai/blob/main/docs/ANDROID_STUDIO_SETUP.md)
+- 🤝 [Contributing Guide](Contributing)
+- 🏗️ [Architecture](Architecture)
+- 📚 [API Reference](API-Reference)
+- ❓ [FAQ](FAQ)
+
+---
+
+**Need Help?**
 
 - 📧 Email: [david@nexuzy.in](mailto:david@nexuzy.in)
-- 🐛 Report Issues: [GitHub Issues](https://github.com/david0154/david-ai/issues)
-- 💬 Discussions: [GitHub Discussions](https://github.com/david0154/david-ai/discussions)
+- 🐛 [Report Issue](https://github.com/david0154/david-ai/issues/new?template=bug_report.md)
+- 💬 [Discussions](https://github.com/david0154/david-ai/discussions)
 
 ---
 
-**© 2026 Nexuzy Tech Ltd.**  
-*Open Source • MIT License • Community Driven*
+**© 2026 Nexuzy Tech Ltd.**

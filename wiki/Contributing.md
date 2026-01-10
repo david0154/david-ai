@@ -1,552 +1,556 @@
-# 🤝 Contributing to D.A.V.I.D AI
+# Contributing to D.A.V.I.D AI
 
-**Thank you for considering contributing to D.A.V.I.D AI!**
-
-We welcome contributions from everyone, whether you're fixing bugs, adding features, improving documentation, or translating the app.
+**Welcome! We're excited that you want to contribute to D.A.V.I.D AI!**
 
 ---
 
-## 📋 Table of Contents
+## 🎯 Table of Contents
 
 1. [Code of Conduct](#code-of-conduct)
 2. [How Can I Contribute?](#how-can-i-contribute)
-3. [Development Setup](#development-setup)
-4. [Coding Standards](#coding-standards)
-5. [Commit Guidelines](#commit-guidelines)
-6. [Pull Request Process](#pull-request-process)
-7. [Translation Guidelines](#translation-guidelines)
-8. [Bug Reporting](#bug-reporting)
-9. [Feature Requests](#feature-requests)
+3. [Getting Started](#getting-started)
+4. [Development Workflow](#development-workflow)
+5. [Coding Standards](#coding-standards)
+6. [Submitting Changes](#submitting-changes)
+7. [Review Process](#review-process)
 
 ---
 
-## 📜 Code of Conduct
+## Code of Conduct
 
 ### Our Pledge
 
-We are committed to providing a welcoming and inclusive experience for everyone. We pledge to:
+We are committed to providing a welcoming and inspiring community for all. We pledge to:
 
-- Be respectful and considerate
-- Welcome diverse perspectives
-- Accept constructive criticism gracefully
-- Focus on what's best for the community
-- Show empathy towards other contributors
+- ✅ Be respectful and inclusive
+- ✅ Welcome newcomers warmly
+- ✅ Accept constructive criticism
+- ✅ Focus on what's best for the community
+- ✅ Show empathy towards others
 
 ### Unacceptable Behavior
 
-- Harassment or discriminatory language
-- Personal attacks or trolling
-- Publishing others' private information
-- Any conduct that could be considered inappropriate
+- ❌ Harassment or discriminatory language
+- ❌ Trolling or insulting comments
+- ❌ Personal or political attacks
+- ❌ Publishing others' private information
+- ❌ Unprofessional conduct
 
-**Report violations:** [david@nexuzy.in](mailto:david@nexuzy.in)
-
----
-
-## 🛠️ How Can I Contribute?
-
-### 1. 🐛 Report Bugs
-
-[Create a bug report](https://github.com/david0154/david-ai/issues/new?template=bug_report.md)
-
-**Good bug reports include:**
-- Clear, descriptive title
-- Steps to reproduce
-- Expected vs actual behavior
-- Screenshots (if applicable)
-- Device and Android version
-- Logcat output (if possible)
+**Enforcement:** Violations may result in temporary or permanent ban.
 
 ---
 
-### 2. ✨ Suggest Features
+## How Can I Contribute?
 
-[Request a feature](https://github.com/david0154/david-ai/issues/new?template=feature_request.md)
+### 🐛 Reporting Bugs
 
-**Good feature requests include:**
-- Clear description of the feature
-- Why it would be useful
-- How it should work
-- Examples or mockups
+**Found a bug?** Help us fix it!
+
+1. Check [existing issues](https://github.com/david0154/david-ai/issues)
+2. If not found, [create new bug report](https://github.com/david0154/david-ai/issues/new?template=bug_report.md)
+3. Include:
+   - Device model & Android version
+   - RAM size
+   - Steps to reproduce
+   - Expected vs actual behavior
+   - LogCat output (if possible)
+   - Screenshots
+
+### ✨ Suggesting Features
+
+**Have an idea?** We'd love to hear it!
+
+1. Check [existing feature requests](https://github.com/david0154/david-ai/issues?q=is%3Aissue+label%3Aenhancement)
+2. [Create feature request](https://github.com/david0154/david-ai/issues/new?template=feature_request.md)
+3. Describe:
+   - The feature
+   - Why it's useful
+   - How it should work
+   - Examples/mockups
+
+### 🌍 Translating
+
+**Speak another language?** Help us reach more users!
+
+**Current Languages (15):**
+English, Hindi, Tamil, Telugu, Bengali, Marathi, Gujarati, Kannada, Malayalam, Punjabi, Odia, Urdu, Sanskrit, Kashmiri, Assamese
+
+**Add New Language:**
+
+1. Create `app/src/main/res/values-{lang}/strings.xml`
+2. Translate all strings from `values/strings.xml`
+3. Test on device
+4. Submit pull request
+
+### 📝 Improving Documentation
+
+**Good at explaining?** Help others understand!
+
+**Areas to improve:**
+- README clarity
+- Wiki pages
+- Code comments
+- API documentation
+- Tutorial videos
+
+### 💻 Writing Code
+
+**Developer?** Jump right in!
+
+**Good First Issues:**
+- Look for [`good first issue`](https://github.com/david0154/david-ai/labels/good%20first%20issue) label
+- Simple bug fixes
+- UI improvements
+- Adding tests
 
 ---
 
-### 3. 💻 Submit Code
-
-**Areas to contribute:**
-- Bug fixes
-- New features
-- Performance improvements
-- Code refactoring
-- Test coverage
-
----
-
-### 4. 📝 Improve Documentation
-
-**Documentation contributions:**
-- Fix typos or unclear wording
-- Add examples or tutorials
-- Improve README
-- Update wiki pages
-- Add code comments
-
----
-
-### 5. 🌍 Translate
-
-**Translation contributions:**
-- Add new languages
-- Improve existing translations
-- Fix translation errors
-- Add regional variations
-
-[See Translation Guidelines](#translation-guidelines)
-
----
-
-### 6. 🎨 Design
-
-**Design contributions:**
-- UI/UX improvements
-- Icon designs
-- Logo variations
-- App screenshots
-- Marketing materials
-
----
-
-## 🚀 Development Setup
+## Getting Started
 
 ### Prerequisites
 
-- Android Studio Hedgehog or later
-- JDK 17+
-- Android SDK 26-34
+- Java JDK 17+
+- Android Studio Hedgehog+
 - Git
+- GitHub account
 
-### Setup Steps
+### Fork & Clone
 
 ```bash
 # 1. Fork the repository on GitHub
+# Click "Fork" button at top right
 
-# 2. Clone your fork
+# 2. Clone YOUR fork
 git clone https://github.com/YOUR_USERNAME/david-ai.git
 cd david-ai
 
 # 3. Add upstream remote
 git remote add upstream https://github.com/david0154/david-ai.git
 
-# 4. Create a branch
-git checkout -b feature/your-feature-name
-
-# 5. Open in Android Studio
-open -a "Android Studio" .  # macOS
-
-# 6. Wait for Gradle sync
-
-# 7. Make your changes
-
-# 8. Test your changes
-./gradlew test
-./gradlew connectedAndroidTest
-
-# 9. Commit and push
-git add .
-git commit -m "feat: add your feature"
-git push origin feature/your-feature-name
-
-# 10. Create Pull Request on GitHub
+# 4. Verify remotes
+git remote -v
+# Should show:
+# origin    https://github.com/YOUR_USERNAME/david-ai.git (fetch)
+# origin    https://github.com/YOUR_USERNAME/david-ai.git (push)
+# upstream  https://github.com/david0154/david-ai.git (fetch)
+# upstream  https://github.com/david0154/david-ai.git (push)
 ```
 
-**Detailed instructions:** [Building from Source](Building-from-Source)
+### Set Up Development Environment
+
+1. Open project in Android Studio
+2. Wait for Gradle sync (5-10 minutes)
+3. Build the app:
+   ```bash
+   ./gradlew assembleDebug
+   ```
+4. Run tests:
+   ```bash
+   ./gradlew test
+   ```
 
 ---
 
-## 📏 Coding Standards
+## Development Workflow
 
-### Kotlin Style Guide
+### Create Feature Branch
 
-We follow the [official Kotlin style guide](https://kotlinlang.org/docs/coding-conventions.html).
+```bash
+# Update main branch
+git checkout main
+git pull upstream main
 
-**Key points:**
+# Create feature branch
+git checkout -b feature/my-awesome-feature
 
-**1. Naming:**
-```kotlin
-// Classes: PascalCase
-class VoiceController
-
-// Functions: camelCase
-fun processVoiceCommand()
-
-// Constants: SCREAMING_SNAKE_CASE
-const val MAX_RETRIES = 3
-
-// Variables: camelCase
-val userName = "David"
+# Or for bug fix
+git checkout -b fix/bug-description
 ```
 
-**2. Formatting:**
-```kotlin
-// Indentation: 4 spaces
-fun example() {
-    if (condition) {
-        doSomething()
-    }
-}
+**Branch Naming:**
+- `feature/` - New features
+- `fix/` - Bug fixes
+- `docs/` - Documentation
+- `refactor/` - Code refactoring
+- `test/` - Adding tests
 
-// Line length: 120 characters max
+### Make Changes
 
-// Blank lines: One blank line between members
-class Example {
-    fun function1() { }
-    
-    fun function2() { }
-}
-```
+1. **Write code** following [coding standards](#coding-standards)
+2. **Add tests** for new features
+3. **Update documentation** if needed
+4. **Test thoroughly**:
+   ```bash
+   ./gradlew test
+   ./gradlew connectedAndroidTest
+   ```
 
-**3. Documentation:**
-```kotlin
-/**
- * Processes voice commands and executes corresponding actions.
- *
- * @param command The voice command to process
- * @param context Android context for system access
- * @return Result of command execution
- */
-fun processCommand(command: String, context: Context): CommandResult {
-    // Implementation
-}
-```
+### Commit Changes
 
----
-
-### Android Best Practices
-
-**1. Architecture:**
-- Follow MVVM pattern
-- Use ViewModels for UI logic
-- Use Repositories for data access
-- Keep Activities/Fragments lightweight
-
-**2. Resources:**
-- Extract strings to `strings.xml`
-- Extract dimensions to `dimens.xml`
-- Extract colors to `colors.xml`
-- Use vector drawables when possible
-
-**3. Performance:**
-- Avoid blocking UI thread
-- Use coroutines for async operations
-- Release resources when done
-- Optimize battery usage
-
----
-
-### Testing
-
-**Write tests for:**
-- New features
-- Bug fixes
-- Critical functionality
-
-**Test structure:**
-```kotlin
-@Test
-fun testVoiceCommandProcessing() {
-    // Given
-    val command = "turn on wifi"
-    val controller = VoiceController(context)
-    
-    // When
-    val result = controller.processCommand(command)
-    
-    // Then
-    assertTrue(result.isSuccessful)
-    assertEquals("wifi_on", result.action)
-}
-```
-
----
-
-## 💬 Commit Guidelines
-
-### Commit Message Format
-
-We use [Conventional Commits](https://www.conventionalcommits.org/):
+**Commit Message Format:**
 
 ```
-<type>(<scope>): <subject>
+<type>: <subject>
 
 <body>
 
 <footer>
 ```
 
-### Types
+**Types:**
+- `feat` - New feature
+- `fix` - Bug fix
+- `docs` - Documentation
+- `style` - Formatting
+- `refactor` - Code restructuring
+- `test` - Adding tests
+- `chore` - Maintenance
 
-- **feat**: New feature
-- **fix**: Bug fix
-- **docs**: Documentation changes
-- **style**: Code style changes (formatting, etc.)
-- **refactor**: Code refactoring
-- **perf**: Performance improvements
-- **test**: Adding or updating tests
-- **build**: Build system changes
-- **ci**: CI/CD changes
-- **chore**: Other changes
-
-### Examples
+**Example:**
 
 ```bash
-# Feature
-git commit -m "feat(voice): add support for custom wake words"
+git add .
+git commit -m "feat: Add dark mode support
 
-# Bug fix
-git commit -m "fix(gesture): resolve pointer not showing issue"
-
-# Documentation
-git commit -m "docs(readme): update installation instructions"
-
-# Multi-line commit
-git commit -m "feat(language): add Assamese language support
-
-- Add Assamese translations
-- Add Assamese voice model
-- Update language selection UI
+Implemented dark mode theme switching in settings.
+Added day/night theme detection.
+Updated all UI components.
 
 Closes #123"
 ```
 
----
+### Push Changes
 
-## 🔄 Pull Request Process
-
-### Before Submitting
-
-**1. Sync with upstream:**
 ```bash
-git fetch upstream
-git rebase upstream/main
+# Push to your fork
+git push origin feature/my-awesome-feature
 ```
-
-**2. Test your changes:**
-```bash
-./gradlew test
-./gradlew connectedAndroidTest
-./gradlew lint
-```
-
-**3. Update documentation:**
-- Update README if needed
-- Add/update code comments
-- Update wiki pages if needed
 
 ---
 
-### Creating Pull Request
+## Coding Standards
 
-**1. Title:**
-- Follow commit message format
-- Be clear and descriptive
-- Examples:
-  - `feat: add Punjabi language support`
-  - `fix: resolve gesture control crash on Android 12`
-  - `docs: improve voice commands documentation`
+### Kotlin Style Guide
 
-**2. Description:**
+**Follow official [Kotlin Style Guide](https://kotlinlang.org/docs/coding-conventions.html)**
 
-Use this template:
+**Key Points:**
 
-```markdown
-## Description
-Brief description of changes
+```kotlin
+// 1. Class names: PascalCase
+class VoiceController
 
-## Type of Change
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Breaking change
-- [ ] Documentation update
+// 2. Function names: camelCase
+fun processVoiceCommand()
 
-## Testing
-Describe tests performed
+// 3. Constants: UPPER_SNAKE_CASE
+const val MAX_RETRY_COUNT = 3
 
-## Screenshots
-(if applicable)
+// 4. Properties: camelCase
+val userName: String
 
-## Checklist
+// 5. Use explicit types for public API
+fun getUserName(): String { ... }
+
+// 6. Prefer val over var
+val immutableValue = "constant"
+
+// 7. Use named arguments for clarity
+fun createUser(
+    name: String,
+    age: Int,
+    email: String
+)
+
+// 8. Single expression functions
+fun double(x: Int): Int = x * 2
+
+// 9. Use when instead of if-else chains
+when (value) {
+    0 -> "zero"
+    1 -> "one"
+    else -> "many"
+}
+
+// 10. Null safety
+val length: Int = text?.length ?: 0
+```
+
+### Code Organization
+
+**Package Structure:**
+
+```
+com.nexuzy.david/
+├── ai/               # AI models & processing
+│   ├── voice/
+│   ├── chat/
+│   ├── vision/
+│   └── gesture/
+├── ui/               # UI components
+│   ├── screens/
+│   ├── components/
+│   └── theme/
+├── data/             # Data layer
+│   ├── repository/
+│   ├── local/
+│   └── model/
+├── domain/           # Business logic
+│   ├── usecase/
+│   └── model/
+├── service/          # Background services
+├── util/             # Utilities
+└── MainActivity.kt
+```
+
+### Documentation
+
+**Document public APIs:**
+
+```kotlin
+/**
+ * Processes voice command and executes corresponding action.
+ *
+ * @param audioData Raw audio data from microphone
+ * @param language Target language for recognition (default: English)
+ * @return CommandResult containing transcription and execution status
+ * @throws ModelNotLoadedException if Whisper model is not initialized
+ */
+fun processVoiceCommand(
+    audioData: ByteArray,
+    language: String = "en"
+): CommandResult
+```
+
+### Testing
+
+**Write tests for:**
+- All public functions
+- Edge cases
+- Error conditions
+
+**Example:**
+
+```kotlin
+@Test
+fun testVoiceCommandProcessing() {
+    // Given
+    val controller = VoiceController(context)
+    val audioData = loadTestAudio("test_command.wav")
+    
+    // When
+    val result = controller.processVoiceCommand(audioData)
+    
+    // Then
+    assertTrue(result.isSuccess)
+    assertEquals("open settings", result.transcription)
+}
+```
+
+---
+
+## Submitting Changes
+
+### Create Pull Request
+
+1. **Push to your fork:**
+   ```bash
+   git push origin feature/my-awesome-feature
+   ```
+
+2. **Go to GitHub** and click "Compare & pull request"
+
+3. **Fill PR template:**
+   - Clear title
+   - Description of changes
+   - Related issues (e.g., "Closes #123")
+   - Screenshots (for UI changes)
+   - Testing done
+
+4. **Ensure CI passes:**
+   - All tests pass
+   - No lint errors
+   - Build succeeds
+
+### Pull Request Checklist
+
+**Before submitting:**
+
 - [ ] Code follows style guidelines
 - [ ] Self-review completed
 - [ ] Comments added for complex code
 - [ ] Documentation updated
 - [ ] Tests added/updated
-- [ ] All tests passing
+- [ ] All tests pass locally
 - [ ] No new warnings
-```
-
-**3. Link Issues:**
-- Reference related issues
-- Use `Closes #123` to auto-close issues
+- [ ] Commit messages are clear
 
 ---
 
-### Review Process
+## Review Process
 
-**1. Automated Checks:**
-- CI/CD builds APK
-- Runs tests
-- Checks code style
-- Must pass to merge
+### What to Expect
 
-**2. Code Review:**
-- Maintainer reviews code
-- May request changes
-- Address feedback
-- Push updates
+1. **Automated Checks** (< 5 minutes)
+   - Builds successfully
+   - Tests pass
+   - Lint checks pass
 
-**3. Approval & Merge:**
-- After approval, maintainer merges
-- PR branch can be deleted
+2. **Code Review** (1-3 days)
+   - Maintainers review code
+   - May request changes
+   - Discussion on approach
 
----
+3. **Revisions** (if needed)
+   - Make requested changes
+   - Push to same branch
+   - PR updates automatically
 
-## 🌍 Translation Guidelines
+4. **Approval & Merge**
+   - At least one approval required
+   - Squash and merge to main
+   - Branch deleted
 
-### Adding New Language
+### Responding to Feedback
 
-**1. Check if already supported:**
-- See [Languages](Languages) page
-- 15 languages currently supported
+**Good practices:**
 
-**2. Request language addition:**
-- Create feature request
-- Include language details
-- Volunteer to translate
+✅ Respond to all comments  
+✅ Ask questions if unclear  
+✅ Be open to suggestions  
+✅ Make requested changes  
+✅ Mark resolved conversations  
 
-**3. Translation process:**
+**Make changes:**
 
 ```bash
-# 1. Create strings resource file
-app/src/main/res/values-[lang]/strings.xml
-
-# Example for French (fr):
-app/src/main/res/values-fr/strings.xml
+# Make changes based on feedback
+git add .
+git commit -m "fix: Address PR feedback"
+git push origin feature/my-awesome-feature
 ```
 
-**4. Translate all strings:**
+---
 
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">D.A.V.I.D AI</string>
-    <string name="voice_control">Contrôle vocal</string>
-    <!-- ... more translations ... -->
-</resources>
+## Development Tips
+
+### Sync with Upstream
+
+**Keep your fork updated:**
+
+```bash
+# Fetch upstream changes
+git fetch upstream
+
+# Switch to main
+git checkout main
+
+# Merge upstream changes
+git merge upstream/main
+
+# Push to your fork
+git push origin main
 ```
 
-**5. Test translations:**
-- Change device language
-- Open app
-- Verify all text is translated
-- Check for UI layout issues
+### Rebase Feature Branch
+
+**Keep feature branch up-to-date:**
+
+```bash
+# Update main first
+git checkout main
+git pull upstream main
+
+# Switch to feature branch
+git checkout feature/my-awesome-feature
+
+# Rebase on main
+git rebase main
+
+# Force push (if already pushed)
+git push origin feature/my-awesome-feature --force-with-lease
+```
+
+### Debug Build Issues
+
+```bash
+# Clean build
+./gradlew clean
+
+# Build with stacktrace
+./gradlew assembleDebug --stacktrace
+
+# Run with info logging
+./gradlew assembleDebug --info
+```
 
 ---
 
-### Translation Best Practices
+## Recognition
 
-**1. Context matters:**
-- Understand the context of each string
-- Ask if unclear
+### Contributor Credits
 
-**2. Length considerations:**
-- Some languages are longer/shorter
-- Ensure text fits in UI
-- Test on device
+All contributors are:
+- ✅ Listed in README
+- ✅ Shown in contributor graph
+- ✅ Credited in release notes
+- ✅ Thanked in announcements
 
-**3. Cultural sensitivity:**
-- Respect cultural differences
-- Adapt examples when needed
-- Consult native speakers
+### Special Recognition
 
-**4. Consistency:**
-- Use same terms throughout
-- Follow existing style
-- Maintain tone
+**Outstanding contributors may receive:**
+- 🏆 Contributor badge
+- 📢 Feature in blog post
+- 🎁 Swag (future)
+- 🤝 Invitation to core team
 
 ---
 
-## 🐛 Bug Reporting
+## Community
 
-### Before Reporting
+### Communication Channels
 
-1. **Search existing issues:** Maybe already reported
-2. **Update app:** Bug might be fixed
-3. **Reproduce:** Ensure it's reproducible
+- 💬 [GitHub Discussions](https://github.com/david0154/david-ai/discussions)
+- 📧 Email: [david@nexuzy.in](mailto:david@nexuzy.in)
+- 🐛 [Issue Tracker](https://github.com/david0154/david-ai/issues)
 
-### Bug Report Template
+### Getting Help
 
-**Use:** [Bug Report Template](https://github.com/david0154/david-ai/issues/new?template=bug_report.md)
+**Stuck? We're here to help!**
 
-**Include:**
-- Clear title
-- Steps to reproduce
-- Expected behavior
-- Actual behavior
-- Screenshots/video
-- Device info (model, Android version)
-- App version
-- Logcat output
+1. Check [FAQ](FAQ)
+2. Search [existing issues](https://github.com/david0154/david-ai/issues)
+3. Ask in [Discussions](https://github.com/david0154/david-ai/discussions)
+4. Email us: [david@nexuzy.in](mailto:david@nexuzy.in)
 
 ---
 
-## ✨ Feature Requests
+## Resources
 
-### Before Requesting
-
-1. **Search existing requests:** Maybe already requested
-2. **Check roadmap:** Maybe already planned
-3. **Consider scope:** Is it feasible?
-
-### Feature Request Template
-
-**Use:** [Feature Request Template](https://github.com/david0154/david-ai/issues/new?template=feature_request.md)
-
-**Include:**
-- Clear description
-- Use case
-- Why it's useful
-- How it should work
-- Examples or mockups
+- 📖 [Building from Source](Building-from-Source)
+- 🏗️ [Architecture](Architecture)
+- 📚 [API Reference](API-Reference)
+- ❓ [FAQ](FAQ)
+- 🐛 [Troubleshooting](Troubleshooting)
 
 ---
 
-## 📞 Contact
+## Thank You!
 
-### Get Help
+**Every contribution makes D.A.V.I.D AI better!**
 
-- 📧 **Email:** [david@nexuzy.in](mailto:david@nexuzy.in)
-- 💬 **Discussions:** [GitHub Discussions](https://github.com/david0154/david-ai/discussions)
-- 🐛 **Issues:** [GitHub Issues](https://github.com/david0154/david-ai/issues)
+Whether you:
+- 🐛 Report a bug
+- 💡 Suggest a feature
+- 💻 Write code
+- 📝 Improve docs
+- 🌍 Translate
+- ⭐ Star the repo
+- 📢 Spread the word
 
-### Community
-
-- Follow updates on GitHub
-- Star the repository
-- Share with others
-- Join discussions
-
----
-
-## 🏆 Recognition
-
-**All contributors are recognized:**
-- Listed in README contributors section
-- Shown on [contributors page](https://github.com/david0154/david-ai/graphs/contributors)
-- Mentioned in release notes (for significant contributions)
-
-**Thank you for contributing to D.A.V.I.D AI!** 🎉
+**You're awesome! Thank you for contributing!** 🙏
 
 ---
 
 **© 2026 Nexuzy Tech Ltd.**  
-*Open Source • MIT License • Community Driven*
+**Questions?** [david@nexuzy.in](mailto:david@nexuzy.in)
