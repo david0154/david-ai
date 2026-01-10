@@ -55,8 +55,7 @@ android {
         freeCompilerArgs += listOf(
             "-opt-in=kotlin.RequiresOptIn",
             "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-            "-P",
-            "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true"
+            "-Xsuppress-version-warnings"
         )
     }
 
@@ -161,6 +160,9 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
+    // Web Scraping - JSoup (ADDED - fixes WebSearchEngine errors)
+    implementation("org.jsoup:jsoup:1.17.2")
+
     // JSON & Serialization
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
@@ -180,9 +182,10 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
 
-    // Security
+    // Security & Encryption
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
     implementation("androidx.biometric:biometric:1.1.0")
+    implementation("com.google.crypto.tink:tink-android:1.12.0") // ADDED - fixes EncryptionManager errors
 
     // Data Store
     implementation("androidx.datastore:datastore-preferences:1.0.0")
