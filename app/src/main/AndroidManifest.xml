@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- ====== CORE PERMISSIONS ====== -->
+    <!-- ====== CORE PERMISSIONS (ESSENTIAL) ====== -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -22,54 +22,48 @@
     <!-- ====== CONNECTIVITY CONTROL ====== -->
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
 
-    <!-- ====== MEDIA & STORAGE ====== -->
+    <!-- ====== MEDIA & STORAGE (Android 13+ / Below 13) ====== -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
 
-    <!-- ====== CONTACT & COMMUNICATION ====== -->
+    <!-- ====== CONTACTS & COMMUNICATION ====== -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.WRITE_CONTACTS" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
     <uses-permission android:name="android.permission.WRITE_CALL_LOG" />
 
-    <!-- ====== SECURITY & ADMIN ====== -->
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- ====== NOTIFICATIONS (Android 13+) ====== -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- ====== BACKGROUND & SYSTEM ====== -->
+    <!-- ====== SECURITY & SYSTEM ====== -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- ====== FOREGROUND SERVICES ====== -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <!-- ====== BIOMETRIC & AUTHENTICATION ====== -->
-    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
-
-    <!-- ====== WEAR OS PERMISSIONS ====== -->
-    <uses-permission android:name="android.permission.BODY_SENSORS" />
-    <uses-permission android:name="android.permission.VIBRATE" />
-
-    <!-- Required features -->
+    <!-- ====== FEATURES ====== -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.microphone" android:required="true" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
     <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
     <uses-feature android:name="android.hardware.type.watch" android:required="false" />
 
-    <!-- ====== APPLICATION CONFIGURATION ====== -->
-    <!-- Note: package attribute removed - namespace is defined in app/build.gradle.kts -->
+    <!-- ====== APPLICATION ====== -->
     <application
         android:name="com.davidstudioz.david.DavidAIApp"
         android:allowBackup="true"
@@ -81,6 +75,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DavidAI"
         android:usesCleartextTraffic="false"
+        android:requestLegacyExternalStorage="true"
         tools:targetApi="31">
 
         <!-- Wear OS Metadata -->
@@ -118,35 +113,35 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.DavidAI" />
 
-        <!-- Main Activity (Complex with dependencies) -->
+        <!-- Main Activity -->
         <activity
             android:name="com.davidstudioz.david.MainActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.DavidAI" />
 
-        <!-- Safe Main Activity (Fallback - no dependencies) -->
+        <!-- Safe Main Activity (Fallback) -->
         <activity
             android:name="com.davidstudioz.david.SafeMainActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.DavidAI" />
 
-        <!-- Hot Word Detection Service -->
+        <!-- Voice Services -->
         <service
             android:name="com.davidstudioz.david.voice.HotWordDetectionService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="microphone" />
 
-        <!-- Gesture Recognition Service -->
+        <!-- Gesture Services -->
         <service
             android:name="com.davidstudioz.david.gesture.GestureRecognitionService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="camera" />
 
-        <!-- WorkManager initialization -->
+        <!-- WorkManager -->
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
