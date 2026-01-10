@@ -1,491 +1,370 @@
-# 🤖 D.A.V.I.D - Digital Assistant Voice Intelligence Device
+# D.A.V.I.D AI - Digital Assistant with Voice & Intelligent Decisions
 
 <div align="center">
 
-![Logo](logo.png)
+![D.A.V.I.D AI Logo](https://img.shields.io/badge/D.A.V.I.D-AI-00E5FF?style=for-the-badge&logo=android&logoColor=white)
 
-**Your AI-Powered Voice Assistant for Android**
+**Advanced AI Assistant with Voice Control, Gesture Recognition, and Complete Device Management**
 
-[![Android](https://img.shields.io/badge/Android-9%2B-green.svg)](https://android.com)
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-blue.svg)](https://kotlinlang.org)
-[![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-2.0.0-brightgreen.svg)]()
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.0-7F52FF?style=flat&logo=kotlin)](https://kotlinlang.org/)
+[![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=flat&logo=android)](https://www.android.com/)
+[![License](https://img.shields.io/badge/License-Custom-orange?style=flat)](LICENSE)
+[![GitHub](https://img.shields.io/badge/GitHub-david0154/david--ai-181717?style=flat&logo=github)](https://github.com/david0154/david-ai)
+
+**Developed by [Nexuzy Tech Ltd.](mailto:david@nexuzy.in)**
 
 </div>
 
 ---
 
-## 🌟 About D.A.V.I.D
+## 🌟 Features
 
-**D.A.V.I.D** stands for **Digital Assistant Voice Intelligence Device** - a cutting-edge, voice-first AI assistant for Android devices. Inspired by Jarvis from Iron Man, D.A.V.I.D combines voice recognition, gesture control, and artificial intelligence to create a seamless, futuristic user experience.
+### 🎯 Core Capabilities
 
-### ✨ Key Features
+- 🎙️ **Voice Control** - Hands-free device control via natural voice commands
+- ✋ **Gesture Recognition** - Control your device with hand gestures via camera
+- 💬 **AI Chat** - Intelligent conversations with on-device AI models
+- 👁️ **Vision Processing** - Image recognition and visual understanding
+- 🌍 **Multi-Language** - Support for 15 languages including all major Indian languages
+- 📡 **Offline First** - All processing happens locally on your device
 
-- 🎤 **Voice Control** - Wake word detection ("Hey David", "OK David")
-- 👁️ **Gesture Recognition** - Control with hand gestures using camera
-- 🌤️ **Weather Integration** - Real-time weather updates and forecasts
-- 💬 **AI Chat** - Intelligent conversation with context awareness
-- 📊 **Resource Monitoring** - Real-time RAM, CPU, and Storage tracking
-- 🔒 **Device Control** - Lock device, control WiFi, Bluetooth, etc.
-- 🖱️ **Pointer Control** - Virtual pointer for hands-free navigation
-- 🔐 **Biometric Security** - Fingerprint and face unlock support
-- 🌐 **Web Search** - Integrated web search capabilities
-- 📦 **Smart Home** - Control IoT devices (future integration)
+### 🔊 Voice Commands
+
+Control everything with your voice:
+
+- **Device Control**: WiFi, Bluetooth, Location, Flashlight on/off
+- **Volume Control**: Increase, decrease, mute, set specific level
+- **Communication**: Make calls, send SMS, send emails
+- **Media Control**: Play, pause, next, previous, forward, rewind
+- **Camera**: Take selfie, record video
+- **Apps**: Open any app by voice
+- **Information**: Time, date, weather, alarms
+- **System**: Lock device, take screenshot
+- **Voice Typing**: Type in any app using voice
+
+### 👋 Gesture Control
+
+**Supported Gestures:**
+- ✋ **Open Palm** - Show pointer
+- ✊ **Closed Fist** - Hide pointer
+- ☝️ **Pointing Up** - Move pointer
+- ✌️ **Victory Sign** - Click action
+- 👍 **Thumbs Up** - Confirm
+
+**Mouse-Like Pointer:**
+- Floating overlay pointer
+- Smooth movement animation
+- Visual feedback (glow effects)
+- Click animations
+
+### 🌍 Supported Languages
+
+**15 Languages Total:**
+
+1. 🇬🇧 English (default)
+2. 🇮🇳 Hindi (हिन्दी)
+3. 🇮🇳 Tamil (தமிழ்)
+4. 🇮🇳 Telugu (తెలుగు)
+5. 🇮🇳 Bengali (বাংলা)
+6. 🇮🇳 Marathi (मराठी)
+7. 🇮🇳 Gujarati (ગુજરાતી)
+8. 🇮🇳 Kannada (ಕನ್ನಡ)
+9. 🇮🇳 Malayalam (മലയാളം)
+10. 🇮🇳 Punjabi (ਪੰਜਾਬੀ)
+11. 🇮🇳 Odia (ଓଡ଼ିଆ)
+12. 🇮🇳 Urdu (اردو)
+13. 🇮🇳 Sanskrit (संस्कृतम्)
+14. 🇮🇳 Kashmiri (कॉशुर)
+15. 🇮🇳 Assamese (অসমীয়া)
 
 ---
 
-## 📱 Screenshots
+## 🤖 AI Models
 
-### Beautiful Splash Screen
-```
-          ✨
-        🤖
-     ○ ○ ○ ○ ○
-   
-   D.A.V.I.D
-   Digital Assistant Voice
-   Intelligence Device
-   
-   Your AI-Powered Voice Assistant
-   
-   [==================] 85%
-   Setting up voice recognition
-   
-   Developed by Nexuzy Tech 
-```
+### Real AI Models (All Downloadable)
 
-### Main Interface 
-```
-🤖 D.A.V.I.D                    🕛 16:32:05
-   Digital Assistant Voice      User: Friend
-   Intelligence Device
+#### Voice Recognition (Whisper from HuggingFace)
+- **Tiny** (75MB) - For 1-2GB RAM devices
+- **Base** (142MB) - For 2-3GB RAM devices
+- **Small** (466MB) - For 3GB+ RAM devices
 
-            👠
-         AI Orb
-      (Animated)
+#### Chat AI (from HuggingFace)
+- **TinyLlama** (669MB) - Lightweight chat model
+- **Qwen 1.5** (1.1GB) - Advanced conversational AI
+- **Phi-2** (1.6GB) - Microsoft's powerful model
 
-Status: D.A.V.I.D systems ready!
+#### Vision (ONNX)
+- **MobileNetV2** (14MB) - Lightweight image recognition
+- **ResNet50** (98MB) - Advanced image classification
 
-    RAM          STORAGE         CPU
-  4/8GB          50/128GB      8 cores
-   65%             40%           25%
+#### Gesture (MediaPipe from Google)
+- **Hand Landmarker** (25MB) - 21-point hand tracking
+- **Gesture Recognizer** (31MB) - Gesture classification
 
-AI MODEL: TensorFlow Lite ✓ Ready
+#### Language (TensorFlow Lite)
+- **Universal Sentence Encoder** (50MB per language)
 
-🌤 WEATHER
-Partly cloudy, 28°C in Kolkata
+### Auto Model Selection
 
-CHAT HISTORY
-→ Hello, how can I help?
-→ What's the weather today?
-→ It's 28°C and partly cloudy
+The app automatically selects appropriate models based on your device's RAM:
 
-[🌤] [📅] [🔒] [🖱]
+- **1-2GB RAM**: Tiny voice + Light chat + Lite vision (~914 MB)
+- **2-4GB RAM**: Base voice + Standard chat + Standard vision (~1.6 GB)
+- **4GB+ RAM**: Small voice + Pro chat + Standard vision + All languages (~2.7 GB)
 
-         🎤
-    Voice Button
-```
+---
+
+## 🛡️ Privacy Policy
+
+### 🔒 WE DO NOT COLLECT ANY DATA
+
+**Your Privacy is Our Top Priority**
+
+✅ **All data stored locally on YOUR device**
+✅ **No data sent to external servers**
+✅ **No user tracking or analytics**
+✅ **No personal information collected**
+✅ **No account required**
+✅ **No cloud storage**
+
+### Your Device, Your Data
+
+- Voice recordings: Processed locally
+- Camera images: Processed locally
+- AI models: Downloaded and stored locally
+- Chat history: Stored locally
+- Settings: Stored locally
+
+**Complete privacy policy:** [PRIVACY_POLICY.md](PRIVACY_POLICY.md)
 
 ---
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### Requirements
 
-- **Android Studio** (Arctic Fox or later)
-- **Android SDK** (API 28 - Android 9.0 minimum)
-- **JDK 17** or higher
-- **Gradle 8.0+**
-- **2GB RAM** minimum (4GB recommended)
-- **500MB free storage**
+- **Android 8.0 (API 26)** or higher
+- **Minimum 1GB RAM** (2GB+ recommended)
+- **Camera** for gesture control
+- **Microphone** for voice commands
+- **500MB-3GB storage** for AI models (depends on device)
 
 ### Installation
 
-#### Option 1: Clone and Build
+1. **Download the APK**:
+   - Go to [Releases](https://github.com/david0154/david-ai/releases)
+   - Download the latest APK
+
+2. **Install the App**:
+   - Enable "Install from Unknown Sources" in settings
+   - Open the APK and install
+
+3. **Grant Permissions**:
+   - Camera (for gesture control)
+   - Microphone (for voice commands)
+   - Storage (for AI models)
+   - Other permissions as needed
+
+4. **Download Models**:
+   - First launch will auto-download models
+   - Models selected based on your device RAM
+   - Takes 2-5 minutes depending on device
+
+### First Use
+
+1. Launch D.A.V.I.D AI
+2. Wait for model downloads to complete
+3. Grant all required permissions
+4. Say "Hey David" to activate voice control
+5. Or use hand gestures for pointer control
+
+---
+
+## 🛠️ Building from Source
+
+### Prerequisites
+
+- Android Studio Hedgehog or later
+- Kotlin 1.9.0+
+- Gradle 8.0+
+- Android SDK 34
+- JDK 17+
+
+### Build Steps
 
 ```bash
 # Clone the repository
 git clone https://github.com/david0154/david-ai.git
 cd david-ai
 
-# Build the app
-./gradlew clean build
-
-# Install on connected device
-./gradlew installDebug
-
-# Or open in Android Studio
-# File -> Open -> Select 'david-ai' folder
-```
-
-#### Option 2: Download APK
-
-```bash
-# Download from releases
-wget https://github.com/david0154/david-ai/releases/latest/david-ai.apk
-
-# Install
-adb install david-ai.apk
-```
-
-### First Run
-
-1. **Launch App** - Tap the D.A.V.I.D icon
-2. **Splash Screen** - Beautiful 3-second animation
-3. **Permissions** - Grant Camera, Microphone, Location
-4. **Setup Complete** - Start using voice commands!
-
----
-
-## 🎮 Usage
-
-### Voice Commands
-
-Wake D.A.V.I.D with:
-- "**Hey David**" or "**OK David**"
-- Then say your command:
-  - "What's the weather?"
-  - "Show me the time"
-  - "Lock my device"
-  - "Turn on WiFi"
-  - "Tell me a joke"
-
-### Gesture Controls
-
-- 👋 **Wave Hand** - Wake D.A.V.I.D
-- 👉 **Swipe Right** - Next
-- 👈 **Swipe Left** - Previous
-- ✋ **Palm Stop** - Pause
-- 👆 **Point Up** - Scroll up
-
-### Quick Actions
-
-- 🌤️ **Weather Button** - Get current weather
-- 📅 **Forecast Button** - 3-day weather forecast (spoken)
-- 🔒 **Lock Button** - Lock device instantly
-- 🖱️ **Pointer Button** - Show virtual pointer
-
----
-
-## ⚙️ Architecture
-
-### Technology Stack
-
-- **Language**: Kotlin 1.9.22
-- **UI Framework**: Jetpack Compose
-- **Architecture**: MVVM + Clean Architecture
-- **Dependency Injection**: Hilt/Dagger
-- **Database**: Room
-- **Networking**: Retrofit + OkHttp
-- **AI/ML**: TensorFlow Lite, MediaPipe
-- **Speech**: Android SpeechRecognizer + TTS
-- **Concurrency**: Kotlin Coroutines + Flow
-
-### Project Structure
-
-```
-app/src/main/kotlin/com/davidstudioz/david/
-├── MainActivity.kt              # Main UI with Jarvis interface
-├── DavidApplication.kt         # Application class with crash handling
-├── ui/
-│   ├── SplashActivity.kt       # Beautiful splash screen
-│   ├── JarvisComponents.kt     # Reusable UI components
-│   └── theme/                  # App theme and colors
-├── voice/
-│   ├── HotWordDetector.kt      # Wake word detection
-│   ├── TextToSpeechEngine.kt   # TTS engine
-│   └── VoiceRecognizer.kt      # Speech recognition
-├── gesture/
-│   ├── GestureController.kt    # Gesture recognition
-│   └── GestureRecognitionService.kt
-├── ai/
-│   ├── ModelManager.kt         # AI model management
-│   ├── AIEngine.kt             # Core AI logic
-│   └── NLPProcessor.kt         # Natural language processing
-├── chat/
-│   ├── ChatManager.kt          # Chat history and context
-│   └── ConversationEngine.kt   # Conversation logic
-├── features/
-│   ├── WeatherTimeProvider.kt  # Weather & time
-│   ├── LocationService.kt      # GPS location
-│   └── CalendarIntegration.kt  # Calendar access
-├── device/
-│   ├── DeviceController.kt     # Device control
-│   ├── DeviceAccessManager.kt  # Permission management
-│   └── ConnectivityManager.kt  # Network control
-├── security/
-│   ├── DeviceLockManager.kt    # Device lock
-│   ├── BiometricAuth.kt        # Fingerprint/Face unlock
-│   └── EncryptionManager.kt    # Data encryption
-├── storage/
-│   ├── PreferencesManager.kt   # SharedPreferences
-│   ├── DatabaseManager.kt      # Room database
-│   └── FileManager.kt          # File operations
-├── utils/
-│   ├── DeviceResourceManager.kt # Resource monitoring
-│   ├── NetworkUtils.kt          # Network utilities
-│   └── PermissionUtils.kt       # Permission helpers
-├── workers/
-│   └── ModelDownloadWorker.kt   # Background model download
-└── di/
-    └── AppModule.kt             # Dependency injection
-```
-
----
-
-## 🔒 Permissions
-
-### Required Permissions
-
-| Permission | Purpose | Critical |
-|------------|---------|----------|
-| 🎤 **RECORD_AUDIO** | Voice commands | ✅ Yes |
-| 📷 **CAMERA** | Gesture recognition | ✅ Yes |
-| 📍 **ACCESS_FINE_LOCATION** | Weather updates | ✅ Yes |
-| 🌐 **INTERNET** | API calls, weather | ✅ Yes |
-| 📞 **CALL_PHONE** | Make calls | ❌ No |
-| 📨 **SEND_SMS** | Send messages | ❌ No |
-| 🔌 **BLUETOOTH** | Device connectivity | ❌ No |
-| 📡 **WIFI_STATE** | WiFi control | ❌ No |
-
-**Note**: App works with limited features if optional permissions are denied.
-
----
-
-## ✅ What's Fixed (v2.0.0)
-
-### Major Bug Fixes
-
-1. ❌ → ✅ **App Crashes on Launch**
-   - Added comprehensive null safety
-   - Global exception handler
-   - Graceful error screens
-
-2. ⬜ → ✅ **Blank Screen Issues**
-   - Always displays content or error message
-   - Fallback UI for failed components
-
-3. ❌ → ✅ **Permission Denial = Crash**
-   - Graceful permission handling
-   - Dialog for denied permissions
-   - App continues with limited features
-
-4. ❌ → ✅ **AI Model Download Crash**
-   - Non-blocking background download
-   - App launches immediately
-   - Fallback if download fails
-
-5. ❌ → ✅ **NullPointerExceptions**
-   - All components are nullable
-   - Safe access with `?.` operator
-   - Default values for UI state
-
----
-
-## 📊 Performance
-
-### Resource Usage
-
-- **RAM**: 100-200MB (varies by device)
-- **Storage**: ~50MB (app) + ~100MB (AI models)
-- **Battery**: Optimized for background services
-- **CPU**: Efficient voice processing
-
-### Optimization Features
-
-- ⚡ Lazy loading of AI models
-- ♻️ Resource cleanup on destroy
-- 📊 Real-time resource monitoring
-- 🔋 Background service management
-- 🚀 Kotlin Coroutines for async operations
-
----
-
-## 🛠️ Development
-
-### Building from Source
-
-```bash
 # Clean build
 ./gradlew clean
 
-# Debug build
+# Build debug APK
 ./gradlew assembleDebug
 
-# Release build (signed)
+# Build release APK
 ./gradlew assembleRelease
 
-# Run tests
-./gradlew test
-
-# Install on device
+# Install on connected device
 ./gradlew installDebug
 ```
 
-### Running Tests
+### APK Location
 
-```bash
-# Unit tests
-./gradlew test
-
-# Instrumented tests (requires device/emulator)
-./gradlew connectedAndroidTest
-
-# All tests
-./gradlew check
-```
-
-### Code Quality
-
-```bash
-# Lint checks
-./gradlew lint
-
-# Format code
-./gradlew ktlintFormat
-
-# Detekt (static analysis)
-./gradlew detekt
-```
+- Debug: `app/build/outputs/apk/debug/app-debug.apk`
+- Release: `app/build/outputs/apk/release/app-release.apk`
 
 ---
 
-## 📝 Roadmap
+## 📚 Documentation
 
-### v2.1.0 (Next Release)
-- [ ] Full offline AI model support
-- [ ] Cloud API integration (OpenAI/Gemini)
+- [Privacy Policy](PRIVACY_POLICY.md)
+- [Complete Fixes Documentation](COMPLETE_FIXES_DOCUMENTATION.md)
+- [API Documentation](docs/API.md) _(coming soon)_
+- [Contributing Guidelines](CONTRIBUTING.md) _(coming soon)_
+
+---
+
+## 💬 Support
+
+### Need Help?
+
+- **Email**: [david@nexuzy.in](mailto:david@nexuzy.in)
+- **GitHub Issues**: [Create an issue](https://github.com/david0154/david-ai/issues)
+- **GitHub Discussions**: [Join discussions](https://github.com/david0154/david-ai/discussions)
+
+### Reporting Bugs
+
+Please include:
+- Device model and Android version
+- RAM size
+- Steps to reproduce
+- Expected vs actual behavior
+- LogCat output (if possible)
+
+---
+
+## 👥 Contributing
+
+We welcome contributions! Whether it's:
+
+- 🐛 Bug fixes
+- ✨ New features
+- 📝 Documentation improvements
+- 🌍 Translations
+- 🎨 UI/UX enhancements
+
+Please feel free to submit pull requests!
+
+---
+
+## 📜 License
+
+This project is licensed under a custom license. See [LICENSE](LICENSE) file for details.
+
+---
+
+## 🏗️ Tech Stack
+
+- **Language**: Kotlin
+- **UI Framework**: Jetpack Compose
+- **AI Models**: 
+  - Whisper (Speech Recognition)
+  - LLaMA/Phi-2 (Chat)
+  - ONNX (Vision)
+  - MediaPipe (Gesture)
+- **Architecture**: MVVM
+- **Dependency Injection**: Hilt _(planned)_
+- **Database**: Room _(for chat history)_
+- **Networking**: OkHttp + Retrofit
+
+---
+
+## 📊 Project Status
+
+- ✅ Voice Control - **COMPLETE**
+- ✅ Gesture Recognition - **COMPLETE**
+- ✅ AI Chat - **COMPLETE**
+- ✅ Multi-Language Support - **COMPLETE**
+- ✅ Device Control - **COMPLETE**
+- ✅ Privacy-First Design - **COMPLETE**
+- 🚧 Advanced Vision Features - **IN PROGRESS**
+- 🚧 Smart Home Integration - **PLANNED**
+- 🚧 Wearable Support - **PLANNED**
+
+---
+
+## 🌟 Roadmap
+
+### Version 1.1 (Q1 2026)
+- [ ] Enhanced gesture recognition
+- [ ] More voice command types
 - [ ] Custom wake word training
-- [ ] Multi-language support (Hindi, Spanish, etc.)
-- [ ] Wear OS companion app
+- [ ] Gesture customization
 
-### v2.2.0 (Future)
-- [ ] Smart home device integration
-- [ ] Calendar event creation via voice
-- [ ] Email reading and composition
-- [ ] Real-time language translation
-- [ ] AR pointer mode
+### Version 1.2 (Q2 2026)
+- [ ] Smart home device control
+- [ ] Calendar integration
+- [ ] Email management
+- [ ] Note taking
 
-### v3.0.0 (Long-term)
-- [ ] On-device LLM (Large Language Model)
-- [ ] Computer vision for object recognition
-- [ ] Personal AI assistant training
-- [ ] Cross-device synchronization
-- [ ] Plugin system for extensions
+### Version 2.0 (Q3 2026)
+- [ ] AR features
+- [ ] Wearable app
+- [ ] API for third-party apps
+- [ ] Cloud sync (optional)
 
 ---
 
-## 🤝 Contributing
+## 🚀 About Nexuzy Tech Ltd.
 
-We welcome contributions! Here's how:
+**D.A.V.I.D AI** is developed and maintained by **Nexuzy Tech Ltd.**, a company focused on building privacy-first AI applications that empower users without compromising their data.
 
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/AmazingFeature`)
-3. **Commit** your changes (`git commit -m 'Add AmazingFeature'`)
-4. **Push** to the branch (`git push origin feature/AmazingFeature`)
-5. **Open** a Pull Request
+### Our Mission
 
-### Code Style
+To create powerful AI tools that:
+- Respect user privacy
+- Work offline-first
+- Are accessible to everyone
+- Put users in control
 
-- Follow Kotlin coding conventions
-- Use meaningful variable names
-- Add comments for complex logic
-- Write unit tests for new features
+### Contact
 
----
-
-## 🐛 Known Issues
-
-1. **Model Download** - Background worker may not complete on slow networks
-2. **Voice Recognition** - Accuracy depends on device microphone quality
-3. **Gesture Recognition** - Requires good lighting conditions
-4. **Weather API** - Limited to 1000 calls/day (free tier)
-
-*Report issues at: [GitHub Issues](https://github.com/david0154/david-ai/issues)*
+- **Email**: [david@nexuzy.in](mailto:david@nexuzy.in)
+- **Website**: _Coming soon_
 
 ---
 
-## 📝 License
+## ⭐ Show Your Support
 
-This project is licensed under the **Apache License 2.0** - see the [LICENSE](LICENSE) file for details.
+If you find D.A.V.I.D AI useful, please consider:
 
-```
-Copyright 2025-2026 David Studioz
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-```
+- ⭐ Starring this repository
+- 🐛 Reporting bugs
+- 💡 Suggesting features
+- 💬 Spreading the word
 
 ---
 
-## 📞 Support & Contact
+## 🙏 Acknowledgments
 
-- **Developer**: David Studioz
-- **GitHub**: [@david0154](https://github.com/david0154)
-- **Issues**: [GitHub Issues](https://github.com/david0154/david-ai/issues)
-- **Email**: Contact via GitHub
-
----
-
-## 🌟 Acknowledgments
-
-- Inspired by **Jarvis** from Iron Man
-- Built with **Android Jetpack** libraries
-- Uses **TensorFlow Lite** for AI
-- **MediaPipe** for gesture recognition
-- **Material Design 3** for beautiful UI
-
----
-
-## 📊 Stats
-
-![GitHub stars](https://img.shields.io/github/stars/david0154/david-ai?style=social)
-![GitHub forks](https://img.shields.io/github/forks/david0154/david-ai?style=social)
-![GitHub issues](https://img.shields.io/github/issues/david0154/david-ai)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/david0154/david-ai)
+- **OpenAI Whisper** - Voice recognition models
+- **HuggingFace** - LLM models (TinyLlama, Qwen, Phi-2)
+- **ONNX** - Vision models
+- **Google MediaPipe** - Gesture recognition
+- **TensorFlow** - Language models
+- All open-source contributors
 
 ---
 
 <div align="center">
 
-**Made with ❤️ by David Studioz**
+**Made with ❤️ by Nexuzy Tech Ltd.**
 
-🌟 **Star this repo** if you like it! 🌟
+[![Email](https://img.shields.io/badge/Email-david%40nexuzy.in-blue?style=flat&logo=gmail)](mailto:david@nexuzy.in)
+[![GitHub](https://img.shields.io/badge/GitHub-david0154-181717?style=flat&logo=github)](https://github.com/david0154)
 
-[Report Bug](https://github.com/david0154/david-ai/issues) ·
-[Request Feature](https://github.com/david0154/david-ai/issues) ·
-[Documentation](https://github.com/david0154/david-ai/wiki)
+**© 2026 Nexuzy Tech Ltd. All rights reserved.**
 
 </div>
-
----
-
-## 📣 Changelog
-
-### v2.0.0 (January 10, 2026) - Current
-- ✅ Complete app rewrite with crash fixes
-- ✨ Beautiful new splash screen
-- 🎭 D.A.V.I.D branding (Digital Assistant Voice Intelligence Device)
-- 🛡️ Null-safe architecture
-- 🎨 Jarvis-style UI with animations
-- 📊 Real-time resource monitoring
-- ⚙️ Improved permission handling
-
-### v1.0.0 (Initial Release)
-- 🎉 First public release
-- 🎤 Basic voice recognition
-- 🌤️ Weather integration
-- 👁️ Gesture recognition (beta)
-
----
-
-**✅ D.A.V.I.D is ready to assist you! Download now and experience the future of voice AI!** 🚀
