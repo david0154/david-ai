@@ -4,7 +4,7 @@
     <item>
         <shape android:shape="rectangle">
             <solid android:color="@color/bg_card_alpha" />
-            <corners android:radius="@dimen/corner_radius_medium" />
+            <corners android:radius="12dp" />
         </shape>
     </item>
     
@@ -17,7 +17,7 @@
                 android:centerColor="@android:color/transparent"
                 android:endColor="@color/glass_overlay"
                 android:type="linear" />
-            <corners android:radius="@dimen/corner_radius_medium" />
+            <corners android:radius="12dp" />
         </shape>
     </item>
 </layer-list>
