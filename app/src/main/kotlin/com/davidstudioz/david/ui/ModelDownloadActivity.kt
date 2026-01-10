@@ -23,14 +23,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import com.davidstudioz.david.MainActivity
+import com.davidstudioz.david.models.AIModel
+import com.davidstudioz.david.models.ModelManager
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * Model Download Activity
- * Shows AI model download progress with beautiful Jarvis-style UI
+ * Shows AI model download progress with real downloads from Hugging Face
+ * Uses ModelManager to download actual AI models
  */
+@AndroidEntryPoint
 class ModelDownloadActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var modelManager: ModelManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,6 +71,22 @@ class ModelDownloadActivity : ComponentActivity() {
         var downloadProgress by remember { mutableStateOf(0f) }
         var downloadStatus by remember { mutableStateOf("Preparing download...") }
         var isComplete by remember { mutableStateOf(false) }
+        var hasError by remember { mutableStateOf(false) }
+        var errorMessage by remember { mutableStateOf("") }
+        var selectedModel by remember { mutableStateOf<AIModel?>(null) }
+        var isDownloading by remember { mutableStateOf(false) }
+
+        // Get recommended model
+        LaunchedEffect(Unit) {
+            try {
+                val recommendedLLM = modelManager.getRecommendedLLM()
+                selectedModel = recommendedLLM
+                Log.d(TAG, "Recommended model: ${recommendedLLM?.name}")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error getting recommended model", e)
+                selectedModel = null
+            }
+        }
 
         // Animated progress
         val infiniteTransition = rememberInfiniteTransition(label = "download_anim")
@@ -74,49 +99,6 @@ class ModelDownloadActivity : ComponentActivity() {
             ),
             label = "glow"
         )
-
-        LaunchedEffect(Unit) {
-            try {
-                // Simulate model download with realistic progress
-                val steps = listOf(
-                    0.1f to "Connecting to server...",
-                    0.2f to "Checking device compatibility...",
-                    0.3f to "Downloading AI model (Gemma 2B)...",
-                    0.5f to "Downloading voice models...",
-                    0.7f to "Downloading language data...",
-                    0.85f to "Optimizing for your device...",
-                    0.95f to "Finalizing installation...",
-                    1.0f to "Download complete!"
-                )
-
-                steps.forEach { (targetProgress, status) ->
-                    downloadStatus = status
-                    val startProgress = downloadProgress
-                    val duration = 1000L
-                    val startTime = System.currentTimeMillis()
-
-                    while (downloadProgress < targetProgress) {
-                        val elapsed = System.currentTimeMillis() - startTime
-                        downloadProgress = (startProgress + (targetProgress - startProgress) * 
-                                          (elapsed.toFloat() / duration)).coerceAtMost(targetProgress)
-                        delay(16)
-                    }
-                    delay(300)
-                }
-
-                isComplete = true
-
-                // Save model downloaded flag
-                val prefs = getSharedPreferences("david_prefs", MODE_PRIVATE)
-                prefs.edit().putBoolean("model_downloaded", true).apply()
-
-                delay(1000)
-                navigateToMain()
-            } catch (e: Exception) {
-                Log.e(TAG, "Download error", e)
-                downloadStatus = "Error: ${e.message}"
-            }
-        }
 
         Box(
             modifier = Modifier
@@ -162,24 +144,30 @@ class ModelDownloadActivity : ComponentActivity() {
                     CircularProgressIndicator(
                         progress = downloadProgress,
                         modifier = Modifier.size(160.dp),
-                        color = Color(0xFF00E5FF),
+                        color = if (hasError) Color(0xFFFF6E40) else Color(0xFF00E5FF),
                         strokeWidth = 8.dp,
                         trackColor = Color(0xFF1E293B)
                     )
 
                     // Percentage text
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "${(downloadProgress * 100).toInt()}%",
-                            fontSize = 36.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF00E5FF)
-                        )
-                        if (isComplete) {
+                        if (hasError) {
+                            Text(
+                                text = "⚠️",
+                                fontSize = 36.sp
+                            )
+                        } else if (isComplete) {
                             Text(
                                 text = "✔",
-                                fontSize = 24.sp,
+                                fontSize = 36.sp,
                                 color = Color(0xFF00FF88)
+                            )
+                        } else {
+                            Text(
+                                text = "${(downloadProgress * 100).toInt()}%",
+                                fontSize = 36.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF00E5FF)
                             )
                         }
                     }
@@ -189,10 +177,10 @@ class ModelDownloadActivity : ComponentActivity() {
 
                 // Title
                 Text(
-                    text = "Setting Up Your AI",
+                    text = if (hasError) "Download Failed" else "Setting Up Your AI",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = if (hasError) Color(0xFFFF6E40) else Color.White
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -206,9 +194,9 @@ class ModelDownloadActivity : ComponentActivity() {
                         .padding(16.dp)
                 ) {
                     Text(
-                        text = downloadStatus,
+                        text = if (hasError) errorMessage else downloadStatus,
                         fontSize = 14.sp,
-                        color = Color(0xFF64B5F6),
+                        color = if (hasError) Color(0xFFFF6E40) else Color(0xFF64B5F6),
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -216,47 +204,163 @@ class ModelDownloadActivity : ComponentActivity() {
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Info cards
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    InfoCard(
-                        icon = "🧠",
-                        title = "AI Model",
-                        subtitle = "Gemma 2B",
-                        modifier = Modifier.weight(1f)
-                    )
-                    InfoCard(
-                        icon = "📦",
-                        title = "Size",
-                        subtitle = "~2.8 GB",
-                        modifier = Modifier.weight(1f)
-                    )
-                    InfoCard(
-                        icon = "⚡",
-                        title = "Speed",
-                        subtitle = "Fast",
-                        modifier = Modifier.weight(1f)
-                    )
+                // Model info cards
+                selectedModel?.let { model ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        InfoCard(
+                            icon = "🧠",
+                            title = "AI Model",
+                            subtitle = model.name,
+                            modifier = Modifier.weight(1f)
+                        )
+                        InfoCard(
+                            icon = "📦",
+                            title = "Size",
+                            subtitle = model.size,
+                            modifier = Modifier.weight(1f)
+                        )
+                        InfoCard(
+                            icon = "⚡",
+                            title = "Type",
+                            subtitle = model.type.uppercase(),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Skip button (for testing)
-                TextButton(
-                    onClick = {
-                        val prefs = getSharedPreferences("david_prefs", MODE_PRIVATE)
-                        prefs.edit().putBoolean("model_downloaded", true).apply()
-                        navigateToMain()
-                    }
+                // Action buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(
-                        text = "Skip for now",
-                        fontSize = 12.sp,
-                        color = Color(0xFF9CA3AF)
-                    )
+                    // Download button
+                    if (!isDownloading && !isComplete) {
+                        Button(
+                            onClick = {
+                                selectedModel?.let { model ->
+                                    isDownloading = true
+                                    hasError = false
+                                    lifecycleScope.launch {
+                                        try {
+                                            downloadStatus = "Connecting to Hugging Face..."
+                                            delay(500)
+                                            
+                                            downloadStatus = "Downloading ${model.name}..."
+                                            
+                                            val result = modelManager.downloadModel(model) { progress ->
+                                                downloadProgress = progress / 100f
+                                                downloadStatus = "Downloading ${model.name}... ${progress}%"
+                                            }
+                                            
+                                            result.onSuccess { path ->
+                                                downloadProgress = 1f
+                                                downloadStatus = "Download complete!"
+                                                isComplete = true
+                                                
+                                                // Save download state
+                                                val prefs = getSharedPreferences("david_prefs", MODE_PRIVATE)
+                                                prefs.edit().apply {
+                                                    putBoolean("model_downloaded", true)
+                                                    putString("downloaded_model", model.name)
+                                                    putString("model_path", path)
+                                                    apply()
+                                                }
+                                                
+                                                delay(1500)
+                                                navigateToMain()
+                                            }
+                                            
+                                            result.onFailure { error ->
+                                                hasError = true
+                                                errorMessage = "Download failed: ${error.message}"
+                                                isDownloading = false
+                                                Log.e(TAG, "Download error", error)
+                                            }
+                                            
+                                        } catch (e: Exception) {
+                                            hasError = true
+                                            errorMessage = "Error: ${e.message}"
+                                            isDownloading = false
+                                            Log.e(TAG, "Download exception", e)
+                                        }
+                                    }
+                                }
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(56.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF00E5FF)
+                            ),
+                            shape = RoundedCornerShape(28.dp)
+                        ) {
+                            Text(
+                                text = "📥 Download",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+                        }
+                    }
+                    
+                    // Skip button
+                    OutlinedButton(
+                        onClick = {
+                            val prefs = getSharedPreferences("david_prefs", MODE_PRIVATE)
+                            prefs.edit().putBoolean("model_downloaded", true).apply()
+                            navigateToMain()
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color(0xFF9CA3AF)
+                        ),
+                        shape = RoundedCornerShape(28.dp),
+                        enabled = !isDownloading
+                    ) {
+                        Text(
+                            text = "Skip for now",
+                            fontSize = 14.sp
+                        )
+                    }
                 }
+
+                // Retry button if error
+                if (hasError) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    TextButton(
+                        onClick = {
+                            hasError = false
+                            downloadProgress = 0f
+                        }
+                    ) {
+                        Text(
+                            text = "🔄 Retry",
+                            fontSize = 14.sp,
+                            color = Color(0xFF00E5FF)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Info text
+                Text(
+                    text = if (isDownloading) {
+                        "Please keep the app open while downloading"
+                    } else {
+                        "Download AI model for offline voice assistant"
+                    },
+                    fontSize = 11.sp,
+                    color = Color(0xFF4B5563),
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }
@@ -291,7 +395,8 @@ class ModelDownloadActivity : ComponentActivity() {
                     text = subtitle,
                     fontSize = 12.sp,
                     color = Color(0xFF00E5FF),
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
                 )
             }
         }
