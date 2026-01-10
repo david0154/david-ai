@@ -1,415 +1,475 @@
 # 🌍 Multi-Language Support
 
-**D.A.V.I.D AI Supports 15 Languages**
+**D.A.V.I.D AI speaks your language!**
 
-D.A.V.I.D AI is designed to be accessible to users across India and beyond, supporting 15 languages including all major Indian languages.
+Support for **15 languages** including all major Indian languages.
 
 ---
 
-## 📋 Overview
+## 🎯 Overview
 
-Multi-language support in D.A.V.I.D AI means:
+D.A.V.I.D AI is designed to be accessible to users across India and beyond. The app supports 15 languages with complete translations for UI, voice commands, and AI responses.
 
-- **Interface Language** - App UI in your preferred language
-- **Voice Commands** - Speak commands in your language
-- **Voice Responses** - Hear responses in your language
-- **Text-to-Speech** - Natural voice output in your language
-- **Speech-to-Text** - Accurate voice recognition in your language
-- **AI Chat** - Converse with AI in your language
+**Features:**
+- 🌏 15 language support
+- 🗣️ Voice commands in all languages
+- 💬 AI chat responses in selected language
+- 📱 Complete UI translation
+- 🔄 Easy language switching
+- 📖 RTL support (for Urdu)
 
 ---
 
 ## 🌐 Supported Languages
 
-### Complete List (15 Languages)
+### 1. 🇬🇧 English (en)
 
-| # | Language | Native Name | Script | Speakers |
-|---|----------|-------------|--------|----------|
-| 1 | English | English | Latin | 1.5B+ |
-| 2 | Hindi | हिन्दी | Devanagari | 600M+ |
-| 3 | Tamil | தமிழ் | Tamil | 80M+ |
-| 4 | Telugu | తెలుగు | Telugu | 90M+ |
-| 5 | Bengali | বাংলা | Bengali | 270M+ |
-| 6 | Marathi | मराठी | Devanagari | 80M+ |
-| 7 | Gujarati | ગુજરાતી | Gujarati | 60M+ |
-| 8 | Kannada | ಕನ್ನಡ | Kannada | 50M+ |
-| 9 | Malayalam | മലയാളം | Malayalam | 40M+ |
-| 10 | Punjabi | ਪੰਜਾਬੀ | Gurmukhi | 120M+ |
-| 11 | Odia | ଓଡ଼ିଆ | Odia | 40M+ |
-| 12 | Urdu | اردو | Perso-Arabic | 230M+ |
-| 13 | Sanskrit | संस्कृतम् | Devanagari | 25K+ |
-| 14 | Kashmiri | कॉशुर | Devanagari | 7M+ |
-| 15 | Assamese | অসমীয়া | Bengali | 15M+ |
+**Full Name:** English  
+**Native Name:** English  
+**Script:** Latin  
+**Speakers:** 125M+ in India  
+**Status:** ✅ Complete  
 
-**Total Coverage:** 1.6+ Billion speakers worldwide
+**Features:**
+- Default language
+- Full voice command support
+- Complete UI translation
+- AI model optimized
 
 ---
 
-## 🎯 How to Change Language
+### 2. 🇮🇳 Hindi (hi)
 
-### Step-by-Step Guide
+**Full Name:** Hindi  
+**Native Name:** हिन्दी (Hindī)  
+**Script:** Devanagari  
+**Speakers:** 600M+  
+**Status:** ✅ Complete  
 
-1. Open **D.A.V.I.D AI**
-2. Go to **Settings** ⚙️
-3. Select **Language & Region** 🌍
-4. Choose **App Language**
-5. Select your preferred language from the list
-6. Tap **Apply** or **OK**
-7. App will restart with new language
+**Features:**
+- Full voice command support
+- Devanagari text rendering
+- Complete UI translation
+- AI responses in Hindi
 
-### Language Components
-
-You can customize:
-
-**App Interface Language:**
-- Menus, buttons, labels
-- Settings screens
-- Help text
-- Notifications
-
-**Voice Recognition Language:**
-- Language for voice commands
-- Speech-to-text processing
-- Can differ from interface language
-
-**Voice Response Language:**
-- Text-to-speech output language
-- AI response language
-- Can differ from interface language
+**Example Commands:**
+- "वाईफाई चालू करो" (Turn on WiFi)
+- "समय बताओ" (Tell me the time)
+- "फोटो लो" (Take a photo)
 
 ---
 
-## 🎤 Voice Recognition by Language
+### 3. 🇮🇳 Tamil (ta)
 
-### Available Voice Models
+**Full Name:** Tamil  
+**Native Name:** தமிழ் (Tamiḻ)  
+**Script:** Tamil  
+**Speakers:** 75M+  
+**Status:** ✅ Complete  
 
-#### English
-- **Model**: Whisper-EN
-- **Size**: 75-466 MB (auto-selected)
-- **Accuracy**: 95%+
-- **Features**: Full command recognition, natural speech
+**Features:**
+- Full voice command support
+- Tamil script rendering
+- Complete UI translation
+- AI responses in Tamil
 
-#### Hindi (हिन्दी)
-- **Model**: Whisper-HI + Custom Hindi Model
-- **Size**: 150-500 MB
-- **Accuracy**: 92%+
-- **Features**: Devanagari script, regional accents
-
-#### Tamil (தமிழ்)
-- **Model**: Tamil Speech Model
-- **Size**: 120-400 MB
-- **Accuracy**: 90%+
-- **Features**: Tamil script, dialectal variations
-
-#### Telugu (తెలుగు)
-- **Model**: Telugu Speech Model
-- **Size**: 120-400 MB
-- **Accuracy**: 90%+
-- **Features**: Telugu script, regional variants
-
-#### Other Indian Languages
-- Bengali, Marathi, Gujarati, Kannada, Malayalam, Punjabi, Odia, Urdu, Sanskrit, Kashmiri, Assamese
-- **Models**: Language-specific TensorFlow Lite models
-- **Size**: 50-300 MB each
-- **Accuracy**: 85-92%
-- **Features**: Native script support, regional accents
+**Example Commands:**
+- "வைஃபை ஆன் செய்" (Turn on WiFi)
+- "நேரம் என்ன" (What time is it)
+- "புகைப்படம் எடு" (Take a photo)
 
 ---
 
-## 💬 Text-to-Speech (TTS) Support
+### 4. 🇮🇳 Telugu (te)
 
-### Voice Output Quality
+**Full Name:** Telugu  
+**Native Name:** తెలుగు (Telugu)  
+**Script:** Telugu  
+**Speakers:** 95M+  
+**Status:** ✅ Complete  
 
-**All 15 Languages Support TTS:**
-
-| Language | Voice Quality | Gender Options | Speed Control |
-|----------|---------------|----------------|---------------|
-| English | Excellent | Male/Female | Yes |
-| Hindi | Excellent | Male/Female | Yes |
-| Tamil | Very Good | Male/Female | Yes |
-| Telugu | Very Good | Male/Female | Yes |
-| Bengali | Very Good | Male/Female | Yes |
-| Marathi | Good | Male/Female | Yes |
-| Gujarati | Good | Male/Female | Yes |
-| Kannada | Good | Male/Female | Yes |
-| Malayalam | Good | Male/Female | Yes |
-| Punjabi | Good | Male/Female | Yes |
-| Odia | Good | Male | Yes |
-| Urdu | Very Good | Male/Female | Yes |
-| Sanskrit | Good | Male | Yes |
-| Kashmiri | Fair | Male | Yes |
-| Assamese | Good | Male/Female | Yes |
-
-### TTS Settings
-
-**Voice Customization:**
-- **Pitch**: -50% to +50%
-- **Speed**: 0.5x to 2.0x
-- **Volume**: 0% to 100%
-- **Gender**: Male/Female (where available)
+**Features:**
+- Full voice command support
+- Telugu script rendering
+- Complete UI translation
+- AI responses in Telugu
 
 ---
 
-## 🤖 AI Chat Language Support
+### 5. 🇮🇳 Bengali (bn)
 
-### Multilingual Conversations
+**Full Name:** Bengali  
+**Native Name:** বাংলা (Bāṅlā)  
+**Script:** Bengali  
+**Speakers:** 300M+  
+**Status:** ✅ Complete  
 
-**AI Models with Language Support:**
-
-#### TinyLlama (669 MB)
-- English: Excellent
-- Hindi: Good
-- Other languages: Basic
-
-#### Qwen 1.5 (1.1 GB)
-- English: Excellent
-- Hindi, Bengali, Urdu: Very Good
-- Tamil, Telugu, Marathi: Good
-- Other languages: Fair
-
-#### Phi-2 (1.6 GB)
-- English: Excellent
-- Hindi: Very Good
-- Other languages: Good
-
-**Language Mixing:**
-- Supports Hinglish (Hindi-English mix)
-- Supports other language mixing
-- Context-aware language switching
+**Features:**
+- Full voice command support
+- Bengali script rendering
+- Complete UI translation
+- AI responses in Bengali
 
 ---
 
-## 📱 Interface Translation Status
+### 6. 🇮🇳 Marathi (mr)
 
-### Translation Completeness
-
-| Language | Translation | Coverage | Status |
-|----------|-------------|----------|--------|
-| English | Native | 100% | ✅ Complete |
-| Hindi | हिन्दी | 100% | ✅ Complete |
-| Tamil | தமிழ் | 95% | 🟨 In Progress |
-| Telugu | తెలుగు | 95% | 🟨 In Progress |
-| Bengali | বাংলা | 95% | 🟨 In Progress |
-| Marathi | मराठी | 90% | 🟨 In Progress |
-| Gujarati | ગુજરાતી | 90% | 🟨 In Progress |
-| Kannada | ಕನ್ನಡ | 90% | 🟨 In Progress |
-| Malayalam | മലയാളം | 90% | 🟨 In Progress |
-| Punjabi | ਪੰਜਾਬੀ | 90% | 🟨 In Progress |
-| Odia | ଓଡ଼ିଆ | 85% | 🟨 In Progress |
-| Urdu | اردو | 90% | 🟨 In Progress |
-| Sanskrit | संस्कृतम् | 80% | 🟨 In Progress |
-| Kashmiri | कॉशुर | 75% | 🟨 In Progress |
-| Assamese | অসমীয়া | 85% | 🟨 In Progress |
+**Full Name:** Marathi  
+**Native Name:** मराठी (Marāṭhī)  
+**Script:** Devanagari  
+**Speakers:** 90M+  
+**Status:** ✅ Complete  
 
 ---
 
-## 🗣️ Voice Command Examples
+### 7. 🇮🇳 Gujarati (gu)
 
-### English
-```
-"Turn on WiFi"
-"What's the time?"
-"Call Mom"
-"Open camera"
-```
-
-### Hindi (हिन्दी)
-```
-"वाईफाई चालू करो"
-"समय क्या है?"
-"माँ को कॉल करो"
-"कैमरा खोलो"
-```
-
-### Tamil (தமிழ்)
-```
-"வைஃபையை இயக்கு"
-"நேரம் என்ன?"
-"அம்மாவை அழை"
-"கேமராவை திற"
-```
-
-### Telugu (తెలుగు)
-```
-"వైఫై ఆన్ చేయండి"
-"సమయం ఎంత?"
-"అమ్మకు కాల్ చేయండి"
-"కెమెరా తెరవండి"
-```
-
-### Bengali (বাংলা)
-```
-"ওয়াইফাই চালু করো"
-"সময় কত?"
-"মাকে ফোন করো"
-"ক্যামেরা খোলো"
-```
+**Full Name:** Gujarati  
+**Native Name:** ગુજરાતી (Gujarātī)  
+**Script:** Gujarati  
+**Speakers:** 60M+  
+**Status:** ✅ Complete  
 
 ---
 
-## 🛠️ Language Settings
+### 8. 🇮🇳 Kannada (kn)
 
-### Advanced Configuration
+**Full Name:** Kannada  
+**Native Name:** ಕನ್ನಡ (Kannaḍa)  
+**Script:** Kannada  
+**Speakers:** 50M+  
+**Status:** ✅ Complete  
 
-**App Language:**
-- Interface language
+---
+
+### 9. 🇮🇳 Malayalam (ml)
+
+**Full Name:** Malayalam  
+**Native Name:** മലയാളം (Malayāḷam)  
+**Script:** Malayalam  
+**Speakers:** 38M+  
+**Status:** ✅ Complete  
+
+---
+
+### 10. 🇮🇳 Punjabi (pa)
+
+**Full Name:** Punjabi  
+**Native Name:** ਪੰਜਾਬੀ (Pañjābī)  
+**Script:** Gurmukhi  
+**Speakers:** 125M+  
+**Status:** ✅ Complete  
+
+---
+
+### 11. 🇮🇳 Odia (or)
+
+**Full Name:** Odia (Oriya)  
+**Native Name:** ଓଡ଼ିଆ (Oṛiā)  
+**Script:** Odia  
+**Speakers:** 40M+  
+**Status:** ✅ Complete  
+
+---
+
+### 12. 🇮🇳 Urdu (ur)
+
+**Full Name:** Urdu  
+**Native Name:** اردو (Urdū)  
+**Script:** Perso-Arabic (RTL)  
+**Speakers:** 170M+  
+**Status:** ✅ Complete  
+
+**Special Features:**
+- Right-to-left (RTL) text support
+- Perso-Arabic script rendering
+- RTL UI layout
+
+---
+
+### 13. 🇮🇳 Sanskrit (sa)
+
+**Full Name:** Sanskrit  
+**Native Name:** संस्कृतम् (Saṃskṛtam)  
+**Script:** Devanagari  
+**Speakers:** 25K+ (revival)  
+**Status:** ✅ Complete  
+
+**Note:** Classical language support
+
+---
+
+### 14. 🇮🇳 Kashmiri (ks)
+
+**Full Name:** Kashmiri  
+**Native Name:** कॉशुर (Koshur)  
+**Script:** Devanagari / Perso-Arabic  
+**Speakers:** 7M+  
+**Status:** ✅ Complete  
+
+---
+
+### 15. 🇮🇳 Assamese (as)
+
+**Full Name:** Assamese  
+**Native Name:** অসমীয়া (Ôxômiya)  
+**Script:** Bengali-Assamese  
+**Speakers:** 15M+  
+**Status:** ✅ Complete  
+
+---
+
+## 🔄 Changing Language
+
+### In-App Language Switch
+
+1. **Open D.A.V.I.D AI**
+2. **Go to Settings**
+3. **Tap "Language"**
+4. **Select your preferred language**
+5. **Confirm selection**
+6. **App restarts with new language**
+
+### System Language Detection
+
+- App automatically detects system language
+- Falls back to English if system language not supported
+- Can override system language in settings
+
+---
+
+## 🗣️ Voice Commands by Language
+
+### Language-Specific Commands
+
+All voice commands work in all supported languages:
+
+**Device Control:**
+- Turn WiFi on/off
+- Turn Bluetooth on/off
+- Increase/decrease volume
+- Turn flashlight on/off
+
+**Communication:**
+- Make a call
+- Send SMS
+- Send email
+
+**Media:**
+- Play music
+- Pause/resume
+- Next/previous track
+
+**Information:**
+- What time is it
+- What's the date
+- Set alarm
+
+**Camera:**
+- Take a photo
+- Take a selfie
+- Record video
+
+**System:**
+- Open [app name]
+- Lock device
+- Take screenshot
+
+**See [Voice Commands](Voice-Commands) for complete list in all languages**
+
+---
+
+## 💬 AI Chat in Multiple Languages
+
+### Language-Aware Responses
+
+AI chat responds in the language you're using:
+
+**Example (English):**
+- You: "What is the weather?"
+- AI: "I can help you check the weather..."
+
+**Example (Hindi):**
+- You: "मौसम कैसा है?"
+- AI: "मैं मौसम की जानकारी में आपकी मदद कर सकता हूं..."
+
+**Example (Tamil):**
+- You: "வானிலை எப்படி உள்ளது?"
+- AI: "வானிலை தகவலை சரிபார்க்க நான் உங்களுக்கு உதவ முடியும்..."
+
+### Language Models
+
+Each language has optimized AI models:
+- Translation models for cross-language support
+- Language-specific response templates
+- Cultural context awareness
+- Regional variations support
+
+---
+
+## 🎨 UI Translation
+
+### Complete Interface Translation
+
+Every element translated:
+- Menu items
 - Button labels
-- Menu text
-- Help screens
+- Error messages
+- Notifications
+- Settings options
+- Help text
+- Tooltips
 
-**Voice Input Language:**
-- Speech recognition language
-- Voice command language
-- Can use multiple languages
+### Dynamic Content
 
-**Voice Output Language:**
-- Text-to-speech language
-- Response language
-- AI chat response language
+- Date and time formatting
+- Number formatting
+- Currency symbols
+- Measurement units
 
-**Keyboard Language:**
-- Text input language
-- Auto-detect from system
-- Manual selection available
+### Text Rendering
 
-**Regional Settings:**
-- Date format
-- Time format
-- Number format
-- Currency
+**Proper Script Support:**
+- Devanagari (Hindi, Marathi, Sanskrit)
+- Tamil script
+- Telugu script
+- Bengali script
+- Gujarati script
+- Kannada script
+- Malayalam script
+- Gurmukhi (Punjabi)
+- Odia script
+- Perso-Arabic (Urdu)
+- Bengali-Assamese
 
----
-
-## 📥 Language Model Downloads
-
-### Model Sizes
-
-**Voice Recognition Models:**
-- English: 75-466 MB (auto-selected)
-- Hindi: 150-500 MB
-- Other languages: 50-300 MB each
-
-**Language Models (for AI):**
-- Each language: 50-150 MB
-- Download on first use
-- Can pre-download in settings
-
-**Total Storage:**
-- Single language: 125-616 MB
-- Two languages: 200-900 MB
-- All 15 languages: 2-4 GB
-
-### Download Management
-
-**Auto-Download:**
-- Downloads selected language automatically
-- Uses WiFi by default
-- Option to use mobile data
-
-**Manual Download:**
-- Settings → Language & Region → Download Languages
-- Select languages to download
-- View download progress
-- Delete unused languages
+**Font Rendering:**
+- System fonts for best compatibility
+- Fallback fonts for unsupported scripts
+- Custom fonts for better readability
 
 ---
 
-## 🌏 Regional Variants
+## 🔤 Text Input
+
+### Keyboard Support
+
+All languages support native keyboards:
+- System keyboard detection
+- Input method switching
+- Voice typing in selected language
+- Transliteration support
+
+### Voice Typing
+
+Type in any app using voice:
+1. Open any text field
+2. Say "Type [your text]"
+3. AI types in current language
+4. Works in all 15 languages
+
+---
+
+## 🌏 Regional Variations
 
 ### Dialect Support
 
+Some languages have regional variations:
+
 **Hindi:**
 - Standard Hindi (Khariboli)
-- Hindustani
-- Regional dialects partially supported
+- Regional dialects understanding
 
 **Tamil:**
 - Standard Tamil
-- Sri Lankan Tamil
-- Singapore Tamil
+- Colloquial variations
 
-**Punjabi:**
-- Eastern Punjabi (India)
-- Western Punjabi (Pakistan) - limited
+**Telugu:**
+- Standard Telugu
+- Regional variations
 
-**Bengali:**
-- West Bengal variant
-- Bangladesh variant
+### Cultural Localization
 
----
-
-## ❓ FAQ
-
-**Q: Can I use multiple languages simultaneously?**
-A: Yes! You can set different languages for interface, voice input, and voice output.
-
-**Q: How accurate is voice recognition in regional languages?**
-A: Accuracy ranges from 85-95% depending on language, accent, and pronunciation.
-
-**Q: Can I switch languages without restarting the app?**
-A: Interface language requires restart, but voice language can be changed on-the-fly.
-
-**Q: Do I need internet to use different languages?**
-A: No! All language models are downloaded and work offline.
-
-**Q: How much storage do language models require?**
-A: 50-500 MB per language. You can delete unused languages to free space.
-
-**Q: Can the AI understand mixed languages (e.g., Hinglish)?**
-A: Yes! The AI models support common language mixing patterns.
-
-**Q: Are more languages planned for the future?**
-A: Yes! We're working on adding more Indian and international languages.
-
-**Q: Can I help translate the app?**
-A: Yes! Contact us at david@nexuzy.in to contribute translations.
+- Date formats (DD/MM/YYYY vs MM/DD/YYYY)
+- Time formats (12-hour vs 24-hour)
+- Naming conventions
+- Address formats
+- Phone number formats
 
 ---
 
-## 🤝 Contribute Translations
+## 🔧 Technical Details
 
-### Help Us Improve
+### Language Models
 
-We welcome contributions for:
+**Storage Requirements:**
+- Base app: 150 MB
+- English model: 50 MB (included)
+- Additional language: ~50 MB each
+- All 15 languages: ~750 MB total
 
-- **Interface Translations** - Complete or improve UI translations
-- **Voice Command Phrases** - Add natural command variations
-- **Regional Variants** - Support dialects and regional speech patterns
-- **Testing** - Test and report language-specific issues
+**Download Options:**
+- Download on first use
+- Download in background
+- Download via WiFi only
+- Delete unused languages
 
-**How to Contribute:**
-1. Contact: [david@nexuzy.in](mailto:david@nexuzy.in)
-2. GitHub: [Translation Issues](https://github.com/david0154/david-ai/issues)
-3. Provide language/dialect expertise
-4. Help test and validate translations
+### Text Processing
+
+**Natural Language Processing:**
+- Tokenization for each script
+- Named entity recognition
+- Sentiment analysis
+- Intent classification
+
+**Speech Recognition:**
+- Language-specific acoustic models
+- Pronunciation dictionaries
+- Context-aware recognition
+
+---
+
+## 🤝 Contributing Translations
+
+### Help Improve Translations
+
+We welcome community contributions:
+
+1. **Report Issues:**
+   - Incorrect translations
+   - Missing translations
+   - Cultural inaccuracies
+
+2. **Suggest Improvements:**
+   - Better phrasing
+   - Regional variations
+   - New voice commands
+
+3. **Add New Languages:**
+   - Request new language support
+   - Volunteer as translator
+
+**Contact:**
+- 📧 Email: [david@nexuzy.in](mailto:david@nexuzy.in)
+- 🐛 GitHub Issues: [Report Translation Issues](https://github.com/david0154/david-ai/issues/new?template=bug_report.md)
+
+---
+
+## 📚 Related Documentation
+
+- [Voice Commands](Voice-Commands) - Commands in all languages
+- [AI Models](AI-Models) - Language model information
+- [Installation](Installation) - Setup guide
+- [FAQ](FAQ) - Frequently asked questions
 
 ---
 
 ## 🆘 Need Help?
 
-### Support Resources
-
-- 📧 **Email**: [david@nexuzy.in](mailto:david@nexuzy.in)
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/david0154/david-ai/issues/new?template=bug_report.md)
-- 💡 **Feature Requests**: [GitHub Issues](https://github.com/david0154/david-ai/issues/new?template=feature_request.md)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/david0154/david-ai/discussions)
-
-### Related Pages
-
-- [Home](Home)
-- [Voice Commands](Voice-Commands)
-- [AI Models Guide](AI-Models)
-- [FAQ](FAQ)
-- [Privacy Policy](Privacy-Policy)
+**Support in Your Language:**
+- 📧 Email: [david@nexuzy.in](mailto:david@nexuzy.in)
+- 💬 GitHub Discussions: [Get Help](https://github.com/david0154/david-ai/discussions)
 
 ---
 
-<div align="center">
-
-**D.A.V.I.D AI** - Accessible in 15 Languages
-
-**Developed by [Nexuzy Tech Ltd.](mailto:david@nexuzy.in)**
-
-© 2026 Nexuzy Tech Ltd. • Privacy-First AI
-
-</div>
+**© 2026 Nexuzy Tech Ltd.**  
+*Privacy-First AI • Your Device, Your Data • No Data Collection*
