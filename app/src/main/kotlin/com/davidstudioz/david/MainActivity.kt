@@ -313,9 +313,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Error screen to show when initialization fails
-     */
     @Composable
     private fun ErrorScreen(errorMsg: String) {
         Box(
@@ -354,9 +351,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Permission denial dialog
-     */
     @Composable
     private fun PermissionDenialDialog(deniedPermissions: List<String>, onDismiss: () -> Unit) {
         AlertDialog(
@@ -399,9 +393,6 @@ class MainActivity : ComponentActivity() {
         )
     }
 
-    /**
-     * UNIFIED JARVIS UI - ALL Features Combined with Logo!
-     */
     @Composable
     private fun UnifiedDavidAIScreen() {
         TimeUpdater()
@@ -711,11 +702,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Logo Image Component
-     * Displays logo.png from drawable folder
-     * Falls back to robot emoji if not found
-     */
     @Composable
     private fun LogoImage(
         modifier: Modifier = Modifier,
@@ -730,21 +716,20 @@ class MainActivity : ComponentActivity() {
             }
         }
         
-        if (logoResourceId != 0) {
-            // Try to load the image, fall back to emoji on any error
-            try {
-                Image(
-                    painter = painterResource(id = logoResourceId),
-                    contentDescription = "D.A.V.I.D Logo",
-                    modifier = modifier.clip(CircleShape),
-                    contentScale = ContentScale.Fit,
-                    colorFilter = tint?.let { ColorFilter.tint(it) }
-                )
-            } catch (e: Exception) {
-                Log.w(TAG, "Error loading logo image", e)
-                LogoFallback(modifier, tint)
-            }
+        // Use state to track if we should show logo or fallback
+        var showFallback by remember { mutableStateOf(logoResourceId == 0) }
+        
+        if (!showFallback && logoResourceId != 0) {
+            // Attempt to show logo image
+            Image(
+                painter = painterResource(id = logoResourceId),
+                contentDescription = "D.A.V.I.D Logo",
+                modifier = modifier.clip(CircleShape),
+                contentScale = ContentScale.Fit,
+                colorFilter = tint?.let { ColorFilter.tint(it) }
+            )
         } else {
+            // Show fallback emoji
             LogoFallback(modifier, tint)
         }
     }

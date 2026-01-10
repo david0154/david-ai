@@ -366,21 +366,20 @@ class SplashActivity : ComponentActivity() {
             }
         }
 
-        if (logoResourceId != 0) {
-            // Try to load image, fall back to emoji on error
-            try {
-                Image(
-                    painter = painterResource(id = logoResourceId),
-                    contentDescription = "D.A.V.I.D Logo",
-                    modifier = modifier.clip(CircleShape),
-                    contentScale = ContentScale.Fit,
-                    colorFilter = tint?.let { ColorFilter.tint(it) }
-                )
-            } catch (e: Exception) {
-                Log.w(TAG, "Error loading logo", e)
-                LogoFallback(modifier, tint)
-            }
+        // Use state to track if we should show logo or fallback
+        var showFallback by remember { mutableStateOf(logoResourceId == 0) }
+
+        if (!showFallback && logoResourceId != 0) {
+            // Attempt to show logo image
+            Image(
+                painter = painterResource(id = logoResourceId),
+                contentDescription = "D.A.V.I.D Logo",
+                modifier = modifier.clip(CircleShape),
+                contentScale = ContentScale.Fit,
+                colorFilter = tint?.let { ColorFilter.tint(it) }
+            )
         } else {
+            // Show fallback emoji
             LogoFallback(modifier, tint)
         }
     }
