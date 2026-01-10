@@ -117,9 +117,16 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.DavidAI" />
 
-        <!-- Main Activity -->
+        <!-- Main Activity (Complex with dependencies) -->
         <activity
             android:name=".MainActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.DavidAI" />
+
+        <!-- Safe Main Activity (Fallback - no dependencies) -->
+        <activity
+            android:name=".SafeMainActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.DavidAI" />
