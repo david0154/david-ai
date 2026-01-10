@@ -101,16 +101,6 @@ class SplashActivity : ComponentActivity() {
             label = "pulse"
         )
 
-        val rotationAngle by infiniteTransition.animateFloat(
-            initialValue = 0f,
-            targetValue = 360f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(20000, easing = LinearEasing),
-                repeatMode = RepeatMode.Restart
-            ),
-            label = "rotation"
-        )
-
         val glowAlpha by infiniteTransition.animateFloat(
             initialValue = 0.3f,
             targetValue = 0.8f,
