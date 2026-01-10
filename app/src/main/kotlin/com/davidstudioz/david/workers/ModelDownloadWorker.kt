@@ -1,78 +1,91 @@
 package com.davidstudioz.david.workers
 
 import android.content.Context
-import android.os.Build
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import com.davidstudioz.david.utils.DeviceResourceManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.net.HttpURLConnection
-import java.net.URL
 
 /**
- * Background Worker to download AI models based on device capability
- * - Checks device RAM, CPU, GPU
- * - Downloads appropriate model (lite, standard, or pro)
- * - Shows progress in notification
+ * Smart AI Model Downloader
+ * - Uses DeviceResourceManager for resource-aware downloads
+ * - Respects 50-60% resource usage limits
+ * - Selects appropriate model based on available resources
+ * - Only downloads if device has sufficient free resources
  */
 class ModelDownloadWorker(
     context: Context,
     params: WorkerParameters
 ) : CoroutineWorker(context, params) {
 
+    private val resourceManager = DeviceResourceManager(context)
+
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
-            Log.d(TAG, "Starting model download...")
+            Log.d(TAG, "=" * 50)
+            Log.d(TAG, "Starting Smart Model Download")
+            Log.d(TAG, "=" * 50)
             
-            // Check device capabilities
-            val deviceCapability = checkDeviceCapability()
-            Log.d(TAG, "Device capability: $deviceCapability")
+            // Get current resource status
+            val resourceStatus = resourceManager.getResourceStatus()
             
-            // Determine which model to download
-            val modelType = when (deviceCapability) {
-                DeviceCapability.HIGH -> "pro"  // High-end devices
-                DeviceCapability.MEDIUM -> "standard"  // Mid-range devices
-                DeviceCapability.LOW -> "lite"  // Low-end devices
+            // Log resource information
+            Log.d(TAG, "Device Resources:")
+            Log.d(TAG, "  RAM: ${resourceStatus.usedRamMB / 1024}GB / ${resourceStatus.totalRamMB / 1024}GB (${resourceStatus.ramUsagePercent.toInt()}%)")
+            Log.d(TAG, "  Storage: ${resourceStatus.usedStorageGB}GB / ${resourceStatus.totalStorageGB}GB (${resourceStatus.storageUsagePercent.toInt()}%)")
+            Log.d(TAG, "  CPU: ${resourceStatus.cpuCores} cores (${resourceStatus.cpuUsagePercent.toInt()}% usage)")
+            Log.d(TAG, "")
+            
+            // Check if download is allowed
+            val availability = resourceStatus.canUseForAI
+            Log.d(TAG, "Resource Availability Check:")
+            Log.d(TAG, "  Can Download: ${availability.canDownloadModel}")
+            Log.d(TAG, "  Recommended Model: ${availability.recommendedModel.name}")
+            Log.d(TAG, "  Max Model Size: ${availability.maxModelSizeMB}MB")
+            Log.d(TAG, "  Max RAM Usage: ${availability.maxRamUsageMB}MB")
+            Log.d(TAG, "  Reason: ${availability.reason}")
+            Log.d(TAG, "")
+            
+            // Don't download if resources are constrained
+            if (!availability.canDownloadModel) {
+                Log.w(TAG, "Download blocked: ${availability.reason}")
+                Log.w(TAG, "Current RAM usage (${resourceStatus.ramUsagePercent.toInt()}%) or Storage usage (${resourceStatus.storageUsagePercent.toInt()}%) exceeds 50% limit")
+                return@withContext Result.failure(
+                    workDataOf(
+                        "error" to "Insufficient resources",
+                        "reason" to availability.reason
+                    )
+                )
             }
             
-            // Download model
-            val success = downloadModel(modelType)
+            // Download appropriate model
+            val modelType = availability.recommendedModel.name.lowercase()
+            Log.d(TAG, "Downloading model: $modelType")
+            Log.d(TAG, "  Size: ${availability.recommendedModel.sizeMB}MB")
+            Log.d(TAG, "  RAM Required: ${availability.recommendedModel.ramRequiredMB}MB")
+            
+            val success = downloadModel(modelType, availability.recommendedModel)
             
             if (success) {
-                Log.d(TAG, "Model downloaded successfully: $modelType")
-                Result.success(workDataOf("model_type" to modelType))
+                Log.d(TAG, "✓ Model downloaded successfully: $modelType")
+                Log.d(TAG, "=" * 50)
+                Result.success(workDataOf(
+                    "model_type" to modelType,
+                    "model_size_mb" to availability.recommendedModel.sizeMB,
+                    "ram_required_mb" to availability.recommendedModel.ramRequiredMB
+                ))
             } else {
-                Log.e(TAG, "Model download failed")
+                Log.e(TAG, "✗ Model download failed: $modelType")
+                Log.d(TAG, "=" * 50)
                 Result.retry()
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error downloading model", e)
+            Log.e(TAG, "Error in model download worker", e)
             Result.failure(workDataOf("error" to e.message))
-        }
-    }
-
-    /**
-     * Check device capability based on RAM, CPU, and Android version
-     */
-    private fun checkDeviceCapability(): DeviceCapability {
-        val runtime = Runtime.getRuntime()
-        val maxMemoryMB = runtime.maxMemory() / (1024 * 1024)
-        val processorCount = runtime.availableProcessors()
-        
-        return when {
-            // High-end: 8GB+ RAM, 8+ cores, Android 12+
-            maxMemoryMB >= 8192 && processorCount >= 8 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> 
-                DeviceCapability.HIGH
-            
-            // Medium: 4GB+ RAM, 4+ cores, Android 10+
-            maxMemoryMB >= 4096 && processorCount >= 4 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> 
-                DeviceCapability.MEDIUM
-            
-            // Low: Everything else
-            else -> DeviceCapability.LOW
         }
     }
 
@@ -80,13 +93,18 @@ class ModelDownloadWorker(
      * Download AI model from server
      * In production, this would download from your CDN/server
      */
-    private suspend fun downloadModel(modelType: String): Boolean = withContext(Dispatchers.IO) {
+    private suspend fun downloadModel(
+        modelType: String,
+        modelSize: DeviceResourceManager.ModelSize
+    ): Boolean = withContext(Dispatchers.IO) {
         try {
             // Model URLs (replace with your actual URLs)
             val modelUrl = when (modelType) {
+                "ultra" -> "https://example.com/models/david-ai-ultra.tflite"
                 "pro" -> "https://example.com/models/david-ai-pro.tflite"
                 "standard" -> "https://example.com/models/david-ai-standard.tflite"
                 "lite" -> "https://example.com/models/david-ai-lite.tflite"
+                "tiny" -> "https://example.com/models/david-ai-tiny.tflite"
                 else -> return@withContext false
             }
             
@@ -99,11 +117,19 @@ class ModelDownloadWorker(
                 return@withContext true
             }
             
-            // TODO: Implement actual download
-            // For now, create a placeholder file
-            Log.d(TAG, "Creating placeholder model file: ${modelFile.absolutePath}")
-            modelFile.writeText("Placeholder AI model: $modelType")
+            // TODO: Implement actual download from your server
+            // For now, create a placeholder file with size info
+            Log.d(TAG, "Creating model file: ${modelFile.absolutePath}")
+            val modelInfo = buildString {
+                appendLine("DAVID AI Model: $modelType")
+                appendLine("Size: ${modelSize.sizeMB}MB")
+                appendLine("RAM Required: ${modelSize.ramRequiredMB}MB")
+                appendLine("Download URL: $modelUrl")
+                appendLine("Status: Ready for production download")
+            }
+            modelFile.writeText(modelInfo)
             
+            Log.d(TAG, "Model file created: ${modelFile.length()} bytes")
             true
         } catch (e: Exception) {
             Log.e(TAG, "Error in downloadModel", e)
@@ -111,11 +137,8 @@ class ModelDownloadWorker(
         }
     }
 
-    enum class DeviceCapability {
-        HIGH, MEDIUM, LOW
-    }
-
     companion object {
         private const val TAG = "ModelDownloadWorker"
+        private operator fun String.times(count: Int) = this.repeat(count)
     }
 }
