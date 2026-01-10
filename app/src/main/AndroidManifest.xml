@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.davidstudioz.david">
 
     <!-- ====== CORE PERMISSIONS ====== -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -70,7 +71,7 @@
 
     <!-- ====== APPLICATION CONFIGURATION ====== -->
     <application
-        android:name=".DavidAIApp"
+        android:name="com.davidstudioz.david.DavidAIApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -79,7 +80,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.DavidAI"
-        android:usesCleartextTraffic="false"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
         <!-- Wear OS Metadata -->
@@ -89,7 +90,7 @@
 
         <!-- Splash Activity - LAUNCHER -->
         <activity
-            android:name=".ui.SplashActivity"
+            android:name="com.davidstudioz.david.ui.SplashActivity"
             android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.DavidAI">
@@ -105,42 +106,42 @@
 
         <!-- Login Activity -->
         <activity
-            android:name=".ui.LoginActivity"
+            android:name="com.davidstudioz.david.ui.LoginActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.DavidAI" />
 
         <!-- Model Download Activity -->
         <activity
-            android:name=".ui.ModelDownloadActivity"
+            android:name="com.davidstudioz.david.ui.ModelDownloadActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.DavidAI" />
 
         <!-- Main Activity (Complex with dependencies) -->
         <activity
-            android:name=".MainActivity"
+            android:name="com.davidstudioz.david.MainActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.DavidAI" />
 
         <!-- Safe Main Activity (Fallback - no dependencies) -->
         <activity
-            android:name=".SafeMainActivity"
+            android:name="com.davidstudioz.david.SafeMainActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.DavidAI" />
 
         <!-- Hot Word Detection Service -->
         <service
-            android:name=".voice.HotWordDetectionService"
+            android:name="com.davidstudioz.david.voice.HotWordDetectionService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="microphone" />
 
         <!-- Gesture Recognition Service -->
         <service
-            android:name=".gesture.GestureRecognitionService"
+            android:name="com.davidstudioz.david.gesture.GestureRecognitionService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="camera" />
