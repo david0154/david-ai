@@ -87,9 +87,16 @@ android {
     }
 }
 
-// NOTE: composeCompiler configuration removed to avoid deprecation warnings
-// Compose compiler will use default settings which are optimal for most cases
+// Compose Compiler Configuration
 // Strong skipping mode is enabled by default in Kotlin 2.0+
+// No additional stability configuration needed for standard cases
+composeCompiler {
+    // Enable strong skipping mode (default in Kotlin 2.0+)
+    enableStrongSkippingMode.set(true)
+    
+    // Include source information for better debugging
+    includeSourceInformation.set(true)
+}
 
 dependencies {
     // Core Android
