@@ -49,17 +49,6 @@ class GestureRecognitionService : Service() {
     private var windowManager: WindowManager? = null
     private var overlayView: ImageView? = null
     private var isRecognizing = false
-    
-    companion object {
-        private const val TAG = "GestureService"
-        private const val NOTIFICATION_ID = 1002
-        private const val CHANNEL_ID = "david_gesture_channel"
-        
-        var isServiceRunning = false
-            private set
-            
-        const val ACTION_STOP = "com.davidstudioz.david.ACTION_STOP_GESTURE"
-    }
 
     override fun onCreate() {
         super.onCreate()
@@ -269,9 +258,19 @@ class GestureRecognitionService : Service() {
     }
 
     companion object {
+        private const val TAG = "GestureService"
+        private const val NOTIFICATION_ID = 1002
+        private const val CHANNEL_ID = "david_gesture_channel"
+        
+        var isServiceRunning = false
+            private set
+            
+        // Action constants
+        const val ACTION_STOP = "com.davidstudioz.david.ACTION_STOP_GESTURE"
         const val ACTION_GESTURE_DETECTED = "com.davidstudioz.david.GESTURE_DETECTED"
         const val EXTRA_GESTURE = "gesture"
         
+        // Service control methods
         fun start(context: Context) {
             val intent = Intent(context, GestureRecognitionService::class.java)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
