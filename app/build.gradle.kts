@@ -87,18 +87,9 @@ android {
     }
 }
 
-// ✅ FIXED: Compose Compiler configuration - Modern syntax for Gradle 9.0+
-composeCompiler {
-    // Use enableStrongSkippingMode instead of featureFlags
-    enableStrongSkippingMode.set(true)
-    
-    // Optional: Enable stability configuration
-    stabilityConfigurationFile.set(rootProject.layout.projectDirectory.file("stability_config.conf"))
-    
-    // Optional: Generate reports
-    reportsDestination.set(layout.buildDirectory.dir("compose_compiler"))
-    metricsDestination.set(layout.buildDirectory.dir("compose_compiler"))
-}
+// NOTE: composeCompiler configuration removed to avoid deprecation warnings
+// Compose compiler will use default settings which are optimal for most cases
+// Strong skipping mode is enabled by default in Kotlin 2.0+
 
 dependencies {
     // Core Android
