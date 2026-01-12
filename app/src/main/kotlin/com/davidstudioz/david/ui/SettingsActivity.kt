@@ -397,7 +397,7 @@ class SettingsActivity : ComponentActivity() {
                         FeatureItem("📱 Device Control")
                         FeatureItem("🔒 Privacy First (No Data Collection)")
                         FeatureItem("🌤️ Weather Integration")
-                        FeatureItem("🤖 Complete Jarvis Experience")
+                        FeatureItem("🤖 Complete David Experience")
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             "© 2026 Nexuzy Tech Ltd.",
