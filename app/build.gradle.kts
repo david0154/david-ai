@@ -61,6 +61,10 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+        // Suppress deprecation warnings for Google Sign-In (will be updated to Credential Manager later)
+        freeCompilerArgs += listOf(
+            "-Xsuppress-warning=DEPRECATION"
+        )
     }
 
     buildFeatures {
@@ -84,14 +88,13 @@ android {
         checkReleaseBuilds = false
         abortOnError = false
         quiet = true
+        disable += setOf("Deprecation", "ObsoleteLintCustomCheck")
     }
 }
 
 // Compose Compiler Configuration (Modern API)
+// REMOVED: StrongSkipping is now enabled by default in Compose Compiler
 composeCompiler {
-    // Use modern featureFlags API instead of deprecated enableStrongSkippingMode
-    featureFlags.add(org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag.StrongSkipping)
-    
     // Include source information for better debugging
     includeSourceInformation.set(true)
 }
@@ -161,6 +164,7 @@ dependencies {
     implementation("com.google.crypto.tink:tink-android:1.15.0")
     
     // Google Sign-In (GoogleSignInScreen, GoogleAuthManager)
+    // Note: Deprecated but functional. Migration to Credential Manager planned.
     implementation("com.google.android.gms:play-services-auth:21.3.0")
     
     // Jsoup for web scraping (WebSearchEngine)
