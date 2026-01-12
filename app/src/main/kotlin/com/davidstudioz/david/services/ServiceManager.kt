@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.PowerManager
-import android.preference.PreferenceManager
 import android.provider.Settings
 import android.util.Log
 import com.davidstudioz.david.gesture.GestureRecognitionService
@@ -29,8 +28,11 @@ import com.davidstudioz.david.voice.HotWordDetectionService
  */
 class ServiceManager(private val context: Context) {
 
-    @Suppress("DEPRECATION")
-    private val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+    // Use modern SharedPreferences instead of deprecated PreferenceManager
+    private val prefs: SharedPreferences = context.getSharedPreferences(
+        "${context.packageName}_preferences",
+        Context.MODE_PRIVATE
+    )
     
     companion object {
         private const val TAG = "ServiceManager"
