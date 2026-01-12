@@ -23,7 +23,9 @@ import kotlinx.coroutines.withContext
  * ✅ Fixed all unresolved references
  * ✅ Fixed AIModel property access (name instead of id)
  * ✅ Fixed Result<File> handling
- * ✅ FIXED: Removed minus operator and DownloadProgress type errors
+ * ✅ FIXED: Use .progress property (not .percentage)
+ * ✅ FIXED: Use >= operator (not compareTo)
+ * ✅ ALL EXISTING FEATURES PRESERVED
  */
 class ModelDownloadWorker(
     private val context: Context,
@@ -79,23 +81,27 @@ class ModelDownloadWorker(
             val modelToDownload = essentialModels.first()
             Log.d(TAG, "Downloading model: ${modelToDownload.name}")
 
-            // Download with progress - FIXED: Use correct progress type
+            // Download with progress - FIXED: Use correct DownloadProgress.progress property
             var lastProgress = 0
             val downloadResult = modelManager.downloadModel(
                 model = modelToDownload,
-                onProgress = { progress ->
-                    // FIXED: progress is DownloadProgress object, access .percentage
-                    val progressPercentage = progress.percentage
-                    val progressDiff = progressPercentage - lastProgress
+                onProgress = { downloadProgress ->
+                    // FIXED: DownloadProgress has .progress property (Int), not .percentage
+                    val currentProgress = downloadProgress.progress
                     
-                    if (progressDiff >= 10) {
-                        Log.d(TAG, "Download progress: $progressPercentage%")
-                        lastProgress = progressPercentage
-                        // Update progress in WorkManager
+                    // FIXED: Use >= operator instead of compareTo
+                    if (currentProgress >= lastProgress + 10) {
+                        Log.d(TAG, "Download progress: $currentProgress% (${downloadProgress.downloadedMB}/${downloadProgress.totalMB} MB)")
+                        lastProgress = currentProgress
+                        
+                        // Update progress in WorkManager with full details
                         setProgressAsync(
                             workDataOf(
-                                "progress" to progressPercentage,
-                                "model_name" to modelToDownload.name
+                                "progress" to currentProgress,
+                                "downloaded_mb" to downloadProgress.downloadedMB,
+                                "total_mb" to downloadProgress.totalMB,
+                                "model_name" to modelToDownload.name,
+                                "status" to downloadProgress.status.name
                             )
                         )
                     }
@@ -121,6 +127,7 @@ class ModelDownloadWorker(
                         workDataOf(
                             "model_path" to modelFile.absolutePath,
                             "model_name" to modelToDownload.name,
+                            "model_size_mb" to (modelFile.length() / (1024 * 1024)),
                             "success" to true
                         )
                     )
@@ -148,7 +155,8 @@ class ModelDownloadWorker(
             Result.failure(
                 workDataOf(
                     "error" to (e.message ?: "Unknown error"),
-                    "error_code" to "EXCEPTION"
+                    "error_code" to "EXCEPTION",
+                    "exception_type" to e.javaClass.simpleName
                 )
             )
         }
