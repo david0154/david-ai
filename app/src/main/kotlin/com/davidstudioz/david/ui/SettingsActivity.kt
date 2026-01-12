@@ -27,24 +27,22 @@ import androidx.lifecycle.lifecycleScope
 import com.davidstudioz.david.BuildConfig
 import com.davidstudioz.david.language.Language
 import com.davidstudioz.david.language.LanguageManager
-import com.davidstudioz.david.models.ModelManager
 import kotlinx.coroutines.launch
 
 /**
  * SettingsActivity - Complete Settings Screen
  * ✅ Language Selection (15 languages)
- * ✅ About Page with version info
+ * ✅ About Page with app info
  * ✅ Privacy Policy viewer
+ * ✅ GitHub Repository links
  * ✅ Open Source Acknowledgments
- * ✅ GitHub Repository Link
- * ✅ Bug Reporting
- * ✅ Contact Developer
+ * ✅ Bug reporting
+ * ✅ Contact developer
  * ✅ Beautiful Jarvis-style UI
  */
 class SettingsActivity : ComponentActivity() {
 
     private lateinit var languageManager: LanguageManager
-    private lateinit var modelManager: ModelManager
     
     private var languages by mutableStateOf<List<Language>>(emptyList())
     private var currentLanguage by mutableStateOf("en")
@@ -57,8 +55,6 @@ class SettingsActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         
         languageManager = LanguageManager(this)
-        modelManager = ModelManager(this)
-        
         loadLanguages()
         
         setContent {
@@ -120,9 +116,7 @@ class SettingsActivity : ComponentActivity() {
                     )
                 }
                 
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
+                item { Spacer(modifier = Modifier.height(8.dp)) }
                 
                 // About Section
                 item {
@@ -153,9 +147,7 @@ class SettingsActivity : ComponentActivity() {
                     )
                 }
                 
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
+                item { Spacer(modifier = Modifier.height(8.dp)) }
                 
                 // Links Section
                 item {
@@ -175,6 +167,14 @@ class SettingsActivity : ComponentActivity() {
                         title = "Report Bug",
                         subtitle = "Help us improve",
                         onClick = { openGitHubIssues() }
+                    )
+                }
+                item {
+                    SettingsCard(
+                        icon = Icons.Default.Forum,
+                        title = "Discussions",
+                        subtitle = "Join the community",
+                        onClick = { openGitHubDiscussions() }
                     )
                 }
                 item {
@@ -297,7 +297,7 @@ class SettingsActivity : ComponentActivity() {
                 )
             },
             text = {
-                LazyColumn {
+                LazyColumn(modifier = Modifier.height(400.dp)) {
                     items(languages) { language ->
                         LanguageItem(
                             language = language,
@@ -378,30 +378,33 @@ class SettingsActivity : ComponentActivity() {
                 }
             },
             text = {
-                Column(modifier = Modifier.padding(8.dp)) {
-                    InfoRow("Version", BuildConfig.VERSION_NAME)
-                    InfoRow("Build", "2026.01.12")
-                    InfoRow("Developer", "Nexuzy Tech Ltd.")
-                    InfoRow("Email", "david@nexuzy.in")
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        "Features:",
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF00E5FF)
-                    )
-                    FeatureItem("🎤 Voice Control")
-                    FeatureItem("✋ Gesture Recognition")
-                    FeatureItem("💬 AI Chat")
-                    FeatureItem("🌍 15 Languages")
-                    FeatureItem("🔒 Privacy First")
-                    FeatureItem("🌤 Weather Info")
-                    FeatureItem("📱 Device Control")
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        "© 2026 Nexuzy Tech Ltd.",
-                        fontSize = 10.sp,
-                        color = Color(0xFF9CA3AF)
-                    )
+                LazyColumn(modifier = Modifier.padding(8.dp)) {
+                    item {
+                        InfoRow("Version", BuildConfig.VERSION_NAME)
+                        InfoRow("Build", "2026.01.12")
+                        InfoRow("Developer", "Nexuzy Tech Ltd.")
+                        InfoRow("Email", "david@nexuzy.in")
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            "Features:",
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF00E5FF)
+                        )
+                        FeatureItem("🎙️ Voice Control")
+                        FeatureItem("✋ Gesture Recognition")
+                        FeatureItem("💬 AI Chat (Local LLMs)")
+                        FeatureItem("🌍 15 Languages")
+                        FeatureItem("📱 Device Control")
+                        FeatureItem("🔒 Privacy First (No Data Collection)")
+                        FeatureItem("🌤️ Weather Integration")
+                        FeatureItem("🤖 Complete Jarvis Experience")
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            "© 2026 Nexuzy Tech Ltd.",
+                            fontSize = 10.sp,
+                            color = Color(0xFF9CA3AF)
+                        )
+                    }
                 }
             },
             confirmButton = {
@@ -453,6 +456,13 @@ class SettingsActivity : ComponentActivity() {
                             "✅ Settings stored locally"
                         ))
                         
+                        PolicySection("Third-Party Services", listOf(
+                            "✅ Open-Meteo API (weather only)",
+                            "✅ AI models downloaded once",
+                            "✅ No user data transmitted",
+                            "✅ No tracking or analytics"
+                        ))
+                        
                         PolicySection("Your Rights", listOf(
                             "✅ Complete control over your data",
                             "✅ Delete chat history anytime",
@@ -462,7 +472,7 @@ class SettingsActivity : ComponentActivity() {
                         
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            "Full policy: github.com/david0154/david-ai/PRIVACY_POLICY.md",
+                            "Full policy: github.com/david0154/david-ai/blob/main/PRIVACY_POLICY.md",
                             fontSize = 10.sp,
                             color = Color(0xFF64B5F6),
                             modifier = Modifier.clickable {
@@ -512,37 +522,43 @@ class SettingsActivity : ComponentActivity() {
                         AcknowledgmentItem(
                             "OpenAI Whisper",
                             "Speech recognition models",
-                            "github.com/openai/whisper"
+                            "https://github.com/openai/whisper"
                         )
                         
                         AcknowledgmentItem(
                             "HuggingFace",
                             "TinyLlama, Qwen, Phi-2 models",
-                            "huggingface.co"
+                            "https://huggingface.co"
                         )
                         
                         AcknowledgmentItem(
                             "ONNX",
                             "Vision classification models",
-                            "onnx.ai"
+                            "https://onnx.ai"
                         )
                         
                         AcknowledgmentItem(
                             "Google MediaPipe",
                             "Hand tracking & gesture recognition",
-                            "mediapipe.dev"
+                            "https://mediapipe.dev"
                         )
                         
                         AcknowledgmentItem(
                             "TensorFlow Lite",
                             "Language processing models",
-                            "tensorflow.org/lite"
+                            "https://tensorflow.org/lite"
                         )
                         
                         AcknowledgmentItem(
                             "Open-Meteo",
                             "Free weather API",
-                            "open-meteo.com"
+                            "https://open-meteo.com"
+                        )
+                        
+                        AcknowledgmentItem(
+                            "Android Jetpack",
+                            "Compose, Room, WorkManager",
+                            "https://developer.android.com/jetpack"
                         )
                         
                         Spacer(modifier = Modifier.height(16.dp))
@@ -632,7 +648,7 @@ class SettingsActivity : ComponentActivity() {
                 fontSize = 10.sp,
                 color = Color(0xFF64B5F6),
                 modifier = Modifier.clickable {
-                    openUrl("https://$url")
+                    openUrl(url)
                 }
             )
         }
@@ -657,20 +673,20 @@ class SettingsActivity : ComponentActivity() {
         openUrl("https://github.com/david0154/david-ai/issues")
     }
 
+    private fun openGitHubDiscussions() {
+        openUrl("https://github.com/david0154/david-ai/discussions")
+    }
+
     private fun openEmail() {
         val intent = Intent(Intent.ACTION_SENDTO).apply {
             data = Uri.parse("mailto:david@nexuzy.in")
             putExtra(Intent.EXTRA_SUBJECT, "D.A.V.I.D AI Feedback")
         }
-        startActivity(Intent.createChooser(intent, "Send Email"))
+        startActivity(intent)
     }
 
     private fun openUrl(url: String) {
-        try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            startActivity(intent)
-        } catch (e: Exception) {
-            // Handle error silently
-        }
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        startActivity(intent)
     }
 }
