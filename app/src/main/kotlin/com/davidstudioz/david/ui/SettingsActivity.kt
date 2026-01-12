@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
  * ✅ Language Selection (15 languages)
  * ✅ About Page with app info
  * ✅ Privacy Policy viewer
- * ✅ GitHub Repository links
+ * ✅ GitHub Repository Link
  * ✅ Open Source Acknowledgments
  * ✅ Bug reporting
  * ✅ Contact developer
@@ -116,7 +116,7 @@ class SettingsActivity : ComponentActivity() {
                     )
                 }
                 
-                item { Spacer(modifier = Modifier.height(8.dp)) }
+                item { Spacer(modifier = Modifier.height(16.dp)) }
                 
                 // About Section
                 item {
@@ -147,7 +147,7 @@ class SettingsActivity : ComponentActivity() {
                     )
                 }
                 
-                item { Spacer(modifier = Modifier.height(8.dp)) }
+                item { Spacer(modifier = Modifier.height(16.dp)) }
                 
                 // Links Section
                 item {
@@ -167,14 +167,6 @@ class SettingsActivity : ComponentActivity() {
                         title = "Report Bug",
                         subtitle = "Help us improve",
                         onClick = { openGitHubIssues() }
-                    )
-                }
-                item {
-                    SettingsCard(
-                        icon = Icons.Default.Forum,
-                        title = "Discussions",
-                        subtitle = "Join the community",
-                        onClick = { openGitHubDiscussions() }
                     )
                 }
                 item {
@@ -297,7 +289,7 @@ class SettingsActivity : ComponentActivity() {
                 )
             },
             text = {
-                LazyColumn(modifier = Modifier.height(400.dp)) {
+                LazyColumn {
                     items(languages) { language ->
                         LanguageItem(
                             language = language,
@@ -378,33 +370,29 @@ class SettingsActivity : ComponentActivity() {
                 }
             },
             text = {
-                LazyColumn(modifier = Modifier.padding(8.dp)) {
-                    item {
-                        InfoRow("Version", BuildConfig.VERSION_NAME)
-                        InfoRow("Build", "2026.01.12")
-                        InfoRow("Developer", "Nexuzy Tech Ltd.")
-                        InfoRow("Email", "david@nexuzy.in")
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            "Features:",
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF00E5FF)
-                        )
-                        FeatureItem("🎙️ Voice Control")
-                        FeatureItem("✋ Gesture Recognition")
-                        FeatureItem("💬 AI Chat (Local LLMs)")
-                        FeatureItem("🌍 15 Languages")
-                        FeatureItem("📱 Device Control")
-                        FeatureItem("🔒 Privacy First (No Data Collection)")
-                        FeatureItem("🌤️ Weather Integration")
-                        FeatureItem("🤖 Complete David Experience")
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            "© 2026 Nexuzy Tech Ltd.",
-                            fontSize = 10.sp,
-                            color = Color(0xFF9CA3AF)
-                        )
-                    }
+                Column(modifier = Modifier.padding(8.dp)) {
+                    InfoRow("Version", BuildConfig.VERSION_NAME)
+                    InfoRow("Build", "2026.01.12")
+                    InfoRow("Developer", "Nexuzy Tech Ltd.")
+                    InfoRow("Email", "david@nexuzy.in")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "Features:",
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF00E5FF)
+                    )
+                    FeatureItem("🎤 Voice Control")
+                    FeatureItem("✋ Gesture Recognition")
+                    FeatureItem("💬 AI Chat")
+                    FeatureItem("🌍 15 Languages")
+                    FeatureItem("🔒 Privacy First")
+                    FeatureItem("🔌 100% Offline")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "© 2026 Nexuzy Tech Ltd.",
+                        fontSize = 10.sp,
+                        color = Color(0xFF9CA3AF)
+                    )
                 }
             },
             confirmButton = {
@@ -454,13 +442,6 @@ class SettingsActivity : ComponentActivity() {
                             "✅ AI models stored locally",
                             "✅ Chat history stored locally",
                             "✅ Settings stored locally"
-                        ))
-                        
-                        PolicySection("Third-Party Services", listOf(
-                            "✅ Open-Meteo API (weather only)",
-                            "✅ AI models downloaded once",
-                            "✅ No user data transmitted",
-                            "✅ No tracking or analytics"
                         ))
                         
                         PolicySection("Your Rights", listOf(
@@ -553,12 +534,6 @@ class SettingsActivity : ComponentActivity() {
                             "Open-Meteo",
                             "Free weather API",
                             "https://open-meteo.com"
-                        )
-                        
-                        AcknowledgmentItem(
-                            "Android Jetpack",
-                            "Compose, Room, WorkManager",
-                            "https://developer.android.com/jetpack"
                         )
                         
                         Spacer(modifier = Modifier.height(16.dp))
@@ -673,20 +648,24 @@ class SettingsActivity : ComponentActivity() {
         openUrl("https://github.com/david0154/david-ai/issues")
     }
 
-    private fun openGitHubDiscussions() {
-        openUrl("https://github.com/david0154/david-ai/discussions")
-    }
-
     private fun openEmail() {
         val intent = Intent(Intent.ACTION_SENDTO).apply {
             data = Uri.parse("mailto:david@nexuzy.in")
             putExtra(Intent.EXTRA_SUBJECT, "D.A.V.I.D AI Feedback")
         }
-        startActivity(intent)
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+            // Fallback: copy email to clipboard or show toast
+        }
     }
 
     private fun openUrl(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        startActivity(intent)
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+            // URL open failed
+        }
     }
 }
