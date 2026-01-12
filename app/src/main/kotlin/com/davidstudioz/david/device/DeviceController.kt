@@ -17,6 +17,7 @@ import android.provider.MediaStore
 import android.provider.Settings
 import android.telephony.SmsManager
 import android.util.Log
+import android.view.KeyEvent
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -25,11 +26,12 @@ import androidx.core.content.ContextCompat
  * DeviceController - COMPLETE VOICE & GESTURE DEVICE CONTROL
  * ✅ WiFi, Bluetooth, Location, Flashlight control
  * ✅ Call, SMS, Email via voice commands
- * ✅ Camera (selfie) control
+ * ✅ Camera (selfie & photo) control
  * ✅ Volume, brightness control
  * ✅ Lock/unlock device
  * ✅ Weather, time, alarm queries
  * ✅ Complete movie playback control
+ * ✅ All VoiceController compatibility methods added
  */
 class DeviceController(private val context: Context) {
 
@@ -429,6 +431,194 @@ class DeviceController(private val context: Context) {
         val month = calendar.getDisplayName(java.util.Calendar.MONTH, java.util.Calendar.LONG, java.util.Locale.getDefault())
         val year = calendar.get(java.util.Calendar.YEAR)
         return "$day $month $year"
+    }
+
+    // ==================== VOICECONTROLLER COMPATIBILITY METHODS ====================
+
+    /**
+     * Method aliases for VoiceController compatibility
+     */
+    fun setWiFiEnabled(enable: Boolean) = toggleWifi(enable)
+    fun setBluetoothEnabled(enable: Boolean) = toggleBluetooth(enable)
+    fun setFlashlightEnabled(enable: Boolean) = toggleFlashlight(enable)
+    fun increaseVolume() = volumeUp()
+    fun decreaseVolume() = volumeDown()
+    fun muteVolume() = toggleMute(true)
+
+    /**
+     * Open location settings
+     */
+    fun openLocationSettings() = toggleLocation(true)
+
+    /**
+     * Take photo (back camera)
+     */
+    fun takePhoto(): Boolean {
+        return try {
+            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            context.startActivity(intent)
+            showToast("Taking photo...")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error taking photo", e)
+            showToast("Cannot take photo: ${e.message}")
+            false
+        }
+    }
+
+    /**
+     * Open messaging app
+     */
+    fun openMessaging(): Boolean {
+        return try {
+            val intent = Intent(Intent.ACTION_MAIN)
+            intent.addCategory(Intent.CATEGORY_APP_MESSAGING)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            context.startActivity(intent)
+            showToast("Opening messaging...")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Cannot open messaging", e)
+            // Fallback to SMS app
+            try {
+                val smsIntent = Intent(Intent.ACTION_VIEW)
+                smsIntent.data = Uri.parse("sms:")
+                smsIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(smsIntent)
+                true
+            } catch (e2: Exception) {
+                showToast("Messaging app not found")
+                false
+            }
+        }
+    }
+
+    /**
+     * Open email app
+     */
+    fun openEmail(): Boolean {
+        return try {
+            val intent = Intent(Intent.ACTION_SENDTO)
+            intent.data = Uri.parse("mailto:")
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            context.startActivity(intent)
+            showToast("Opening email...")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Cannot open email", e)
+            showToast("Email app not found")
+            false
+        }
+    }
+
+    /**
+     * Open alarm app
+     */
+    fun openAlarmApp(): Boolean {
+        return try {
+            val intent = Intent(android.provider.AlarmClock.ACTION_SHOW_ALARMS)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            context.startActivity(intent)
+            showToast("Opening alarm...")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Cannot open alarm app", e)
+            showToast("Alarm app not found")
+            false
+        }
+    }
+
+    /**
+     * Open weather app or web
+     */
+    fun openWeatherApp(): Boolean {
+        return try {
+            // Try common weather apps
+            val weatherPackages = listOf(
+                "com.google.android.googlequicksearchbox", // Google weather
+                "com.weather.Weather",
+                "com.accuweather.android"
+            )
+            
+            var opened = false
+            for (pkg in weatherPackages) {
+                try {
+                    val intent = context.packageManager.getLaunchIntentForPackage(pkg)
+                    if (intent != null) {
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        context.startActivity(intent)
+                        opened = true
+                        break
+                    }
+                } catch (e: Exception) {
+                    continue
+                }
+            }
+            
+            if (!opened) {
+                // Fallback to web search
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/search?q=weather"))
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+            }
+            
+            showToast("Opening weather...")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Cannot open weather", e)
+            showToast("Cannot open weather app")
+            false
+        }
+    }
+
+    /**
+     * Open browser
+     */
+    fun openBrowser(url: String = "https://www.google.com"): Boolean {
+        return try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            context.startActivity(intent)
+            showToast("Opening browser...")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Cannot open browser", e)
+            showToast("Browser not found")
+            false
+        }
+    }
+
+    /**
+     * Media playback controls
+     */
+    fun mediaPlay(): Boolean {
+        return sendMediaKey(KeyEvent.KEYCODE_MEDIA_PLAY)
+    }
+
+    fun mediaPause(): Boolean {
+        return sendMediaKey(KeyEvent.KEYCODE_MEDIA_PAUSE)
+    }
+
+    fun mediaNext(): Boolean {
+        return sendMediaKey(KeyEvent.KEYCODE_MEDIA_NEXT)
+    }
+
+    fun mediaPrevious(): Boolean {
+        return sendMediaKey(KeyEvent.KEYCODE_MEDIA_PREVIOUS)
+    }
+
+    private fun sendMediaKey(keyCode: Int): Boolean {
+        return try {
+            val eventDown = KeyEvent(KeyEvent.ACTION_DOWN, keyCode)
+            val eventUp = KeyEvent(KeyEvent.ACTION_UP, keyCode)
+            audioManager.dispatchMediaKeyEvent(eventDown)
+            audioManager.dispatchMediaKeyEvent(eventUp)
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Media key error: $keyCode", e)
+            false
+        }
     }
 
     // ==================== HELPER METHODS ====================
