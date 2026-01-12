@@ -10,7 +10,7 @@ import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizer
 import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizerResult
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarkerResult
-import com.davidstudioz.david.pointer.GesturePointerOverlay
+import com.davidstudioz.david.pointer.PointerOverlay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -24,12 +24,13 @@ import java.io.File
  * ✅ Gesture recognition (Open Palm, Closed Fist, Pointing, etc.)
  * ✅ Pointer control via hand position
  * ✅ Gesture commands execution
+ * ✅ Fixed PointerOverlay import
  */
 class GestureController(private val context: Context) {
 
     private var handLandmarker: HandLandmarker? = null
     private var gestureRecognizer: GestureRecognizer? = null
-    private var pointerOverlay: GesturePointerOverlay? = null
+    private var pointerOverlay: PointerOverlay? = null
     
     private val scope = CoroutineScope(Dispatchers.Default + Job())
     
@@ -158,6 +159,9 @@ class GestureController(private val context: Context) {
             // Detect gesture type
             val gesture = detectGestureFromLandmarks(landmarks)
             
+            // Notify callback
+            onGestureDetected?.invoke(gesture)
+            
             return GestureResult(
                 gesture = gesture,
                 handX = lastHandX,
@@ -193,10 +197,10 @@ class GestureController(private val context: Context) {
             if (pinkyTip.y() < wrist.y()) extendedFingers++
             
             return when {
-                extendedFingers == 0 -> "Closed_Fist"
-                extendedFingers >= 4 -> "Open_Palm"
-                extendedFingers == 1 -> "Pointing_Up"
-                extendedFingers == 2 -> "Victory"
+                extendedFingers == 0 -> GESTURE_CLOSED_FIST
+                extendedFingers >= 4 -> GESTURE_OPEN_PALM
+                extendedFingers == 1 -> GESTURE_POINTING
+                extendedFingers == 2 -> GESTURE_VICTORY
                 else -> "Unknown"
             }
             
@@ -210,7 +214,7 @@ class GestureController(private val context: Context) {
      */
     fun showPointer() {
         if (pointerOverlay == null) {
-            pointerOverlay = GesturePointerOverlay(context)
+            pointerOverlay = PointerOverlay(context)
         }
         pointerOverlay?.show()
         isPointerVisible = true
