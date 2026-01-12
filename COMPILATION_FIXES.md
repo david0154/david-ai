@@ -6,7 +6,7 @@ This document details all the compilation errors fixed in the david-ai project.
 ## 1. SDK XML Version Compatibility
 
 ### Problem
-```
+```text
 SDK processing. This version only understands SDK XML versions up to 3 but an SDK XML file of version 4 was encountered.
 ```
 
@@ -19,7 +19,7 @@ SDK processing. This version only understands SDK XML versions up to 3 but an SD
 ## 2. Compose Compiler Gradle Plugin (Kotlin 2.0 Requirement)
 
 ### Problem
-```
+```text
 Starting in Kotlin 2.0, the Compose Compiler Gradle plugin is required when compose is enabled.
 ```
 
@@ -142,17 +142,19 @@ Language("en", "English", "English", isDownloaded = true)
 - `voice/VoiceController.kt` (lines 249-368)
 
 ### Problem
+```text
 Multiple unresolved references to DeviceController methods:
-- `setWiFiEnabled`
-- `setBluetoothEnabled`
-- `openLocationSettings`
-- `setFlashlightEnabled`
-- `takePhoto`
-- `increaseVolume`, `decreaseVolume`, `muteVolume`
-- `openMessaging`, `openEmail`
-- `openAlarmApp`, `openWeatherApp`
-- `mediaPlay`, `mediaPause`, `mediaNext`, `mediaPrevious`
-- `openBrowser`
+- setWiFiEnabled
+- setBluetoothEnabled
+- openLocationSettings
+- setFlashlightEnabled
+- takePhoto
+- increaseVolume, decreaseVolume, muteVolume
+- openMessaging, openEmail
+- openAlarmApp, openWeatherApp
+- mediaPlay, mediaPause, mediaNext, mediaPrevious
+- openBrowser
+```
 
 ### Solution
 Update method calls to match DeviceController's actual API:
