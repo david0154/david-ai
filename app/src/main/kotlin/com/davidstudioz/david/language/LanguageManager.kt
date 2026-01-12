@@ -10,15 +10,17 @@ data class Language(
     val code: String,
     val name: String,
     val nativeName: String,
-    val isDownloaded: Boolean = false
+    val isDownloaded: Boolean = false,
+    val isDefault: Boolean = false
 )
 
 /**
- * LanguageManager - FIXED: Multi-language support
+ * LanguageManager - Multi-language support
  * ✅ 10 languages supported
  * ✅ English default language
  * ✅ Download additional languages
  * ✅ Switch languages dynamically
+ * ✅ Compilation error fixed
  */
 class LanguageManager(private val context: Context) {
     
@@ -27,7 +29,7 @@ class LanguageManager(private val context: Context) {
     
     // Supported languages
     private val supportedLanguages = listOf(
-        Language("en", "English", "English", isDefault = true),
+        Language("en", "English", "English", isDownloaded = true, isDefault = true),
         Language("hi", "Hindi", "हिंदी"),
         Language("ta", "Tamil", "தமிழ்"),
         Language("te", "Telugu", "తెలుగు"),
