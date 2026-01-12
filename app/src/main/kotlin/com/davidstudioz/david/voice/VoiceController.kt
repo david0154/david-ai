@@ -611,8 +611,9 @@ class VoiceController(
                         // Try to get AI response
                         chatManager?.let { chat ->
                             try {
-                                // Send command to AI and get response
-                                response = chat.sendMessage(command) ?: "I didn't understand that command."
+                                // Send command to AI and get response as String
+                                val aiResponse = chat.sendMessage(command)
+                                response = aiResponse ?: "I didn't understand that command."
                                 commandHandled = true
                                 Log.d(TAG, "AI response: $response")
                             } catch (e: Exception) {

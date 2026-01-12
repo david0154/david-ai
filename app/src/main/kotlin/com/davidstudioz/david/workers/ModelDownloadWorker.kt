@@ -59,8 +59,8 @@ class ModelDownloadWorker(
                 Log.w(TAG, "Not on WiFi - may use mobile data")
             }
 
-            // Get recommended model
-            val recommendedModel = modelManager.getRecommendedLLM()
+            // Get recommended model - returns null if no suitable model
+            val recommendedModel = modelManager.suggestModel()
             if (recommendedModel == null) {
                 Log.e(TAG, "No suitable model found for device")
                 return@withContext Result.failure(
@@ -71,56 +71,57 @@ class ModelDownloadWorker(
                 )
             }
 
-            Log.d(TAG, "Downloading model: ${recommendedModel.name}")
+            Log.d(TAG, "Downloading model: ${recommendedModel.id}")
 
             // Download with progress
             var lastProgress = 0
-            val downloadResult = modelManager.downloadModel(recommendedModel) { progress ->
-                if (progress - lastProgress >= 10) {
-                    Log.d(TAG, "Download progress: $progress%")
-                    lastProgress = progress
-                    // Update progress in WorkManager
-                    setProgressAsync(
-                        workDataOf(
-                            "progress" to progress,
-                            "model_name" to recommendedModel.name
+            val downloadResult = modelManager.downloadModel(
+                modelId = recommendedModel.id,
+                onProgress = { progress ->
+                    if (progress - lastProgress >= 10) {
+                        Log.d(TAG, "Download progress: $progress%")
+                        lastProgress = progress
+                        // Update progress in WorkManager
+                        setProgressAsync(
+                            workDataOf(
+                                "progress" to progress,
+                                "model_name" to recommendedModel.id
+                            )
                         )
-                    )
-                }
-            }
-
-            downloadResult.fold(
-                onSuccess = { modelPath ->
-                    Log.d(TAG, "Model downloaded successfully: $modelPath")
-                    
-                    // Save download info
-                    val prefs = context.getSharedPreferences("david_prefs", Context.MODE_PRIVATE)
-                    prefs.edit().apply {
-                        putBoolean("model_downloaded", true)
-                        putString("downloaded_model", recommendedModel.name)
-                        putString("model_path", modelPath)
-                        putLong("download_timestamp", System.currentTimeMillis())
-                        apply()
                     }
-                    
-                    Result.success(
-                        workDataOf(
-                            "model_path" to modelPath,
-                            "model_name" to recommendedModel.name,
-                            "success" to true
-                        )
-                    )
-                },
-                onFailure = { error ->
-                    Log.e(TAG, "Model download failed", error)
-                    Result.failure(
-                        workDataOf(
-                            "error" to (error.message ?: "Download failed"),
-                            "error_code" to "DOWNLOAD_FAILED"
-                        )
-                    )
                 }
             )
+
+            if (downloadResult) {
+                val modelPath = modelManager.getModelPath(recommendedModel.id)
+                Log.d(TAG, "Model downloaded successfully: $modelPath")
+                
+                // Save download info
+                val prefs = context.getSharedPreferences("david_prefs", Context.MODE_PRIVATE)
+                prefs.edit().apply {
+                    putBoolean("model_downloaded", true)
+                    putString("downloaded_model", recommendedModel.id)
+                    putString("model_path", modelPath.toString())
+                    putLong("download_timestamp", System.currentTimeMillis())
+                    apply()
+                }
+                
+                Result.success(
+                    workDataOf(
+                        "model_path" to modelPath.toString(),
+                        "model_name" to recommendedModel.id,
+                        "success" to true
+                    )
+                )
+            } else {
+                Log.e(TAG, "Model download failed")
+                Result.failure(
+                    workDataOf(
+                        "error" to "Download failed",
+                        "error_code" to "DOWNLOAD_FAILED"
+                    )
+                )
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Worker exception", e)
             Result.failure(
