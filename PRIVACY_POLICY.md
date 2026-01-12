@@ -1,228 +1,233 @@
-# D.A.V.I.D AI - Privacy Policy
+# Privacy Policy for D.A.V.I.D AI
 
-**Last Updated: January 10, 2026**
+**Effective Date**: January 12, 2026  
+**Last Updated**: January 12, 2026  
+**Developer**: Nexuzy Tech Ltd.  
+**Contact**: david@nexuzy.in
+
+---
+
+## Overview
+
+D.A.V.I.D AI (Digital Assistant with Voice & Intelligent Decisions) is committed to protecting your privacy. This policy explains our data practices in detail.
 
 ---
 
 ## 🔒 WE DO NOT COLLECT ANY DATA
 
-### Your Privacy is Our Top Priority
+**Your Privacy is Our Top Priority**
 
-D.A.V.I.D AI (Digital Assistant with Voice & Intelligent Decisions) is committed to protecting your privacy. This privacy policy explains how we handle your data.
+D.A.V.I.D AI operates with a **privacy-first architecture**. We fundamentally believe that your data belongs to you and should stay on your device.
 
----
+### What This Means:
 
-## ✅ What We DON'T Do
-
-- ❌ **NO data collection**
-- ❌ **NO data transmission to external servers**
-- ❌ **NO user tracking or analytics**
-- ❌ **NO personal information stored on cloud**
-- ❌ **NO account required**
-- ❌ **NO third-party data sharing**
-- ❌ **NO advertisements**
-- ❌ **NO cookies or tracking**
+- ❌ **No personal information collected**
+- ❌ **No data sent to external servers**
+- ❌ **No user tracking or analytics**
+- ❌ **No behavioral profiling**
+- ❌ **No account required**
+- ❌ **No cloud storage**
+- ❌ **No advertising IDs**
+- ❌ **No third-party data sharing**
 
 ---
 
-## 🏠 Your Device, Your Data
+## Data Storage
 
-### Everything Stays Local
+All data is stored **locally on YOUR device** using standard Android storage mechanisms:
 
-All data processing happens **entirely on your device**. Nothing leaves your device.
+### Voice Recordings:
+- Processed in real-time using on-device speech recognition
+- Never stored permanently
+- Deleted immediately after processing
+- No audio files saved
 
-#### Voice Processing
-- Voice recordings are processed locally using on-device AI models
-- No voice data is sent to any server
-- Voice commands are immediately processed and discarded
-- No voice history is stored
+### Camera Images:
+- Used only for gesture recognition
+- Processed frame-by-frame in memory
+- Never saved to storage
+- No photos or videos stored
 
-#### Camera & Gesture Recognition
-- Camera feed is processed locally in real-time
-- No images or videos are saved
-- Hand gestures are detected using on-device MediaPipe models
-- No camera data is transmitted anywhere
+### AI Models:
+- Downloaded once from HuggingFace/ONNX repositories
+- Stored locally in app-specific storage
+- Can be deleted anytime
+- No usage data sent back
 
-#### AI Models
-- Downloaded once and stored locally on your device
-- Models are open-source and publicly available
-- No data is sent to model providers
-- You can delete models anytime
+### Chat History:
+- Stored in local SQLite database (Room)
+- Encrypted using Android Keystore
+- Can be cleared anytime via settings
+- Never leaves your device
 
-#### Chat History
-- All conversations are stored locally in your device storage
-- Encrypted using Android's built-in security
-- Not accessible to other apps
-- Deleted when you uninstall the app
-
-#### Settings & Preferences
-- Stored locally using Android SharedPreferences
-- Only accessible by this app
-- Deleted when you uninstall the app
+### Settings & Preferences:
+- Stored in SharedPreferences
+- Includes language choice, user nickname
+- Local to your device only
 
 ---
 
-## 🔑 Permissions Explained
+## Permissions
 
-We request certain permissions to provide functionality. Here's exactly what we use them for:
+D.A.V.I.D AI requests the following permissions:
 
-### Camera Permission
-**Why:** For gesture recognition and taking photos via voice command
-**Usage:** 
-- Real-time hand gesture detection
-- Taking selfies when you ask
-- Processed locally, never stored or transmitted
+### 🔴 Required Permissions:
 
-### Microphone Permission
-**Why:** For voice commands and speech recognition
-**Usage:**
-- Listening for "Hey David" activation
-- Processing voice commands
-- Voice-to-text conversion
-- All processing done locally
+| Permission | Purpose | Data Collection |
+|------------|---------|----------------|
+| **Microphone** | Voice commands | Processed locally, not stored |
+| **Camera** | Gesture recognition | Processed locally, not stored |
+| **Internet** | Download AI models | Only for model downloads |
 
-### Internet Permission
-**Why:** For downloading AI models only
-**Usage:**
-- One-time download of AI models from public sources (HuggingFace, Google MediaPipe)
-- No ongoing data transmission
-- Can be disabled after initial setup
+### 🟡 Optional Permissions:
 
-### Storage Permission
-**Why:** To store AI models and settings locally
-**Usage:**
-- Saving downloaded AI models
-- Storing app settings
-- Saving chat history locally
-- All data remains on your device
+| Permission | Purpose | Data Collection |
+|------------|---------|----------------|
+| **Phone** | Voice-controlled calling | No call data collected |
+| **SMS** | Voice-controlled messaging | No message content collected |
+| **Location** | Weather information | Coordinates used for weather API only |
+| **Contacts** | Voice contact access | No contacts uploaded |
+| **Storage** | Save AI models | Only app models stored |
+| **Bluetooth** | Bluetooth control | No pairing data collected |
 
-### Phone Permission
-**Why:** To make calls via voice command
-**Usage:**
-- Making phone calls when you ask
-- Only used when you explicitly request to make a call
-- No call data is stored or transmitted
-
-### SMS Permission
-**Why:** To send messages via voice command
-**Usage:**
-- Sending SMS when you ask
-- Only used when you explicitly request to send a message
-- No message data is stored or transmitted
-
-### Contacts Permission
-**Why:** To access contacts for voice-based calling/messaging
-**Usage:**
-- Reading contact names for voice commands
-- Only accessed when needed
-- Not transmitted anywhere
-
-### Location Permission
-**Why:** To control GPS settings via voice and support location-based features (e.g., weather)
-**Usage:**
-- Turning GPS on/off via voice command
-- Providing location-based responses such as weather when explicitly requested
-- Location data is only used on-device when needed and is never collected, stored, or transmitted
-
-### Bluetooth Permission
-**Why:** To control Bluetooth via voice
-**Usage:**
-- Turning Bluetooth on/off via voice command
-- Managing Bluetooth connections
-- No Bluetooth data is collected
-
-### WiFi Permission
-**Why:** To control WiFi via voice
-**Usage:**
-- Turning WiFi on/off via voice command
-- No WiFi data is collected or transmitted
-
-### System Alert Window
-**Why:** To show gesture pointer overlay
-**Usage:**
-- Displaying floating pointer for gesture control
-- Only shown when gesture control is active
-
-### Foreground Service
-**Why:** To keep voice and gesture detection running in background
-**Usage:**
-- Continuous voice command detection
-- Continuous gesture recognition
-- Shows persistent notification when active
+**Note**: You can deny optional permissions. Core features will still work.
 
 ---
 
-## 🗑️ Data Deletion
+## Third-Party Services
 
-### How to Delete All Data
+D.A.V.I.D AI uses the following open-source components and APIs:
 
-**Option 1: Uninstall the App**
-- Go to Settings → Apps → D.A.V.I.D AI → Uninstall
-- All data is automatically deleted with the app
+### AI Models (Downloaded Once):
 
-**Option 2: Clear App Data**
-- Go to Settings → Apps → D.A.V.I.D AI → Storage → Clear Data
-- All settings, models, and history will be deleted
+| Service | Purpose | Data Sharing |
+|---------|---------|-------------|
+| **OpenAI Whisper** | Speech recognition | No data sent after download |
+| **HuggingFace Models** | Chat AI (TinyLlama, Qwen, Phi-2) | No data sent after download |
+| **ONNX Models** | Vision classification | No data sent after download |
+| **Google MediaPipe** | Hand tracking | Runs locally, no data sent |
+| **TensorFlow Lite** | Language processing | Runs locally, no data sent |
 
-**Option 3: Delete Models from App**
-- Open D.A.V.I.D AI → Settings → Model Management → Delete All
-- AI models will be deleted (chat history remains)
+### External APIs:
 
----
+| Service | Purpose | Data Sent |
+|---------|---------|----------|
+| **Open-Meteo API** | Weather data | Only GPS coordinates (no user ID) |
 
-## 🌍 GDPR & CCPA Compliance
-
-Since we don't collect any data:
-- No data to be accessed (GDPR Article 15)
-- No data to be rectified (GDPR Article 16)
-- No data to be erased (GDPR Article 17)
-- No data to be ported (GDPR Article 20)
-- No data to be sold (CCPA)
-
-**We are fully compliant by design - we simply don't collect data.**
+**Important**: 
+- All AI processing happens **on your device**
+- Models are downloaded once and cached
+- No usage telemetry sent to model providers
+- No API keys linked to your identity
 
 ---
 
-## 👶 Children's Privacy
+## Data Sharing
 
-We do not knowingly collect any data from anyone, including children under 13. Since all processing is local, there's no risk to children's privacy.
+**We do NOT share any data because we do NOT collect any data.**
 
----
-
-## 🔄 Changes to Privacy Policy
-
-We may update this privacy policy. Changes will be posted in the app and on our GitHub repository.
-
-**Current Version:** 1.0  
-**Last Updated:** January 10, 2026
+- No data sold to third parties
+- No data shared with advertisers
+- No data shared with analytics companies
+- No data shared with government agencies (unless legally required)
 
 ---
 
-## 📧 Contact Us
+## Your Rights
 
-If you have questions about this privacy policy:
+You have complete control over your data:
 
-**Email:** david@nexuzy.in  
-**GitHub:** https://github.com/david0154/david-ai  
-**Company:** Nexuzy Tech Ltd.
+### ✅ Right to Access:
+- All your data is in your device storage
+- Chat history visible in app
+- Settings accessible anytime
+
+### ✅ Right to Delete:
+- Clear chat history: Settings → Clear Chat
+- Delete AI models: Settings → Manage Models
+- Delete all data: Android Settings → Apps → D.A.V.I.D AI → Clear Data
+- Uninstall app: Removes all app data permanently
+
+### ✅ Right to Export:
+- Chat history can be exported as text
+- Settings can be backed up (local only)
+
+### ✅ Right to Opt-Out:
+- You can disable any permission anytime
+- App will work with reduced functionality
 
 ---
 
-## ✅ Summary
+## Security
 
-**D.A.V.I.D AI is 100% privacy-focused:**
+### How We Protect Your Data:
 
-✅ All processing happens on your device  
-✅ No data collection whatsoever  
-✅ No external servers  
-✅ No user tracking  
-✅ No cloud storage  
-✅ Open source and transparent  
-✅ Your data never leaves your device  
-
-**Your device. Your data. Your privacy.**
+- ✅ **Encrypted Storage**: Chat history encrypted using Google Tink
+- ✅ **Secure Communications**: HTTPS only for model downloads
+- ✅ **No Cloud Sync**: Data never leaves your device
+- ✅ **ProGuard**: Code obfuscation enabled
+- ✅ **No Hardcoded Keys**: No API keys in code
+- ✅ **Permission-Based Access**: Request only needed permissions
 
 ---
 
-**Nexuzy Tech Ltd.**  
-*Building privacy-first AI applications*
+## Children's Privacy
+
+D.A.V.I.D AI does not knowingly collect data from children under 13. Since we don't collect any data at all, the app is safe for all ages. However, parental supervision is recommended for:
+
+- Voice-controlled phone calls
+- Voice-controlled messaging
+- Internet access for model downloads
+
+---
+
+## Changes to This Policy
+
+We may update this privacy policy to:
+
+- Reflect new features
+- Comply with legal requirements
+- Improve clarity
+
+Changes will be posted:
+- In the app (Settings → Privacy Policy)
+- On GitHub: [https://github.com/david0154/david-ai/blob/main/PRIVACY_POLICY.md](https://github.com/david0154/david-ai/blob/main/PRIVACY_POLICY.md)
+
+**Last Updated**: January 12, 2026
+
+---
+
+## Contact Us
+
+Questions about privacy? Contact us:
+
+**Email**: david@nexuzy.in  
+**GitHub**: [https://github.com/david0154/david-ai/issues](https://github.com/david0154/david-ai/issues)  
+**Developer**: Nexuzy Tech Ltd.
+
+---
+
+## Legal Compliance
+
+This privacy policy complies with:
+
+- **GDPR** (General Data Protection Regulation - EU)
+- **CCPA** (California Consumer Privacy Act - US)
+- **Google Play Store** policies
+- **Indian IT Act** 2000
+
+---
+
+**© 2026 Nexuzy Tech Ltd. All rights reserved.**
+
+---
+
+## Summary (TL;DR)
+
+🔒 **We collect ZERO data**  
+✅ **Everything runs on your device**  
+🚫 **No tracking, no analytics, no cloud**  
+💾 **You control all your data**  
+🗑️ **Delete anytime**  
+
+**Your privacy = Our priority** 🛡️

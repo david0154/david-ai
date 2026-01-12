@@ -16,18 +16,18 @@ data class Language(
 
 /**
  * LanguageManager - Multi-language support
- * ✅ 10 languages supported
+ * ✅ 15 languages supported (10 original + 5 new)
  * ✅ English default language
  * ✅ Download additional languages
  * ✅ Switch languages dynamically
- * ✅ Compilation error fixed
+ * ✅ Complete language parity with ModelManager
  */
 class LanguageManager(private val context: Context) {
     
     private val modelManager = ModelManager(context)
     private val prefs = context.getSharedPreferences("david_language", Context.MODE_PRIVATE)
     
-    // Supported languages
+    // All 15 supported languages
     private val supportedLanguages = listOf(
         Language("en", "English", "English", isDownloaded = true, isDefault = true),
         Language("hi", "Hindi", "हिंदी"),
@@ -38,7 +38,13 @@ class LanguageManager(private val context: Context) {
         Language("gu", "Gujarati", "ગુજરાતી"),
         Language("kn", "Kannada", "ಕನ್ನಡ"),
         Language("ml", "Malayalam", "മലയാളം"),
-        Language("pa", "Punjabi", "ਪੰਜਾਬੀ")
+        Language("pa", "Punjabi", "ਪੰਜਾਬੀ"),
+        // NEW: 5 additional languages
+        Language("or", "Odia", "ଓଡ଼ିଆ"),
+        Language("ur", "Urdu", "اردو"),
+        Language("sa", "Sanskrit", "संस्कृतम्"),
+        Language("ks", "Kashmiri", "कॉशुर"),
+        Language("as", "Assamese", "অসমীয়া")
     )
     
     /**
