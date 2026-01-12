@@ -1,5 +1,7 @@
 package com.davidstudioz.david.ui
 
+import android.app.ActivityManager
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -42,12 +44,12 @@ import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
 
 /**
- * D.A.V.I.D Model Download - COMPLETE SETUP
- * ✅ Downloads ONE voice model (base)
- * ✅ Downloads Chat LLM model 
- * ✅ Downloads Vision model
- * ✅ Downloads ONE multilingual model (supports all 15 languages)
- * ✅ Downloads Gesture control models
+ * D.A.V.I.D Model Download - INTELLIGENT DEVICE-BASED SELECTION
+ * ✅ Detects device RAM capacity
+ * ✅ Downloads optimal models for device (Light/Standard/Pro)
+ * ✅ Low RAM (1-2GB): Tiny voice, Light chat, Lite vision
+ * ✅ Medium RAM (3GB): Base voice, Standard chat, Standard vision
+ * ✅ High RAM (4GB+): Pro voice, Pro chat, Advanced vision
  */
 class ModelDownloadActivity : ComponentActivity() {
 
@@ -92,6 +94,74 @@ class ModelDownloadActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * Get device RAM in GB
+     */
+    private fun getDeviceRamGB(): Int {
+        return try {
+            val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            val memInfo = ActivityManager.MemoryInfo()
+            activityManager.getMemoryInfo(memInfo)
+            val ramGB = (memInfo.totalMem / (1024 * 1024 * 1024)).toInt()
+            Log.d(TAG, "Device RAM: $ramGB GB")
+            ramGB
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting device RAM", e)
+            2 // Default to 2GB for safety
+        }
+    }
+
+    /**
+     * Get optimal models based on device RAM
+     */
+    private fun getOptimalModels(): List<ModelInfo> {
+        val deviceRam = getDeviceRamGB()
+        
+        Log.d(TAG, "Selecting optimal models for ${deviceRam}GB RAM device")
+        
+        return when {
+            // High-end devices (4GB+ RAM) - Pro models
+            deviceRam >= 4 -> listOf(
+                ModelInfo("D.A.V.I.D Voice Pro", "High-accuracy voice (Small)", "🎤", "466 MB", 466f, "voice_pro", "Pro"),
+                ModelInfo("D.A.V.I.D Chat Pro", "Advanced AI conversations (Phi-2)", "💬", "1600 MB", 1600f, "chat_pro", "Pro"),
+                ModelInfo("D.A.V.I.D Vision Pro", "Advanced object recognition", "👁️", "98 MB", 98f, "vision_pro", "Pro"),
+                ModelInfo("D.A.V.I.D Language", "15 languages (EN, HI, TA, TE, BN...)", "🌐", "120 MB", 120f, "language_multilingual", "Shared"),
+                ModelInfo("D.A.V.I.D Gesture Hand", "Hand tracking & landmarks", "✋", "25 MB", 25f, "gesture_hand", "Shared"),
+                ModelInfo("D.A.V.I.D Gesture Ctrl", "Gesture recognition control", "👆", "31 MB", 31f, "gesture_ctrl", "Shared")
+            )
+            
+            // Mid-range devices (3GB RAM) - Standard models
+            deviceRam >= 3 -> listOf(
+                ModelInfo("D.A.V.I.D Voice", "Balanced voice recognition (Base)", "🎤", "142 MB", 142f, "voice_base", "Standard"),
+                ModelInfo("D.A.V.I.D Chat", "Smart AI conversations (Qwen)", "💬", "1100 MB", 1100f, "chat_standard", "Standard"),
+                ModelInfo("D.A.V.I.D Vision", "Standard object recognition", "👁️", "98 MB", 98f, "vision_standard", "Standard"),
+                ModelInfo("D.A.V.I.D Language", "15 languages (EN, HI, TA, TE, BN...)", "🌐", "120 MB", 120f, "language_multilingual", "Shared"),
+                ModelInfo("D.A.V.I.D Gesture Hand", "Hand tracking & landmarks", "✋", "25 MB", 25f, "gesture_hand", "Shared"),
+                ModelInfo("D.A.V.I.D Gesture Ctrl", "Gesture recognition control", "👆", "31 MB", 31f, "gesture_ctrl", "Shared")
+            )
+            
+            // Budget devices (2GB RAM) - Light models
+            deviceRam >= 2 -> listOf(
+                ModelInfo("D.A.V.I.D Voice Lite", "Fast voice recognition (Base)", "🎤", "142 MB", 142f, "voice_base", "Light"),
+                ModelInfo("D.A.V.I.D Chat Lite", "Efficient AI chat (TinyLlama)", "💬", "669 MB", 669f, "chat_light", "Light"),
+                ModelInfo("D.A.V.I.D Vision Lite", "Fast object detection", "👁️", "14 MB", 14f, "vision_lite", "Light"),
+                ModelInfo("D.A.V.I.D Language", "15 languages (EN, HI, TA, TE, BN...)", "🌐", "120 MB", 120f, "language_multilingual", "Shared"),
+                ModelInfo("D.A.V.I.D Gesture Hand", "Hand tracking & landmarks", "✋", "25 MB", 25f, "gesture_hand", "Shared"),
+                ModelInfo("D.A.V.I.D Gesture Ctrl", "Gesture recognition control", "👆", "31 MB", 31f, "gesture_ctrl", "Shared")
+            )
+            
+            // Very low-end devices (1GB RAM) - Ultra-light models
+            else -> listOf(
+                ModelInfo("D.A.V.I.D Voice Mini", "Ultra-fast voice (Tiny)", "🎤", "75 MB", 75f, "voice_tiny", "Mini"),
+                ModelInfo("D.A.V.I.D Chat Mini", "Basic AI chat (TinyLlama)", "💬", "669 MB", 669f, "chat_light", "Mini"),
+                ModelInfo("D.A.V.I.D Vision Mini", "Basic object detection", "👁️", "14 MB", 14f, "vision_lite", "Mini"),
+                ModelInfo("D.A.V.I.D Language", "15 languages (EN, HI, TA, TE, BN...)", "🌐", "120 MB", 120f, "language_multilingual", "Shared"),
+                ModelInfo("D.A.V.I.D Gesture Hand", "Hand tracking & landmarks", "✋", "25 MB", 25f, "gesture_hand", "Shared"),
+                ModelInfo("D.A.V.I.D Gesture Ctrl", "Gesture recognition control", "👆", "31 MB", 31f, "gesture_ctrl", "Shared")
+            )
+        }
+    }
+
     @Composable
     private fun DownloadScreen() {
         var downloadProgress by remember { mutableStateOf(0f) }
@@ -105,28 +175,11 @@ class ModelDownloadActivity : ComponentActivity() {
         var downloadedModels by remember { mutableStateOf(setOf<Int>()) }
         var totalDownloadedMB by remember { mutableStateOf(0f) }
         var downloadSpeed by remember { mutableStateOf("") }
+        var deviceRam by remember { mutableStateOf(0) }
+        var deviceTier by remember { mutableStateOf("") }
 
-        // FIXED: Essential D.A.V.I.D models (one of each type)
-        val models = remember {
-            listOf(
-                // Voice Recognition (ONE model - base quality)
-                ModelInfo("D.A.V.I.D Voice", "Voice recognition & commands", "🎤", "142 MB", 142f, "voice_base"),
-                
-                // Chat LLM (ADDED - was missing!)
-                ModelInfo("D.A.V.I.D Chat", "AI conversation & responses", "💬", "1100 MB", 1100f, "chat_llm"),
-                
-                // Vision
-                ModelInfo("D.A.V.I.D Vision", "Image & object recognition", "👁️", "14 MB", 14f, "vision_lite"),
-                
-                // Multilingual (ONE model for ALL 15 languages)
-                ModelInfo("D.A.V.I.D Language", "15 languages (EN, HI, TA, TE, BN...)", "🌐", "120 MB", 120f, "language_multilingual"),
-                
-                // Gesture Control (2 models needed)
-                ModelInfo("D.A.V.I.D Gesture Hand", "Hand tracking & landmarks", "✋", "25 MB", 25f, "gesture_hand"),
-                ModelInfo("D.A.V.I.D Gesture Ctrl", "Gesture recognition control", "👆", "31 MB", 31f, "gesture_ctrl")
-            )
-        }
-
+        // Get optimal models for this device
+        val models = remember { getOptimalModels() }
         val totalSize = remember { models.sumOf { it.sizeMB.toDouble() }.toFloat() }
 
         val infiniteTransition = rememberInfiniteTransition(label = "download")
@@ -166,8 +219,18 @@ class ModelDownloadActivity : ComponentActivity() {
                 isDownloading = true
                 
                 try {
-                    downloadStatus = "Initializing D.A.V.I.D AI setup..."
-                    delay(1000)
+                    // Detect device capacity
+                    deviceRam = getDeviceRamGB()
+                    deviceTier = when {
+                        deviceRam >= 4 -> "Pro"
+                        deviceRam >= 3 -> "Standard"
+                        deviceRam >= 2 -> "Light"
+                        else -> "Mini"
+                    }
+                    
+                    downloadStatus = "Detected ${deviceRam}GB RAM - Optimizing for $deviceTier tier..."
+                    Log.d(TAG, "Device: ${deviceRam}GB RAM, Tier: $deviceTier, Models: ${models.size}")
+                    delay(2000)
                     
                     val modelsDir = File(filesDir, "david_models")
                     if (!modelsDir.exists()) {
@@ -177,7 +240,7 @@ class ModelDownloadActivity : ComponentActivity() {
                     models.forEachIndexed { index, model ->
                         currentModelIndex = index
                         downloadStatus = "Downloading ${model.name}..."
-                        Log.d(TAG, "Downloading: ${model.name}")
+                        Log.d(TAG, "Downloading: ${model.name} (${model.tier})")
 
                         val modelFile = File(modelsDir, "${model.fileId}.bin")
                         
@@ -213,8 +276,8 @@ class ModelDownloadActivity : ComponentActivity() {
                                             downloadStatus = "${model.name}... ${currentModelProgress}%"
                                         }
                                         
-                                        // Simulate realistic download speed
-                                        delay(if (model.sizeMB > 500) 5 else 10)
+                                        // Simulate realistic download speed based on file size
+                                        delay(if (model.sizeMB > 500) 3 else 8)
                                     }
                                 }
                                 
@@ -231,7 +294,7 @@ class ModelDownloadActivity : ComponentActivity() {
                     }
 
                     downloadProgress = 1f
-                    downloadStatus = "All D.A.V.I.D AI models ready!"
+                    downloadStatus = "All D.A.V.I.D $deviceTier models ready!"
                     isComplete = true
                     
                     val prefs = getSharedPreferences("david_prefs", MODE_PRIVATE)
@@ -240,11 +303,13 @@ class ModelDownloadActivity : ComponentActivity() {
                         putLong("download_timestamp", System.currentTimeMillis())
                         putFloat("total_size_mb", totalSize)
                         putInt("model_count", models.size)
+                        putInt("device_ram_gb", deviceRam)
+                        putString("device_tier", deviceTier)
                         putString("models_dir", modelsDir.absolutePath)
                         apply()
                     }
                     
-                    Log.d(TAG, "All ${models.size} D.A.V.I.D models downloaded! Total: ${totalSize} MB")
+                    Log.d(TAG, "All ${models.size} D.A.V.I.D $deviceTier models downloaded! Total: ${totalSize.toInt()} MB")
                     delay(2000)
                     navigateToMain()
                     
@@ -315,6 +380,17 @@ class ModelDownloadActivity : ComponentActivity() {
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
+
+                if (deviceRam > 0) {
+                    Text(
+                        text = "${deviceRam}GB RAM • $deviceTier Tier Models",
+                        fontSize = 12.sp,
+                        color = Color(0xFF00FF88),
+                        letterSpacing = 1.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
 
                 Text(
                     text = "Downloading AI Models",
@@ -542,16 +618,18 @@ class ModelDownloadActivity : ComponentActivity() {
                         modifier = Modifier.padding(end = 12.dp)
                     )
                     Column {
-                        Text(
-                            text = model.name,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isDownloaded) Color(0xFF00FF88) 
-                                   else if (isDownloading) Color(0xFF00E5FF)
-                                   else Color.White,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = model.name,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isDownloaded) Color(0xFF00FF88) 
+                                       else if (isDownloading) Color(0xFF00E5FF)
+                                       else Color.White,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                         Text(
                             text = model.description,
                             fontSize = 9.sp,
@@ -620,7 +698,8 @@ class ModelDownloadActivity : ComponentActivity() {
         val icon: String,
         val size: String,
         val sizeMB: Float,
-        val fileId: String
+        val fileId: String,
+        val tier: String // "Mini", "Light", "Standard", "Pro", "Shared"
     )
 
     companion object {
