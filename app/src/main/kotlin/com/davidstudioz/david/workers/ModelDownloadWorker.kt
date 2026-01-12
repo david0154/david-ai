@@ -20,6 +20,7 @@ import kotlinx.coroutines.withContext
  * ✅ WiFi connection check
  * ✅ Memory availability check
  * ✅ Better error handling with error codes
+ * ✅ Fixed all unresolved references
  */
 class ModelDownloadWorker(
     private val context: Context,
@@ -59,7 +60,7 @@ class ModelDownloadWorker(
                 Log.w(TAG, "Not on WiFi - may use mobile data")
             }
 
-            // Get recommended model - returns null if no suitable model
+            // Get recommended model - returns AIModel or null
             val recommendedModel = modelManager.suggestModel()
             if (recommendedModel == null) {
                 Log.e(TAG, "No suitable model found for device")
@@ -76,7 +77,7 @@ class ModelDownloadWorker(
             // Download with progress
             var lastProgress = 0
             val downloadResult = modelManager.downloadModel(
-                modelId = recommendedModel.id,
+                model = recommendedModel,
                 onProgress = { progress ->
                     if (progress - lastProgress >= 10) {
                         Log.d(TAG, "Download progress: $progress%")
@@ -93,22 +94,22 @@ class ModelDownloadWorker(
             )
 
             if (downloadResult) {
-                val modelPath = modelManager.getModelPath(recommendedModel.id)
-                Log.d(TAG, "Model downloaded successfully: $modelPath")
+                val modelFile = modelManager.getModelPath(recommendedModel.id)
+                Log.d(TAG, "Model downloaded successfully: ${modelFile.absolutePath}")
                 
                 // Save download info
                 val prefs = context.getSharedPreferences("david_prefs", Context.MODE_PRIVATE)
                 prefs.edit().apply {
                     putBoolean("model_downloaded", true)
                     putString("downloaded_model", recommendedModel.id)
-                    putString("model_path", modelPath.toString())
+                    putString("model_path", modelFile.absolutePath)
                     putLong("download_timestamp", System.currentTimeMillis())
                     apply()
                 }
                 
                 Result.success(
                     workDataOf(
-                        "model_path" to modelPath.toString(),
+                        "model_path" to modelFile.absolutePath,
                         "model_name" to recommendedModel.id,
                         "success" to true
                     )

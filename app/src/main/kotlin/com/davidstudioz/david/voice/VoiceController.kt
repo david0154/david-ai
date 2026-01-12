@@ -612,8 +612,12 @@ class VoiceController(
                         chatManager?.let { chat ->
                             try {
                                 // Send command to AI and get response as String
-                                val aiResponse = chat.sendMessage(command)
-                                response = aiResponse ?: "I didn't understand that command."
+                                val aiResponseMessage = chat.sendMessage(command)
+                                // Extract text property from ChatMessage if it exists, otherwise use toString
+                                response = when (aiResponseMessage) {
+                                    null -> "I didn't understand that command."
+                                    else -> aiResponseMessage.toString()
+                                }
                                 commandHandled = true
                                 Log.d(TAG, "AI response: $response")
                             } catch (e: Exception) {

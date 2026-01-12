@@ -242,7 +242,7 @@ fun SettingsScreen(onBack: () -> Unit = {}) {
             
             item {
                 SettingItem(
-                    icon = Icons.Default.GitHub,
+                    icon = Icons.Default.Code,
                     title = "GitHub Repository",
                     subtitle = "View source code",
                     onClick = {
