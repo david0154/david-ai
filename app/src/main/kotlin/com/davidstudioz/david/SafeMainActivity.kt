@@ -45,6 +45,7 @@ import java.util.*
 /**
  * D.A.V.I.D Main Activity with WORKING Voice AI Responses!
  */
+@OptIn(ExperimentalMaterial3Api::class)
 class SafeMainActivity : ComponentActivity() {
 
     private lateinit var wifiManager: WifiManager
@@ -99,7 +100,7 @@ class SafeMainActivity : ComponentActivity() {
         val scope = rememberCoroutineScope()
 
         Scaffold(
-            topBar = {
+            topBar {
                 TopAppBar(
                     title = {
                         Column {
