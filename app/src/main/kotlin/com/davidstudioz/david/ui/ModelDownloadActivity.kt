@@ -47,7 +47,7 @@ import java.io.File
  * ✅ Downloads from real URLs: HuggingFace, Google MediaPipe, ONNX
  * ✅ Detects device RAM capacity
  * ✅ Downloads optimal models for device (Mini/Light/Standard/Pro)
- * ✅ Progress tracking with real download speeds
+ * ✅ Progress tracking with real download speeds (MB/s)
  * ✅ Model IDs match ModelManager methods
  */
 class ModelDownloadActivity : ComponentActivity() {
@@ -180,27 +180,42 @@ class ModelDownloadActivity : ComponentActivity() {
                         downloadStatus = "Downloading ${aiModel.name}..."
                         Log.d(TAG, "Starting download: ${aiModel.name} from ${aiModel.url}")
 
+                        // ✅ Track download start time for speed calculation
+                        var downloadStartTime = System.currentTimeMillis()
+                        var lastDownloadedMB = 0f
+                        
                         // ✅ REAL DOWNLOAD using ModelManager
                         val downloadResult = modelManager.downloadModel(
                             model = aiModel,
                             onProgress = { progress ->
+                                // ✅ Calculate REAL download speed (MB/s)
+                                val elapsedSeconds = (System.currentTimeMillis() - downloadStartTime) / 1000f
+                                val speedMBps = if (elapsedSeconds > 0) {
+                                    progress.downloadedMB / elapsedSeconds
+                                } else {
+                                    0f
+                                }
+                                
                                 // Update UI with real download progress
                                 currentModelProgress = progress.progress
-                                totalDownloadedMB = downloadedModels.sumOf { 
+                                
+                                // Calculate total downloaded including completed models
+                                val completedSize = downloadedModels.sumOf { 
                                     parseSizeMB(models[it].size).toDouble() 
-                                }.toFloat() + progress.downloadedMB
+                                }.toFloat()
+                                totalDownloadedMB = completedSize + progress.downloadedMB
                                 downloadProgress = totalDownloadedMB / totalSize
                                 
-                                val speed = if (progress.downloadedMB > 0) {
-                                    "${String.format("%.1f", progress.downloadedMB)} / ${String.format("%.1f", progress.totalMB)} MB"
+                                // ✅ Show real speed in MB/s
+                                downloadSpeed = if (speedMBps > 0) {
+                                    String.format("%.2f MB/s", speedMBps)
                                 } else {
                                     "Connecting..."
                                 }
-                                downloadSpeed = speed
                                 
                                 downloadStatus = "${aiModel.name}... ${progress.progress}%"
                                 
-                                Log.d(TAG, "Progress: ${aiModel.name} - ${progress.progress}% (${progress.downloadedMB}/${progress.totalMB} MB)")
+                                Log.d(TAG, "Progress: ${aiModel.name} - ${progress.progress}% (${progress.downloadedMB.toInt()}/${progress.totalMB.toInt()} MB @ $downloadSpeed)")
                             }
                         )
 
