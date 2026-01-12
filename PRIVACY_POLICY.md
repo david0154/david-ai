@@ -5,234 +5,264 @@
 
 ## Overview
 
-D.A.V.I.D AI (Digital Assistant with Voice & Intelligent Decisions) is committed to protecting your privacy. This policy explains our data practices and how we handle your information.
+D.A.V.I.D AI (Digital Assistant with Voice & Intelligent Decisions) is committed to protecting your privacy. This policy explains our data practices in detail.
 
-## 🔒 Data Collection
+---
 
-### WE DO NOT COLLECT ANY DATA
+## 🔒 WE DO NOT COLLECT ANY DATA
 
-D.A.V.I.D AI operates with a privacy-first approach:
+**Your Privacy is Our Top Priority**
 
-- ❌ **No personal information collected** - We don't ask for or store your name, email, phone number, or any identifying information
-- ❌ **No data sent to external servers** - All processing happens locally on your device
-- ❌ **No user tracking or analytics** - We don't track your usage patterns or behavior
-- ❌ **No advertising or marketing data** - We don't collect data for ads or marketing purposes
-- ❌ **No account required** - You can use all features without creating an account
-- ❌ **No cloud storage** - Your data never leaves your device
+D.A.V.I.D AI is designed with privacy at its core. We believe your data belongs to you and should stay on your device.
+
+### What We DON'T Do:
+
+- ❌ **No Data Collection**: We do NOT collect any personal information
+- ❌ **No External Servers**: We do NOT send data to external servers
+- ❌ **No Tracking**: We do NOT track user behavior or analytics
+- ❌ **No Accounts**: We do NOT require user accounts or logins
+- ❌ **No Cloud Storage**: We do NOT store your data in the cloud
+- ❌ **No Third-Party Sharing**: We do NOT share data with third parties
+- ❌ **No Advertising**: We do NOT use your data for advertising
+
+---
 
 ## 📱 Data Storage
 
-All data is stored **locally on YOUR device only**:
+All data processing happens **locally on YOUR device**:
 
-### Voice Data
-- Voice recordings are processed in real-time for speech recognition
-- Audio is immediately deleted after processing
-- No voice data is stored or transmitted
+### Voice Recordings
+- Processed in real-time for voice commands
+- **Never stored permanently**
+- Deleted immediately after processing
+- Never uploaded to any server
 
-### Camera/Images
-- Camera images are processed locally for gesture recognition
-- Images are analyzed frame-by-frame and immediately discarded
-- No photos or videos are saved
+### Camera Images
+- Processed for gesture recognition only
+- **Never saved to storage**
+- Analyzed frame-by-frame and discarded
+- Never uploaded to any server
 
 ### AI Models
-- AI models (speech, language, vision) are downloaded once from public repositories
-- Models are stored locally on your device
-- Models are only updated when you explicitly choose to update them
+- Downloaded once from HuggingFace/ONNX repositories
+- Stored locally on your device
+- Run entirely offline after download
+- No model usage data sent anywhere
 
 ### Chat History
-- Your conversations with D.A.V.I.D are stored in a local database (Room)
-- Chat history never leaves your device
-- You can delete chat history at any time from settings
+- Stored in local SQLite database (Room)
+- Never leaves your device
+- Can be deleted anytime via app settings
+- Removed completely on app uninstall
 
 ### Settings & Preferences
-- App preferences (language, theme, etc.) are stored in SharedPreferences
-- Settings remain on your device only
+- Stored in Android SharedPreferences
+- Includes: language preference, nickname, theme
+- Stays on your device
+- Deleted on app uninstall
 
-## 🔐 Permissions
+---
+
+## 🔐 Permissions Explained
 
 D.A.V.I.D AI requests the following permissions:
 
 ### Required Permissions:
 
-**🎤 Microphone (android.permission.RECORD_AUDIO)**
-- Purpose: Voice command recognition
-- Processing: All voice processing happens locally using on-device models
-- Storage: Voice data is not stored
+#### 🎤 **Microphone (RECORD_AUDIO)**
+- **Purpose**: Voice commands and speech recognition
+- **Processing**: All voice processing done locally using Whisper model
+- **Storage**: Voice data not stored, processed and discarded immediately
 
-**📷 Camera (android.permission.CAMERA)**
-- Purpose: Hand gesture recognition for touchless control
-- Processing: Images processed locally for hand tracking
-- Storage: No images are saved
+#### 📷 **Camera (CAMERA)**
+- **Purpose**: Hand gesture recognition for device control
+- **Processing**: Real-time gesture detection using MediaPipe
+- **Storage**: Camera frames not saved, analyzed and discarded
 
-**🌐 Internet (android.permission.INTERNET)**
-- Purpose: Only for downloading AI models (one-time)
-- Usage: No ongoing internet connection required after models are downloaded
-- Data: No user data transmitted
+#### 🌐 **Internet (INTERNET)**
+- **Purpose**: 
+  - Downloading AI models (one-time)
+  - Fetching weather data (optional)
+- **Data Sent**: Only weather API requests (location only, no personal data)
+- **Note**: App works offline after models are downloaded
 
 ### Optional Permissions:
 
-**📞 Phone (android.permission.CALL_PHONE)**
-- Purpose: Voice-controlled phone calls ("Call John")
-- Your control: Only activates when you use voice commands for calling
+#### 📞 **Phone (CALL_PHONE)**
+- **Purpose**: Voice-controlled calling ("Call Mom")
+- **Usage**: Only when you explicitly use voice commands
+- **Data**: Phone numbers stay on your device
 
-**💬 SMS (android.permission.SEND_SMS)**
-- Purpose: Voice-controlled messaging ("Send message")
-- Your control: Only activates when you use voice commands for messaging
+#### 💬 **SMS (SEND_SMS)**
+- **Purpose**: Voice-controlled messaging
+- **Usage**: Only when you explicitly use voice commands
+- **Data**: Messages handled by Android, not stored by app
 
-**📍 Location (android.permission.ACCESS_FINE_LOCATION)**
-- Purpose: Local weather information
-- Processing: Location used only for weather API calls (Open-Meteo)
-- Storage: Location coordinates not stored
+#### 📍 **Location (ACCESS_FINE_LOCATION)**
+- **Purpose**: Weather information based on your location
+- **Usage**: Only sent to Open-Meteo weather API (free, no tracking)
+- **Data**: Location never stored or logged
 
-**📇 Contacts (android.permission.READ_CONTACTS)**
-- Purpose: Voice-controlled contact access ("Call Mom")
-- Your control: Only accessed when you use contact-related voice commands
+#### 📇 **Contacts (READ_CONTACTS)**
+- **Purpose**: Voice-controlled "Call John" commands
+- **Usage**: Read-only access, contacts stay on device
+- **Data**: Never uploaded or stored separately
 
-**💾 Storage (android.permission.WRITE_EXTERNAL_STORAGE)**
-- Purpose: Saving downloaded AI models
-- Storage: Only AI models are saved, no personal data
+#### 💾 **Storage (WRITE_EXTERNAL_STORAGE)**
+- **Purpose**: Saving downloaded AI models
+- **Usage**: Only for model storage in app folder
+- **Data**: Only AI model files stored
 
-**🔵 Bluetooth (android.permission.BLUETOOTH_CONNECT, BLUETOOTH_SCAN - Android 12+)**
-- Purpose: Voice-controlled Bluetooth toggle
-- Your control: Only used when you say "Turn on/off Bluetooth"
+#### 🔵 **Bluetooth (BLUETOOTH_CONNECT, BLUETOOTH_SCAN)**
+- **Purpose**: Voice-controlled Bluetooth toggle
+- **Usage**: Only when you use "Turn on Bluetooth" command
+- **Data**: No Bluetooth data collected
+
+---
 
 ## 🌍 Third-Party Services
 
-D.A.V.I.D AI uses the following third-party services:
+D.A.V.I.D AI uses the following services:
 
 ### AI Models (Downloaded Once)
 
-**OpenAI Whisper** (Speech Recognition)
-- Source: [OpenAI GitHub](https://github.com/openai/whisper)
-- License: MIT License
-- Usage: Downloaded once, runs locally
-- Data: No data sent to OpenAI
+1. **OpenAI Whisper** (Speech Recognition)
+   - Downloaded from: HuggingFace
+   - Privacy: Runs locally, no data sent
+   - License: MIT
 
-**HuggingFace Models** (Chat AI - TinyLlama, Qwen, Phi-2)
-- Source: [HuggingFace](https://huggingface.co)
-- License: Apache 2.0 / MIT (varies by model)
-- Usage: Downloaded once, runs locally
-- Data: No data sent to HuggingFace
+2. **HuggingFace Models** (Chat AI)
+   - Models: TinyLlama, Qwen2.5, Phi-2
+   - Downloaded from: HuggingFace.co
+   - Privacy: Runs locally, no data sent
+   - License: Various open source licenses
 
-**ONNX Models** (Vision Classification)
-- Source: [ONNX](https://onnx.ai)
-- License: Apache 2.0
-- Usage: Downloaded once, runs locally
-- Data: No image data transmitted
+3. **ONNX Models** (Vision Classification)
+   - Downloaded from: ONNX Model Zoo
+   - Privacy: Runs locally, no data sent
+   - License: Apache 2.0
 
-**Google MediaPipe** (Gesture Recognition)
-- Source: [MediaPipe](https://mediapipe.dev)
-- License: Apache 2.0
-- Usage: Downloaded once, runs locally
-- Data: No image data transmitted
+4. **Google MediaPipe** (Gesture Recognition)
+   - Integrated as library
+   - Privacy: Runs locally, no data sent
+   - License: Apache 2.0
 
-**TensorFlow Lite** (Language Models)
-- Source: [TensorFlow](https://tensorflow.org/lite)
-- License: Apache 2.0
-- Usage: Downloaded once, runs locally
-- Data: No data transmitted
+5. **TensorFlow Lite** (Language Processing)
+   - Integrated as library
+   - Privacy: Runs locally, no data sent
+   - License: Apache 2.0
 
-### Weather API
+### External APIs (Optional)
 
-**Open-Meteo** (Weather Information)
-- Source: [Open-Meteo](https://open-meteo.com)
-- License: CC BY 4.0
-- Usage: Public API for weather forecasts
-- Data: Only location coordinates sent (if permission granted)
-- Privacy: No user tracking, no API key required
+1. **Open-Meteo API** (Weather)
+   - Purpose: Weather forecasts
+   - Data sent: Geographic coordinates only
+   - Privacy: Free API, no tracking, no registration
+   - Website: [open-meteo.com](https://open-meteo.com)
+   - Policy: No personal data collected
 
-**None of these services receive your personal data, voice recordings, or images.**
+**Important**: None of these services receive your personal data, voice recordings, or images.
 
-## 🚫 Data Sharing
-
-**WE DO NOT SHARE ANY DATA** because **WE DO NOT COLLECT ANY DATA**.
-
-- No data shared with third parties
-- No data sold to advertisers
-- No data provided to analytics companies
-- No data given to data brokers
+---
 
 ## 🛡️ Data Security
 
-Even though we don't collect data, we implement security measures:
+### How We Protect Your Data:
 
-- All app data stored using Android's encrypted storage
-- HTTPS-only for model downloads
-- No plaintext sensitive data
-- ProGuard code obfuscation
-- Runtime permission checks
+- ✅ **Local Processing**: All AI runs on your device
+- ✅ **No Cloud Sync**: Data never synced to cloud
+- ✅ **Encrypted Storage**: Android encrypted storage used
+- ✅ **HTTPS Only**: All model downloads use HTTPS
+- ✅ **No Analytics**: Zero telemetry or crash reporting
+- ✅ **Open Source**: Code is public, auditable on GitHub
+
+---
 
 ## 👤 Your Rights
 
 You have complete control over your data:
 
-### Right to Access
-- All your data is on your device
-- You can view chat history anytime
+### You Can:
 
-### Right to Delete
-- Delete chat history from settings
-- Clear app data from Android settings
-- Uninstall app to remove all data
+- ✅ **View Data**: Check chat history anytime
+- ✅ **Delete Data**: Clear chat history via settings
+- ✅ **Export Data**: No export needed (data stays on device)
+- ✅ **Revoke Permissions**: Disable any permission in Android settings
+- ✅ **Uninstall**: Removes ALL data completely
 
-### Right to Export
-- Chat history can be exported (if implemented)
-- Settings can be backed up manually
+### Data Retention:
 
-### Right to Control
-- Revoke permissions anytime from Android settings
-- Disable features you don't want to use
+- **Chat History**: Kept until you delete it or uninstall app
+- **AI Models**: Kept until you delete them or uninstall app
+- **Settings**: Kept until you clear app data or uninstall
+- **Voice/Camera**: Never stored
+
+---
+
+## 🌐 International Users
+
+D.A.V.I.D AI works globally:
+
+- ✅ **GDPR Compliant** (Europe): No data collection = automatic compliance
+- ✅ **CCPA Compliant** (California): No data sale = automatic compliance
+- ✅ **Works Everywhere**: No region restrictions
+- ✅ **Offline Capable**: Works without internet after setup
+
+---
 
 ## 👶 Children's Privacy
 
-D.A.V.I.D AI does not knowingly collect data from children under 13. Since we don't collect any data at all, the app is safe for all ages. However, parental supervision is recommended for features like phone calls and messaging.
+D.A.V.I.D AI does not knowingly collect data from anyone, including children under 13:
 
-## 🌍 International Users
+- No age verification required
+- No data collection from any age group
+- Safe for all ages (with parental supervision for device control features)
 
-D.A.V.I.D AI can be used anywhere in the world. Since all data stays on your device:
-
-- No GDPR concerns (EU)
-- No CCPA concerns (California)
-- No data localization requirements
-- Compliant with all data protection laws
-
-## 📱 App Store Compliance
-
-This privacy policy meets requirements for:
-
-- ✅ Google Play Store
-- ✅ Apple App Store (if released on iOS)
-- ✅ F-Droid
-- ✅ Samsung Galaxy Store
-- ✅ Amazon Appstore
+---
 
 ## 🔄 Changes to This Policy
 
-We may update this privacy policy from time to time. When we do:
+We may update this privacy policy:
 
-- Updated policy will be posted in the app
-- Updated policy will be posted on GitHub
+- Changes will be posted in the app
+- Changes will be posted on GitHub
 - Effective date will be updated
-- You'll be notified of significant changes
+- Major changes will be announced in release notes
 
-Continued use of D.A.V.I.D AI after changes means you accept the updated policy.
+**Current Version**: 1.0.0 (January 12, 2026)
+
+---
 
 ## 📧 Contact Us
 
-Questions about this privacy policy?
+Questions about privacy?
 
-**Email**: [david@nexuzy.in](mailto:david@nexuzy.in)  
-**GitHub**: [github.com/david0154/david-ai](https://github.com/david0154/david-ai)  
-**Issues**: [github.com/david0154/david-ai/issues](https://github.com/david0154/david-ai/issues)
+**Email**: [david@nexuzy.in](mailto:david@nexuzy.in)
+
+**GitHub**: [github.com/david0154/david-ai](https://github.com/david0154/david-ai)
+
+**Developer**: Nexuzy Tech Ltd.
+
+**Response Time**: Usually within 48 hours
+
+---
 
 ## 📜 Legal
 
-**Developer**: Nexuzy Tech Ltd.  
-**Location**: India  
-**Registration**: [Company details if applicable]
+### Disclaimer
+
+D.A.V.I.D AI is provided "as is" without warranties. Users are responsible for how they use device control features.
+
+### Governing Law
+
+This policy is governed by the laws of India.
+
+### Acceptance
+
+By using D.A.V.I.D AI, you agree to this privacy policy.
 
 ---
 
 **© 2026 Nexuzy Tech Ltd. All rights reserved.**
 
-Last Updated: January 12, 2026
+*Last Updated: January 12, 2026*
