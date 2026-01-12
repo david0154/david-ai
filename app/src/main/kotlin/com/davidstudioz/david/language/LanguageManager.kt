@@ -84,17 +84,20 @@ class LanguageManager(private val context: Context) {
     
     /**
      * Check if language model is downloaded
+     * Uses multilingual model that supports all languages
      */
     fun isLanguageDownloaded(languageCode: String): Boolean {
         // English is always available (default)
         if (languageCode == "en") return true
         
-        val modelPath = modelManager.getModelPath("language", languageCode)
-        return modelPath != null && modelPath.exists()
+        // Check if multilingual model is downloaded (supports all languages)
+        val multilingualModel = modelManager.getLanguageModelPath()
+        return multilingualModel != null && multilingualModel.exists()
     }
     
     /**
      * Download language model
+     * Uses the multilingual model that supports all 15 languages
      */
     suspend fun downloadLanguage(
         languageCode: String,
@@ -104,15 +107,26 @@ class LanguageManager(private val context: Context) {
             val language = supportedLanguages.find { it.code == languageCode }
                 ?: return Result.failure(Exception("Language not supported"))
             
-            Log.d(TAG, "Downloading language: ${language.name}")
+            Log.d(TAG, "Downloading language support for: ${language.name}")
             
-            val model = modelManager.getLanguageModel(language.name)
-                ?: return Result.failure(Exception("Model not found for ${language.name}"))
+            // Check if multilingual model is already downloaded
+            val existingModel = modelManager.getLanguageModelPath()
+            if (existingModel != null && existingModel.exists()) {
+                Log.d(TAG, "Multilingual model already downloaded")
+                return Result.success(existingModel)
+            }
             
-            val result = modelManager.downloadModel(model, onProgress)
+            // Download multilingual model (supports all languages)
+            val multilingualModel = AIModel(
+                "D.A.V.I.D Multilingual",
+                "https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/onnx/model.onnx",
+                "120 MB", 1, "Language", "ONNX", "multilingual"
+            )
+            
+            val result = modelManager.downloadModel(multilingualModel, onProgress)
             
             if (result.isSuccess) {
-                Log.d(TAG, "Language downloaded: ${language.name}")
+                Log.d(TAG, "Multilingual model downloaded - supports all 15 languages")
             }
             
             result
@@ -124,9 +138,18 @@ class LanguageManager(private val context: Context) {
     
     /**
      * Get downloaded languages
+     * If multilingual model is downloaded, all languages are available
      */
     fun getDownloadedLanguages(): List<Language> {
-        return supportedLanguages.filter { isLanguageDownloaded(it.code) }
+        val multilingualDownloaded = modelManager.getLanguageModelPath()?.exists() == true
+        
+        return if (multilingualDownloaded) {
+            // All languages are available when multilingual model is downloaded
+            supportedLanguages.map { it.copy(isDownloaded = true) }
+        } else {
+            // Only English is available by default
+            supportedLanguages.filter { it.code == "en" }
+        }
     }
     
     /**
@@ -138,6 +161,7 @@ class LanguageManager(private val context: Context) {
     
     /**
      * Delete language model
+     * Note: This deletes the multilingual model affecting all languages
      */
     fun deleteLanguage(languageCode: String): Boolean {
         if (languageCode == "en") {
@@ -146,20 +170,20 @@ class LanguageManager(private val context: Context) {
         }
         
         return try {
-            val modelPath = modelManager.getModelPath("language", languageCode)
+            val modelPath = modelManager.getLanguageModelPath()
             val deleted = modelPath?.delete() ?: false
             
             if (deleted) {
-                Log.d(TAG, "Language deleted: $languageCode")
+                Log.d(TAG, "Multilingual model deleted (affects all non-English languages)")
                 // Switch to English if current language was deleted
-                if (getCurrentLanguage() == languageCode) {
+                if (getCurrentLanguage() != "en") {
                     setCurrentLanguage("en")
                 }
             }
             
             deleted
         } catch (e: Exception) {
-            Log.e(TAG, "Error deleting language", e)
+            Log.e(TAG, "Error deleting language model", e)
             false
         }
     }
