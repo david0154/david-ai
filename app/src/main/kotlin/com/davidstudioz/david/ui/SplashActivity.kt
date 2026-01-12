@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit
  * D.A.V.I.D Splash Screen - Beautiful Modern Design
  * Complete 500+ line implementation with all animations
  * Shows branding, logo, and initialization progress
- * Digital Assistant Voice Intelligence Device
+ * Digital Assistant with Voice & Intelligent Decisions
  */
 class SplashActivity : ComponentActivity() {
 
@@ -361,7 +361,7 @@ class SplashActivity : ComponentActivity() {
 
                     // Subtitle
                     Text(
-                        text = "Digital Assistant Voice\nIntelligence Device",
+                        text = "Digital Assistant with Voice \n& Intelligent Decisions",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color(0xFF64B5F6),
@@ -496,7 +496,7 @@ class SplashActivity : ComponentActivity() {
                             letterSpacing = 1.sp
                         )
                         Text(
-                            text = "Developed by David Studioz",
+                            text = "Developed by Nexuzy Tech Pvt Ltd",
                             fontSize = 10.sp,
                             color = Color(0xFF4B5563),
                             letterSpacing = 1.sp,
