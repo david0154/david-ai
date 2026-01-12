@@ -21,6 +21,8 @@ import kotlinx.coroutines.withContext
  * ✅ Memory availability check
  * ✅ Better error handling with error codes
  * ✅ Fixed all unresolved references
+ * ✅ Fixed AIModel property access (name instead of id)
+ * ✅ Fixed Result<File> handling
  */
 class ModelDownloadWorker(
     private val context: Context,
@@ -60,24 +62,26 @@ class ModelDownloadWorker(
                 Log.w(TAG, "Not on WiFi - may use mobile data")
             }
 
-            // Get recommended model - returns AIModel or null
-            val recommendedModel = modelManager.suggestModel()
-            if (recommendedModel == null) {
-                Log.e(TAG, "No suitable model found for device")
+            // Get essential models list
+            val essentialModels = modelManager.getEssentialModels()
+            if (essentialModels.isEmpty()) {
+                Log.e(TAG, "No suitable models found for device")
                 return@withContext Result.failure(
                     workDataOf(
-                        "error" to "No suitable AI model for your device",
+                        "error" to "No suitable AI models for your device",
                         "error_code" to "NO_MODEL"
                     )
                 )
             }
 
-            Log.d(TAG, "Downloading model: ${recommendedModel.id}")
+            // Download the first essential model (or you can download all)
+            val modelToDownload = essentialModels.first()
+            Log.d(TAG, "Downloading model: ${modelToDownload.name}")
 
             // Download with progress
             var lastProgress = 0
             val downloadResult = modelManager.downloadModel(
-                model = recommendedModel,
+                model = modelToDownload,
                 onProgress = { progress ->
                     if (progress - lastProgress >= 10) {
                         Log.d(TAG, "Download progress: $progress%")
@@ -86,43 +90,54 @@ class ModelDownloadWorker(
                         setProgressAsync(
                             workDataOf(
                                 "progress" to progress,
-                                "model_name" to recommendedModel.id
+                                "model_name" to modelToDownload.name
                             )
                         )
                     }
                 }
             )
 
-            if (downloadResult) {
-                val modelFile = modelManager.getModelPath(recommendedModel.id)
-                Log.d(TAG, "Model downloaded successfully: ${modelFile.absolutePath}")
-                
-                // Save download info
-                val prefs = context.getSharedPreferences("david_prefs", Context.MODE_PRIVATE)
-                prefs.edit().apply {
-                    putBoolean("model_downloaded", true)
-                    putString("downloaded_model", recommendedModel.id)
-                    putString("model_path", modelFile.absolutePath)
-                    putLong("download_timestamp", System.currentTimeMillis())
-                    apply()
+            // Check if download was successful
+            downloadResult.fold(
+                onSuccess = { modelFile ->
+                    Log.d(TAG, "Model downloaded successfully: ${modelFile.absolutePath}")
+                    
+                    // Save download info
+                    val prefs = context.getSharedPreferences("david_prefs", Context.MODE_PRIVATE)
+                    prefs.edit().apply {
+                        putBoolean("model_downloaded", true)
+                        putString("downloaded_model", modelToDownload.name)
+                        putString("model_path", modelFile.absolutePath)
+                        putLong("download_timestamp", System.currentTimeMillis())
+                        apply()
+                    }
+                    
+                    return@withContext Result.success(
+                        workDataOf(
+                            "model_path" to modelFile.absolutePath,
+                            "model_name" to modelToDownload.name,
+                            "success" to true
+                        )
+                    )
+                },
+                onFailure = { error ->
+                    Log.e(TAG, "Model download failed: ${error.message}")
+                    return@withContext Result.failure(
+                        workDataOf(
+                            "error" to (error.message ?: "Download failed"),
+                            "error_code" to "DOWNLOAD_FAILED"
+                        )
+                    )
                 }
-                
-                Result.success(
-                    workDataOf(
-                        "model_path" to modelFile.absolutePath,
-                        "model_name" to recommendedModel.id,
-                        "success" to true
-                    )
+            )
+
+            // This should never be reached due to returns above
+            Result.failure(
+                workDataOf(
+                    "error" to "Unknown error",
+                    "error_code" to "UNKNOWN"
                 )
-            } else {
-                Log.e(TAG, "Model download failed")
-                Result.failure(
-                    workDataOf(
-                        "error" to "Download failed",
-                        "error_code" to "DOWNLOAD_FAILED"
-                    )
-                )
-            }
+            )
         } catch (e: Exception) {
             Log.e(TAG, "Worker exception", e)
             Result.failure(
