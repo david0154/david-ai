@@ -12,17 +12,18 @@ import java.net.URL
 import java.net.URLEncoder
 
 /**
- * WeatherService - Fetch weather data from API
- * ✅ Uses OpenWeatherMap API (free)
+ * WeatherService - Fetch weather data from Open-Meteo API
+ * ✅ Uses Open-Meteo API (free, no API key needed)
  * ✅ Gets location-based weather
  * ✅ Returns human-readable weather info
  * ✅ No browser opening - background fetch
+ * ✅ Geocoding support for city names
  */
 class WeatherService(private val context: Context) {
 
     /**
      * Get current weather for user's location
-     * Returns spoken response like "It's 25 degrees and sunny in New York"
+     * Returns spoken response like "It's 25 degrees and sunny in Kolkata"
      */
     suspend fun getCurrentWeather(): String = withContext(Dispatchers.IO) {
         try {
@@ -32,9 +33,7 @@ class WeatherService(private val context: Context) {
                 return@withContext "I couldn't determine your location. Please enable location services."
             }
             
-            // Use OpenWeatherMap API (requires API key - users should add their own)
-            // Alternative: use free weather APIs like wttr.in
-            val weatherData = fetchWeatherFromWttrIn(location.latitude, location.longitude)
+            val weatherData = fetchWeatherFromOpenMeteo(location.latitude, location.longitude)
             
             return@withContext weatherData
             
@@ -49,24 +48,17 @@ class WeatherService(private val context: Context) {
      */
     suspend fun getWeatherForCity(city: String): String = withContext(Dispatchers.IO) {
         try {
-            val encodedCity = URLEncoder.encode(city, "UTF-8")
-            val url = URL("https://wttr.in/$encodedCity?format=%C+%t+%w+%h")
-            val connection = url.openConnection() as HttpURLConnection
-            connection.requestMethod = "GET"
-            connection.connectTimeout = 5000
-            connection.readTimeout = 5000
-            connection.setRequestProperty("User-Agent", "curl/7.68.0")
-            
-            val responseCode = connection.responseCode
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                val response = connection.inputStream.bufferedReader().use { it.readText() }
-                connection.disconnect()
-                
-                return@withContext parseWttrResponse(response, city)
-            } else {
-                connection.disconnect()
-                return@withContext "I couldn't find weather for $city"
+            // First, geocode the city name to get coordinates
+            val coords = geocodeCity(city)
+            if (coords == null) {
+                return@withContext "I couldn't find the location: $city"
             }
+            
+            // Fetch weather for coordinates
+            val weatherData = fetchWeatherFromOpenMeteo(coords.first, coords.second, city)
+            
+            return@withContext weatherData
+            
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching weather for city", e)
             return@withContext "I couldn't fetch weather for $city. Please try again."
@@ -74,62 +66,132 @@ class WeatherService(private val context: Context) {
     }
     
     /**
-     * Fetch weather from wttr.in (free, no API key needed)
+     * Geocode city name to coordinates using Open-Meteo Geocoding API
+     * Returns Pair(latitude, longitude) or null
      */
-    private fun fetchWeatherFromWttrIn(lat: Double, lon: Double): String {
+    private fun geocodeCity(city: String): Pair<Double, Double>? {
         try {
-            val url = URL("https://wttr.in/?format=%l:+%C+%t+%w+%h")
+            val encodedCity = URLEncoder.encode(city, "UTF-8")
+            val url = URL("https://geocoding-api.open-meteo.com/v1/search?name=$encodedCity&count=1&language=en&format=json")
+            
             val connection = url.openConnection() as HttpURLConnection
             connection.requestMethod = "GET"
             connection.connectTimeout = 5000
             connection.readTimeout = 5000
-            connection.setRequestProperty("User-Agent", "curl/7.68.0")
             
             val responseCode = connection.responseCode
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 val response = connection.inputStream.bufferedReader().use { it.readText() }
                 connection.disconnect()
                 
-                return parseWttrResponse(response, "your location")
+                val json = JSONObject(response)
+                val results = json.optJSONArray("results")
+                if (results != null && results.length() > 0) {
+                    val firstResult = results.getJSONObject(0)
+                    val lat = firstResult.getDouble("latitude")
+                    val lon = firstResult.getDouble("longitude")
+                    return Pair(lat, lon)
+                }
+            } else {
+                connection.disconnect()
+            }
+            
+            return null
+        } catch (e: Exception) {
+            Log.e(TAG, "Error geocoding city", e)
+            return null
+        }
+    }
+    
+    /**
+     * Fetch weather from Open-Meteo API (free, no API key needed)
+     * API: https://api.open-meteo.com/v1/forecast
+     */
+    private fun fetchWeatherFromOpenMeteo(lat: Double, lon: Double, locationName: String = "your location"): String {
+        try {
+            // Open-Meteo API URL with current weather parameters
+            val url = URL(
+                "https://api.open-meteo.com/v1/forecast?" +
+                "latitude=$lat&longitude=$lon&" +
+                "current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&" +
+                "temperature_unit=celsius&" +
+                "wind_speed_unit=kmh&" +
+                "timezone=auto"
+            )
+            
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+            connection.connectTimeout = 5000
+            connection.readTimeout = 5000
+            
+            val responseCode = connection.responseCode
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                val response = connection.inputStream.bufferedReader().use { it.readText() }
+                connection.disconnect()
+                
+                return parseOpenMeteoResponse(response, locationName)
             } else {
                 connection.disconnect()
                 return "Weather service unavailable"
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error fetching from wttr.in", e)
+            Log.e(TAG, "Error fetching from Open-Meteo", e)
             return "Unable to fetch weather data"
         }
     }
     
     /**
-     * Parse wttr.in response into spoken format
-     * Example input: "New York: Clear +15°C ↓5 km/h 45%"
-     * Example output: "In New York, it's clear with 15 degrees celsius, wind 5 kilometers per hour, humidity 45 percent"
+     * Parse Open-Meteo JSON response into spoken format
+     * Example output: "In Kolkata, it's clear with 25 degrees celsius, wind 10 kilometers per hour, humidity 60 percent"
      */
-    private fun parseWttrResponse(response: String, locationName: String): String {
+    private fun parseOpenMeteoResponse(jsonResponse: String, locationName: String): String {
         try {
-            val parts = response.trim().split(" ")
-            if (parts.size < 4) {
-                return "Weather data format not recognized"
-            }
+            val json = JSONObject(jsonResponse)
+            val current = json.getJSONObject("current")
             
-            val condition = parts[1] // e.g., "Clear", "Cloudy"
-            val temperature = parts[2].replace("+", "").replace("°C", " degrees celsius").replace("°F", " degrees fahrenheit")
-            val wind = parts.getOrNull(3)?.replace("↓", "")?.replace("km/h", "kilometers per hour") ?: ""
-            val humidity = parts.getOrNull(4)?.replace("%", " percent") ?: ""
+            val temperature = current.getDouble("temperature_2m").toInt()
+            val humidity = current.getInt("relative_humidity_2m")
+            val windSpeed = current.getDouble("wind_speed_10m").toInt()
+            val weatherCode = current.getInt("weather_code")
+            
+            // Convert WMO weather code to description
+            val condition = getWeatherCondition(weatherCode)
             
             return buildString {
-                append("In $locationName, it's $condition with $temperature")
-                if (wind.isNotBlank()) {
-                    append(", wind $wind")
+                append("In $locationName, it's $condition with $temperature degrees celsius")
+                if (windSpeed > 0) {
+                    append(", wind $windSpeed kilometers per hour")
                 }
-                if (humidity.isNotBlank()) {
-                    append(", humidity $humidity")
-                }
+                append(", humidity $humidity percent")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error parsing weather", e)
-            return "The weather in $locationName is $response"
+            Log.e(TAG, "Error parsing Open-Meteo response", e)
+            return "Weather data in $locationName is available but format not recognized"
+        }
+    }
+    
+    /**
+     * Convert WMO Weather Code to human-readable condition
+     * WMO Codes: https://open-meteo.com/en/docs
+     */
+    private fun getWeatherCondition(code: Int): String {
+        return when (code) {
+            0 -> "clear sky"
+            1 -> "mainly clear"
+            2 -> "partly cloudy"
+            3 -> "overcast"
+            45, 48 -> "foggy"
+            51, 53, 55 -> "drizzling"
+            56, 57 -> "freezing drizzle"
+            61, 63, 65 -> "rainy"
+            66, 67 -> "freezing rain"
+            71, 73, 75 -> "snowy"
+            77 -> "snow grains"
+            80, 81, 82 -> "rain showers"
+            85, 86 -> "snow showers"
+            95 -> "thunderstorm"
+            96, 99 -> "thunderstorm with hail"
+            else -> "unknown conditions"
         }
     }
     
@@ -144,6 +206,7 @@ class WeatherService(private val context: Context) {
             val gpsLocation = try {
                 locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
             } catch (e: SecurityException) {
+                Log.w(TAG, "GPS permission denied")
                 null
             }
             
@@ -151,6 +214,7 @@ class WeatherService(private val context: Context) {
             val networkLocation = try {
                 locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
             } catch (e: SecurityException) {
+                Log.w(TAG, "Network location permission denied")
                 null
             }
             
