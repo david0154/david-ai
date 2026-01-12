@@ -50,6 +50,9 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    
+    <!-- ====== BOOT RECEIVER (AUTO-START) ====== -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <!-- ====== FOREGROUND SERVICES ====== -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -83,6 +86,8 @@
             android:name="com.google.android.wearable.standalone"
             android:value="true" />
 
+        <!-- ====== ACTIVITIES ====== -->
+        
         <!-- Splash Activity - LAUNCHER -->
         <activity
             android:name="com.davidstudioz.david.ui.SplashActivity"
@@ -127,28 +132,49 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.DavidAI" />
 
-        <!-- Settings Activity - NEW -->
+        <!-- Settings Activity -->
         <activity
             android:name="com.davidstudioz.david.ui.SettingsActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.DavidAI" />
 
-        <!-- Voice Services -->
+        <!-- ====== SERVICES ====== -->
+        
+        <!-- Hot Word Detection Service - Always-On Voice -->
         <service
             android:name="com.davidstudioz.david.voice.HotWordDetectionService"
             android:enabled="true"
             android:exported="false"
-            android:foregroundServiceType="microphone" />
+            android:foregroundServiceType="microphone"
+            android:stopWithTask="false" />
 
-        <!-- Gesture Services -->
+        <!-- Gesture Recognition Service - Background Hand Tracking -->
         <service
             android:name="com.davidstudioz.david.gesture.GestureRecognitionService"
             android:enabled="true"
             android:exported="false"
-            android:foregroundServiceType="camera" />
+            android:foregroundServiceType="camera"
+            android:stopWithTask="false" />
 
-        <!-- WorkManager -->
+        <!-- ====== BROADCAST RECEIVERS ====== -->
+        
+        <!-- Boot Receiver - Auto-Start Services on Boot -->
+        <receiver
+            android:name="com.davidstudioz.david.services.BootReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+
+        <!-- ====== PROVIDERS ====== -->
+        
+        <!-- WorkManager Initialization -->
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
