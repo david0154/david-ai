@@ -54,7 +54,7 @@ enum class DownloadStatus {
  * ✅ Cancel support
  * ✅ Batch download support
  * ✅ Error handling and retry
- * Connected to: SettingsScreen, SafeMainActivity, ModelManagementDialog
+ * Connected to: SettingsScreen, SafeMainActivity, ModelDownloadActivity
  */
 class ModelManager(private val context: Context) {
     
