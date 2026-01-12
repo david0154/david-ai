@@ -22,7 +22,8 @@ import com.davidstudioz.david.storage.EncryptionManager
 /**
  * SettingsActivity - Full settings management
  * Connected to: SafeMainActivity, LanguageManager, EncryptionManager
- * FIXED: Use AutoMirrored icons
+ * ✅ FIXED: Use AutoMirrored icons
+ * ✅ FIXED: Use .size property to get language count from List<Language>
  */
 @OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : ComponentActivity() {
@@ -33,33 +34,64 @@ class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        languageManager = LanguageManager(this)
-        encryptionManager = EncryptionManager(this)
-        
-        setContent {
-            MaterialTheme(
-                colorScheme = darkColorScheme(
-                    primary = Color(0xFF00E5FF),
-                    background = Color(0xFF0A0E27)
-                )
-            ) {
-                Scaffold(
-                    topBar = {
-                        TopAppBar(
-                            title = { Text("Settings") },
-                            navigationIcon = {
-                                IconButton(onClick = { finish() }) {
-                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
-                                }
-                            },
-                            colors = TopAppBarDefaults.topAppBarColors(
-                                containerColor = Color(0xFF1A1F3A)
+        try {
+            languageManager = LanguageManager(this)
+            encryptionManager = EncryptionManager(this)
+            
+            setContent {
+                MaterialTheme(
+                    colorScheme = darkColorScheme(
+                        primary = Color(0xFF00E5FF),
+                        background = Color(0xFF0A0E27)
+                    )
+                ) {
+                    Scaffold(
+                        topBar = {
+                            TopAppBar(
+                                title = { Text("Settings") },
+                                navigationIcon = {
+                                    IconButton(onClick = { finish() }) {
+                                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                                    }
+                                },
+                                colors = TopAppBarDefaults.topAppBarColors(
+                                    containerColor = Color(0xFF1A1F3A)
+                                )
                             )
-                        )
+                        }
+                    ) { padding ->
+                        SettingsScreen(Modifier.padding(padding))
                     }
-                ) { padding ->
-                    SettingsScreen(Modifier.padding(padding))
                 }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in onCreate", e)
+        }
+    }
+    
+    @Composable
+    private fun SettingsScreen(modifier: Modifier = Modifier) {
+        LazyColumn(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            item {
+                Text(
+                    text = "D.A.V.I.D Settings",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+            
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            
+            items(getSettingsSections()) { section ->
+                SettingsSectionCard(section)
             }
         }
     }
@@ -116,9 +148,14 @@ class SettingsActivity : ComponentActivity() {
         }
     }
     
+    /**
+     * Build settings sections list with proper type handling
+     * ✅ FIXED: Extract .size from List<Language> before string interpolation
+     */
     private fun getSettingsSections(): List<SettingsSection> {
-        // FIXED: Get language count properly
-        val languageCount = languageManager.getDownloadedLanguages().size
+        // ✅ CORRECT: Get language count as Int from List<Language>
+        val downloadedLanguages = languageManager.getDownloadedLanguages()
+        val languageCount = downloadedLanguages.size
         
         return listOf(
             SettingsSection("🌐", "Languages", "$languageCount languages available"),
