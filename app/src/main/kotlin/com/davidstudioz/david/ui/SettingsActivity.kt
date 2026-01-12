@@ -23,7 +23,9 @@ import com.davidstudioz.david.storage.EncryptionManager
  * SettingsActivity - Full settings management
  * Connected to: SafeMainActivity, LanguageManager, EncryptionManager
  * ✅ FIXED: Use AutoMirrored icons
- * ✅ FIXED: Use .size property to get language count from List<Language>
+ * ✅ FIXED: Use .size property to get language count
+ * ✅ FIXED: Remove duplicate SettingsScreen function
+ * ✅ FIXED: Use isEncryptionEnabled() instead of isInitialized()
  */
 @OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : ComponentActivity() {
@@ -97,33 +99,6 @@ class SettingsActivity : ComponentActivity() {
     }
     
     @Composable
-    private fun SettingsScreen(modifier: Modifier = Modifier) {
-        LazyColumn(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            item {
-                Text(
-                    text = "D.A.V.I.D Settings",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
-            
-            item {
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-            
-            items(getSettingsSections()) { section ->
-                SettingsSectionCard(section)
-            }
-        }
-    }
-    
-    @Composable
     private fun SettingsSectionCard(section: SettingsSection) {
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -151,18 +126,22 @@ class SettingsActivity : ComponentActivity() {
     /**
      * Build settings sections list with proper type handling
      * ✅ FIXED: Extract .size from List<Language> before string interpolation
+     * ✅ FIXED: Use isEncryptionEnabled() method
      */
     private fun getSettingsSections(): List<SettingsSection> {
         // ✅ CORRECT: Get language count as Int from List<Language>
         val downloadedLanguages = languageManager.getDownloadedLanguages()
         val languageCount = downloadedLanguages.size
         
+        // ✅ CORRECT: Check encryption status
+        val encryptionStatus = if (encryptionManager.isEncryptionEnabled()) "Enabled" else "Disabled"
+        
         return listOf(
             SettingsSection("🌐", "Languages", "$languageCount languages available"),
             SettingsSection("🎤", "Voice Settings", "Voice recognition and TTS configuration"),
             SettingsSection("✋", "Gesture Settings", "Gesture recognition sensitivity and controls"),
             SettingsSection("🔔", "Notifications", "Manage notification preferences"),
-            SettingsSection("🔒", "Privacy & Security", "Data encryption: ${if (encryptionManager.isInitialized()) "Enabled" else "Disabled"}"),
+            SettingsSection("🔒", "Privacy & Security", "Data encryption: $encryptionStatus"),
             SettingsSection("ℹ️", "About D.A.V.I.D", "Version 1.0.0 - AI Assistant")
         )
     }
