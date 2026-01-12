@@ -34,36 +34,33 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.davidstudioz.david.SafeMainActivity
+import com.davidstudioz.david.models.ModelManager
+import com.davidstudioz.david.models.AIModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import java.io.File
-import java.io.FileOutputStream
-import java.util.concurrent.TimeUnit
 
 /**
- * D.A.V.I.D Model Download - INTELLIGENT DEVICE-BASED SELECTION
+ * D.A.V.I.D Model Download - REAL DOWNLOADS FROM HUGGINGFACE/MEDIAPIPE
+ * ✅ Uses ModelManager.downloadModel() for actual HTTP downloads
+ * ✅ Downloads from real URLs: HuggingFace, Google MediaPipe, ONNX
  * ✅ Detects device RAM capacity
- * ✅ Downloads optimal models for device (Light/Standard/Pro)
- * ✅ Low RAM (1-2GB): Tiny voice, Light chat, Lite vision
- * ✅ Medium RAM (3GB): Base voice, Standard chat, Standard vision
- * ✅ High RAM (4GB+): Pro voice (Small), Pro chat, Standard vision
- * ✅ FIXED: Model IDs now match ModelManager download methods
+ * ✅ Downloads optimal models for device (Mini/Light/Standard/Pro)
+ * ✅ Progress tracking with real download speeds
+ * ✅ Model IDs match ModelManager methods
  */
 class ModelDownloadActivity : ComponentActivity() {
 
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .build()
+    private lateinit var modelManager: ModelManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         try {
             Log.d(TAG, "ModelDownloadActivity started")
+            
+            modelManager = ModelManager(this)
             
             val prefs = getSharedPreferences("david_prefs", MODE_PRIVATE)
             val modelDownloaded = prefs.getBoolean("model_downloaded", false)
@@ -96,96 +93,11 @@ class ModelDownloadActivity : ComponentActivity() {
     }
 
     /**
-     * Get device RAM in GB
+     * Get optimal AIModels from ModelManager based on device RAM
+     * ✅ Returns REAL AIModel objects with download URLs
      */
-    private fun getDeviceRamGB(): Int {
-        return try {
-            val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-            val memInfo = ActivityManager.MemoryInfo()
-            activityManager.getMemoryInfo(memInfo)
-            val ramGB = (memInfo.totalMem / (1024 * 1024 * 1024)).toInt()
-            Log.d(TAG, "Device RAM: $ramGB GB")
-            ramGB
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting device RAM", e)
-            2 // Default to 2GB for safety
-        }
-    }
-
-    /**
-     * Get optimal models based on device RAM
-     * ✅ FIXED: fileId now matches ModelManager getVoiceModel/getLLMModel/getVisionModel calls
-     */
-    private fun getOptimalModels(): List<ModelInfo> {
-        val deviceRam = getDeviceRamGB()
-        
-        Log.d(TAG, "Selecting optimal models for ${deviceRam}GB RAM device")
-        
-        return when {
-            // High-end devices (4GB+ RAM) - Pro models
-            deviceRam >= 4 -> listOf(
-                // ✅ Voice Pro = Whisper Small
-                ModelInfo("D.A.V.I.D Voice Pro", "High-accuracy voice", "🎤", "466 MB", 466f, "voice_small", "Pro"),
-                // ✅ Chat Pro = Phi-2
-                ModelInfo("D.A.V.I.D Chat Pro", "Advanced AI conversations", "💬", "1.6 GB", 1600f, "llm_pro", "Pro"),
-                // ✅ Vision Standard = ResNet50 (ModelManager only has lite/standard, no "pro")
-                ModelInfo("D.A.V.I.D Vision", "Advanced object recognition", "👁️", "98 MB", 98f, "vision_standard", "Pro"),
-                // ✅ Language = Multilingual
-                ModelInfo("D.A.V.I.D Multilingual", "15 languages: EN, HI, TA, TE, BN, MR, GU, KN, ML, PA, OR, UR, SA, KS, AS", "🌐", "120 MB", 120f, "language_multilingual", "Shared"),
-                // ✅ Gesture Hand = MediaPipe Hand
-                ModelInfo("D.A.V.I.D Gesture Hand", "Hand detection & 21-point tracking", "✋", "25 MB", 25f, "gesture_hand", "Shared"),
-                // ✅ Gesture Recognition = MediaPipe Gesture (was "gesture_ctrl")
-                ModelInfo("D.A.V.I.D Gesture Recognition", "Gesture classification: thumbs up, peace, OK...", "👆", "31 MB", 31f, "gesture_recognition", "Shared")
-            )
-            
-            // Mid-range devices (3GB RAM) - Standard models
-            deviceRam >= 3 -> listOf(
-                // ✅ Voice Base = Whisper Base
-                ModelInfo("D.A.V.I.D Voice Base", "Balanced voice recognition", "🎤", "142 MB", 142f, "voice_base", "Standard"),
-                // ✅ Chat Standard = Qwen
-                ModelInfo("D.A.V.I.D Chat Standard", "Smart AI conversations", "💬", "1.1 GB", 1100f, "llm_standard", "Standard"),
-                // ✅ Vision Standard = ResNet50
-                ModelInfo("D.A.V.I.D Vision", "Standard object recognition", "👁️", "98 MB", 98f, "vision_standard", "Standard"),
-                // ✅ Language = Multilingual
-                ModelInfo("D.A.V.I.D Multilingual", "15 languages: EN, HI, TA, TE, BN, MR, GU, KN, ML, PA, OR, UR, SA, KS, AS", "🌐", "120 MB", 120f, "language_multilingual", "Shared"),
-                // ✅ Gesture Hand
-                ModelInfo("D.A.V.I.D Gesture Hand", "Hand detection & 21-point tracking", "✋", "25 MB", 25f, "gesture_hand", "Shared"),
-                // ✅ Gesture Recognition
-                ModelInfo("D.A.V.I.D Gesture Recognition", "Gesture classification: thumbs up, peace, OK...", "👆", "31 MB", 31f, "gesture_recognition", "Shared")
-            )
-            
-            // Budget devices (2GB RAM) - Light models
-            deviceRam >= 2 -> listOf(
-                // ✅ Voice Base = Whisper Base (same as 3GB)
-                ModelInfo("D.A.V.I.D Voice Base", "Fast voice recognition", "🎤", "142 MB", 142f, "voice_base", "Light"),
-                // ✅ Chat Light = TinyLlama
-                ModelInfo("D.A.V.I.D Chat Light", "Efficient AI chat", "💬", "669 MB", 669f, "llm_light", "Light"),
-                // ✅ Vision Lite = MobileNetV2
-                ModelInfo("D.A.V.I.D Vision Lite", "Fast object detection", "👁️", "14 MB", 14f, "vision_lite", "Light"),
-                // ✅ Language = Multilingual
-                ModelInfo("D.A.V.I.D Multilingual", "15 languages: EN, HI, TA, TE, BN, MR, GU, KN, ML, PA, OR, UR, SA, KS, AS", "🌐", "120 MB", 120f, "language_multilingual", "Shared"),
-                // ✅ Gesture Hand
-                ModelInfo("D.A.V.I.D Gesture Hand", "Hand detection & 21-point tracking", "✋", "25 MB", 25f, "gesture_hand", "Shared"),
-                // ✅ Gesture Recognition
-                ModelInfo("D.A.V.I.D Gesture Recognition", "Gesture classification: thumbs up, peace, OK...", "👆", "31 MB", 31f, "gesture_recognition", "Shared")
-            )
-            
-            // Very low-end devices (1GB RAM) - Ultra-light models
-            else -> listOf(
-                // ✅ Voice Tiny = Whisper Tiny
-                ModelInfo("D.A.V.I.D Voice Tiny", "Ultra-fast voice", "🎤", "75 MB", 75f, "voice_tiny", "Mini"),
-                // ✅ Chat Light = TinyLlama (same as 2GB)
-                ModelInfo("D.A.V.I.D Chat Light", "Basic AI chat", "💬", "669 MB", 669f, "llm_light", "Mini"),
-                // ✅ Vision Lite = MobileNetV2
-                ModelInfo("D.A.V.I.D Vision Lite", "Basic object detection", "👁️", "14 MB", 14f, "vision_lite", "Mini"),
-                // ✅ Language = Multilingual
-                ModelInfo("D.A.V.I.D Multilingual", "15 languages: EN, HI, TA, TE, BN, MR, GU, KN, ML, PA, OR, UR, SA, KS, AS", "🌐", "120 MB", 120f, "language_multilingual", "Shared"),
-                // ✅ Gesture Hand
-                ModelInfo("D.A.V.I.D Gesture Hand", "Hand detection & 21-point tracking", "✋", "25 MB", 25f, "gesture_hand", "Shared"),
-                // ✅ Gesture Recognition
-                ModelInfo("D.A.V.I.D Gesture Recognition", "Gesture classification: thumbs up, peace, OK...", "👆", "31 MB", 31f, "gesture_recognition", "Shared")
-            )
-        }
+    private fun getOptimalModelsFromManager(): List<AIModel> {
+        return modelManager.getEssentialModels()
     }
 
     @Composable
@@ -204,9 +116,13 @@ class ModelDownloadActivity : ComponentActivity() {
         var deviceRam by remember { mutableStateOf(0) }
         var deviceTier by remember { mutableStateOf("") }
 
-        // Get optimal models for this device
-        val models = remember { getOptimalModels() }
-        val totalSize = remember { models.sumOf { it.sizeMB.toDouble() }.toFloat() }
+        // Get optimal models for this device from ModelManager
+        val models = remember { getOptimalModelsFromManager() }
+        val totalSize = remember { 
+            models.sumOf { 
+                parseSizeMB(it.size).toDouble() 
+            }.toFloat() 
+        }
 
         val infiniteTransition = rememberInfiniteTransition(label = "download")
         
@@ -246,7 +162,7 @@ class ModelDownloadActivity : ComponentActivity() {
                 
                 try {
                     // Detect device capacity
-                    deviceRam = getDeviceRamGB()
+                    deviceRam = modelManager.getDeviceRamGB()
                     deviceTier = when {
                         deviceRam >= 4 -> "Pro"
                         deviceRam >= 3 -> "Standard"
@@ -256,67 +172,50 @@ class ModelDownloadActivity : ComponentActivity() {
                     
                     downloadStatus = "Detected ${deviceRam}GB RAM - Optimizing for $deviceTier tier..."
                     Log.d(TAG, "Device: ${deviceRam}GB RAM, Tier: $deviceTier, Models: ${models.size}")
+                    Log.d(TAG, "Models to download: ${models.map { it.name }}")
                     delay(2000)
                     
-                    val modelsDir = File(filesDir, "david_models")
-                    if (!modelsDir.exists()) {
-                        modelsDir.mkdirs()
-                    }
-                    
-                    models.forEachIndexed { index, model ->
+                    models.forEachIndexed { index, aiModel ->
                         currentModelIndex = index
-                        downloadStatus = "Downloading ${model.name}..."
-                        Log.d(TAG, "Downloading: ${model.name} (${model.tier}) [${model.fileId}]")
+                        downloadStatus = "Downloading ${aiModel.name}..."
+                        Log.d(TAG, "Starting download: ${aiModel.name} from ${aiModel.url}")
 
-                        val modelFile = File(modelsDir, "${model.fileId}.bin")
-                        
-                        // Real download simulation with actual file creation
-                        withContext(Dispatchers.IO) {
-                            try {
-                                // Create model file
-                                val startTime = System.currentTimeMillis()
-                                val targetSize = (model.sizeMB * 1024 * 1024).toLong()
-                                val buffer = ByteArray(8192)
+                        // ✅ REAL DOWNLOAD using ModelManager
+                        val downloadResult = modelManager.downloadModel(
+                            model = aiModel,
+                            onProgress = { progress ->
+                                // Update UI with real download progress
+                                currentModelProgress = progress.progress
+                                totalDownloadedMB = downloadedModels.sumOf { 
+                                    parseSizeMB(models[it].size).toDouble() 
+                                }.toFloat() + progress.downloadedMB
+                                downloadProgress = totalDownloadedMB / totalSize
                                 
-                                FileOutputStream(modelFile).use { fos ->
-                                    var written = 0L
-                                    while (written < targetSize) {
-                                        val chunk = minOf(buffer.size.toLong(), targetSize - written).toInt()
-                                        fos.write(buffer, 0, chunk)
-                                        written += chunk
-                                        
-                                        // Update progress
-                                        withContext(Dispatchers.Main) {
-                                            currentModelProgress = ((written.toFloat() / targetSize) * 100).toInt()
-                                            val completedSize = downloadedModels.sumOf { 
-                                                models[it].sizeMB.toDouble() 
-                                            }.toFloat()
-                                            val currentDownload = (written.toFloat() / (1024 * 1024))
-                                            totalDownloadedMB = completedSize + currentDownload
-                                            downloadProgress = totalDownloadedMB / totalSize
-                                            
-                                            val elapsed = (System.currentTimeMillis() - startTime) / 1000f
-                                            val speed = if (elapsed > 0) currentDownload / elapsed else 0f
-                                            downloadSpeed = String.format("%.1f MB/s", speed)
-                                            
-                                            downloadStatus = "${model.name}... ${currentModelProgress}%"
-                                        }
-                                        
-                                        // Simulate realistic download speed based on file size
-                                        delay(if (model.sizeMB > 500) 3 else 8)
-                                    }
+                                val speed = if (progress.downloadedMB > 0) {
+                                    "${String.format("%.1f", progress.downloadedMB)} / ${String.format("%.1f", progress.totalMB)} MB"
+                                } else {
+                                    "Connecting..."
                                 }
+                                downloadSpeed = speed
                                 
-                                Log.d(TAG, "Downloaded: ${model.name} to ${modelFile.absolutePath}")
-                            } catch (e: Exception) {
-                                Log.e(TAG, "Error downloading ${model.name}", e)
-                                throw e
+                                downloadStatus = "${aiModel.name}... ${progress.progress}%"
+                                
+                                Log.d(TAG, "Progress: ${aiModel.name} - ${progress.progress}% (${progress.downloadedMB}/${progress.totalMB} MB)")
                             }
-                        }
+                        )
 
-                        currentModelProgress = 100
-                        downloadedModels = downloadedModels + index
-                        delay(300)
+                        // Check if download succeeded
+                        if (downloadResult.isSuccess) {
+                            currentModelProgress = 100
+                            downloadedModels = downloadedModels + index
+                            val file = downloadResult.getOrNull()
+                            Log.d(TAG, "✅ Downloaded: ${aiModel.name} to ${file?.absolutePath}")
+                            delay(500)
+                        } else {
+                            val error = downloadResult.exceptionOrNull()
+                            Log.e(TAG, "❌ Download failed: ${aiModel.name}", error)
+                            throw error ?: Exception("Download failed for ${aiModel.name}")
+                        }
                     }
 
                     downloadProgress = 1f
@@ -331,7 +230,6 @@ class ModelDownloadActivity : ComponentActivity() {
                         putInt("model_count", models.size)
                         putInt("device_ram_gb", deviceRam)
                         putString("device_tier", deviceTier)
-                        putString("models_dir", modelsDir.absolutePath)
                         apply()
                     }
                     
@@ -419,7 +317,7 @@ class ModelDownloadActivity : ComponentActivity() {
                 }
 
                 Text(
-                    text = "Downloading AI Models",
+                    text = "Downloading from HuggingFace & MediaPipe",
                     fontSize = 14.sp,
                     color = Color(0xFF64B5F6),
                     letterSpacing = 1.sp
@@ -584,7 +482,7 @@ class ModelDownloadActivity : ComponentActivity() {
                     text = if (isComplete) {
                         "Setup complete! Launching D.A.V.I.D..."
                     } else {
-                        "Voice • Chat • Vision • 15 Languages • Gesture Control"
+                        "Real downloads: Whisper, Phi-2, TinyLlama, ResNet50, MediaPipe"
                     },
                     fontSize = 10.sp,
                     color = Color(0xFF4B5563),
@@ -597,7 +495,7 @@ class ModelDownloadActivity : ComponentActivity() {
 
     @Composable
     private fun ModelItem(
-        model: ModelInfo,
+        model: AIModel,
         isDownloading: Boolean,
         isDownloaded: Boolean,
         progress: Int
@@ -639,7 +537,14 @@ class ModelDownloadActivity : ComponentActivity() {
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = model.icon,
+                        text = when (model.type) {
+                            "Speech" -> "🎤"
+                            "LLM" -> "💬"
+                            "Vision" -> "👁️"
+                            "Language" -> "🌐"
+                            "Gesture" -> if (model.name.contains("Hand")) "✋" else "👆"
+                            else -> "🤖"
+                        },
                         fontSize = 24.sp,
                         modifier = Modifier.padding(end = 12.dp)
                     )
@@ -671,7 +576,7 @@ class ModelDownloadActivity : ComponentActivity() {
                             )
                         } else {
                             Text(
-                                text = model.size,
+                                text = "${model.size} • ${model.format}",
                                 fontSize = 8.sp,
                                 color = Color(0xFF64B5F6)
                             )
@@ -719,23 +624,16 @@ class ModelDownloadActivity : ComponentActivity() {
     }
 
     /**
-     * ✅ FIXED: fileId matches ModelManager download methods
-     * - voice_tiny/base/small → getVoiceModel("tiny"/"base"/"small")
-     * - llm_light/standard/pro → getLLMModel("light"/"standard"/"pro")
-     * - vision_lite/standard → getVisionModel("lite"/"standard")
-     * - language_multilingual → getMultilingualModel()
-     * - gesture_hand → getGestureModels()[0]
-     * - gesture_recognition → getGestureModels()[1]
+     * Parse size string to MB
      */
-    data class ModelInfo(
-        val name: String,
-        val description: String,
-        val icon: String,
-        val size: String,
-        val sizeMB: Float,
-        val fileId: String, // ✅ Now matches ModelManager method parameters
-        val tier: String // "Mini", "Light", "Standard", "Pro", "Shared"
-    )
+    private fun parseSizeMB(size: String): Float {
+        val num = size.replace("[^0-9.]".toRegex(), "").toFloatOrNull() ?: 0f
+        return when {
+            size.contains("GB", ignoreCase = true) -> num * 1024f
+            size.contains("MB", ignoreCase = true) -> num
+            else -> num
+        }
+    }
 
     companion object {
         private const val TAG = "ModelDownloadActivity"
