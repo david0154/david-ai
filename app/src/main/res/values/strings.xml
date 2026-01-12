@@ -3,12 +3,12 @@
     <!-- App Name & Branding -->
     <string name="app_name">D.A.V.I.D</string>
     <string name="app_full_name">D.A.V.I.D</string>
-    <string name="app_tagline">Digital Assistant Voice Intelligence Device</string>
+    <string name="app_tagline">Digital Assistant with Voice & Intelligent Decisions</string>
     <string name="app_description">Your AI-Powered Voice Assistant</string>
-    <string name="developed_by">Developed by David Studioz</string>
+    <string name="developed_by">Developed by Nexuzy Tech Pvt</string>
     
     <!-- Main Screen -->
-    <string name="title_digital_assistant">Digital Assistant Voice Intelligence Device</string>
+    <string name="title_digital_assistant">Digital Assistant with Voice & Intelligent Decisions</string>
     <string name="greeting_message">Hi %1$s, I\'m ready!</string>
     <string name="initializing">Initializing D.A.V.I.D…</string>
     <string name="systems_online">Voice systems online</string>
