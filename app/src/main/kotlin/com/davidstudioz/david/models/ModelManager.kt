@@ -121,7 +121,7 @@ class ModelManager(private val context: Context) {
                 "142 MB", 2, "Speech", "GGML", "en"
             )
             "small" -> AIModel(
-                "D.A.V.I.D Voice Small",
+                "D.A.V.I.D Voice Pro",
                 "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.en.bin",
                 "466 MB", 3, "Speech", "GGML", "en"
             )
