@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.davidstudioz.david.chat.ChatHistoryManager
+import com.davidstudioz.david.chat.ChatManager
 import com.davidstudioz.david.device.DeviceController
 import com.davidstudioz.david.gesture.GestureController
 import com.davidstudioz.david.language.LanguageManager
@@ -53,12 +54,13 @@ import java.util.*
 
 /**
  * D.A.V.I.D Main Activity - FULLY INTEGRATED
- * ✅ Voice Control connected to VoiceController
+ * ✅ Voice Control connected to VoiceController with DeviceController
  * ✅ Chat connected to LLMEngine
  * ✅ Gesture connected to GestureController
  * ✅ Settings connected to SettingsActivity & LanguageManager
  * ✅ Privacy connected to EncryptionManager
  * ✅ Device control connected to DeviceController
+ * ✅ ChatManager connected to VoiceController for AI responses
  */
 @OptIn(ExperimentalMaterial3Api::class)
 class SafeMainActivity : ComponentActivity() {
@@ -69,6 +71,7 @@ class SafeMainActivity : ComponentActivity() {
     private lateinit var deviceController: DeviceController
     private lateinit var languageManager: LanguageManager
     private lateinit var chatHistoryManager: ChatHistoryManager
+    private lateinit var chatManager: ChatManager
     private lateinit var llmEngine: LLMEngine
     private lateinit var encryptionManager: EncryptionManager
     
@@ -79,10 +82,17 @@ class SafeMainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         try {
-            // Initialize all backend controllers
-            voiceController = VoiceController(this)
-            gestureController = GestureController(this)
+            // Initialize DeviceController FIRST (required by VoiceController)
             deviceController = DeviceController(this)
+            
+            // Initialize ChatManager (for AI responses)
+            chatManager = ChatManager(this)
+            
+            // Initialize VoiceController with DeviceController and ChatManager
+            voiceController = VoiceController(this, deviceController, chatManager)
+            
+            // Initialize other controllers
+            gestureController = GestureController(this)
             languageManager = LanguageManager(this)
             chatHistoryManager = ChatHistoryManager(this)
             llmEngine = LLMEngine(this)
@@ -91,7 +101,9 @@ class SafeMainActivity : ComponentActivity() {
             wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
             bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
             
-            Log.d(TAG, "All controllers initialized successfully")
+            Log.d(TAG, "✅ All controllers initialized successfully")
+            Log.d(TAG, "✅ VoiceController connected to DeviceController")
+            Log.d(TAG, "✅ VoiceController connected to ChatManager")
             
             setContent {
                 MaterialTheme(
@@ -227,7 +239,7 @@ class SafeMainActivity : ComponentActivity() {
                         onToggleListening = {
                             isVoiceListening = !isVoiceListening
                             if (isVoiceListening) {
-                                // Start real voice recognition
+                                // Start real voice recognition - FIXED callback
                                 scope.launch {
                                     try {
                                         voiceController.startListening { recognizedText ->
