@@ -87,11 +87,11 @@ android {
     }
 }
 
-// Compose Compiler configuration - Using new featureFlags API
+// Compose Compiler configuration - Using correct SetProperty syntax
 composeCompiler {
-    featureFlags = setOf(
+    featureFlags.set(setOf(
         "StrongSkipping"
-    )
+    ))
 }
 
 dependencies {
