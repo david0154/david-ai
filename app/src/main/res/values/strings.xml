@@ -106,12 +106,12 @@
     <string name="about">About</string>
     <string name="version">Version %1$s</string>
     
-    <!-- Accessibility Service - Labels and UI Strings Only -->
-    <!-- Note: accessibility_service_description is in accessibility_strings.xml -->
-    <string name="accessibility_service_label">D.A.V.I.D Screen Control</string>
+    <!-- Accessibility Service - FIXED LABEL -->
+    <string name="accessibility_service_description">D.A.V.I.D AI - Voice-controlled screen navigation, scrolling, swiping, and app control. Allows hands-free operation of your device.</string>
+    <string name="accessibility_service_label">D.A.V.I.D AI</string>
     <string name="accessibility_enabled">Screen control enabled</string>
     <string name="accessibility_disabled">Screen control disabled</string>
-    <string name="accessibility_enable_prompt">Enable in Settings > Accessibility > D.A.V.I.D</string>
+    <string name="accessibility_enable_prompt">Enable in Settings > Accessibility > D.A.V.I.D AI</string>
     <string name="accessibility_required">Required for scroll/swipe voice commands</string>
     <string name="btn_open_accessibility_settings">Open Accessibility Settings</string>
     
