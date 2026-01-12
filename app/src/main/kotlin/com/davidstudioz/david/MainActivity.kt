@@ -46,6 +46,7 @@ import com.davidstudioz.david.ui.JarvisComponents
 import com.davidstudioz.david.utils.DeviceResourceManager
 import com.davidstudioz.david.voice.HotWordDetector
 import com.davidstudioz.david.voice.TextToSpeechEngine
+import com.davidstudioz.david.voice.VoiceController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -59,6 +60,8 @@ import kotlinx.coroutines.launch
  * ✅ Exception handling
  * ✅ Permission request handling
  * ✅ Bluetooth permissions for Android 12+ (API 31+)
+ * ✅ VoiceController properly initialized with DeviceController
+ * ✅ GestureController fully initialized with callbacks
  */
 class MainActivity : ComponentActivity() {
 
@@ -67,6 +70,7 @@ class MainActivity : ComponentActivity() {
     private var hotWordDetector: HotWordDetector? = null
     private var textToSpeechEngine: TextToSpeechEngine? = null
     private var deviceController: DeviceController? = null
+    private var voiceController: VoiceController? = null
     private var gestureController: GestureController? = null
     private var chatManager: ChatManager? = null
     private var weatherTimeProvider: WeatherTimeProvider? = null
@@ -189,6 +193,11 @@ class MainActivity : ComponentActivity() {
 
             // Initialize device controller
             deviceController = DeviceController(this)
+            Log.d(TAG, "Device controller initialized")
+            
+            // Initialize voice controller WITH deviceController
+            voiceController = VoiceController(this, deviceController!!)
+            Log.d(TAG, "Voice controller initialized with device controller")
             
             // Initialize chat manager
             chatManager = ChatManager(this)
@@ -205,8 +214,49 @@ class MainActivity : ComponentActivity() {
                 statusMessage = "Clicked at ($x, $y)"
             }
 
-            // Initialize gesture controller
+            // Initialize gesture controller with FULL CALLBACK SETUP
             gestureController = GestureController(this)
+            gestureController?.initialize { gesture ->
+                lifecycleScope.launch {
+                    try {
+                        statusMessage = "Gesture detected: $gesture"
+                        Log.d(TAG, "Gesture: $gesture")
+                        
+                        when (gesture) {
+                            GestureController.GESTURE_OPEN_PALM -> {
+                                pointerController?.showPointer()
+                                textToSpeechEngine?.speak(
+                                    "Pointer shown",
+                                    TextToSpeechEngine.SupportedLanguage.ENGLISH
+                                )
+                            }
+                            GestureController.GESTURE_CLOSED_FIST -> {
+                                pointerController?.hidePointer()
+                                textToSpeechEngine?.speak(
+                                    "Pointer hidden",
+                                    TextToSpeechEngine.SupportedLanguage.ENGLISH
+                                )
+                            }
+                            GestureController.GESTURE_VICTORY -> {
+                                gestureController?.performClick()
+                                textToSpeechEngine?.speak(
+                                    "Click performed",
+                                    TextToSpeechEngine.SupportedLanguage.ENGLISH
+                                )
+                            }
+                            GestureController.GESTURE_POINTING -> {
+                                statusMessage = "Pointing gesture detected"
+                            }
+                            else -> {
+                                Log.d(TAG, "Unhandled gesture: $gesture")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error handling gesture", e)
+                    }
+                }
+            }
+            Log.d(TAG, "Gesture controller initialized with callbacks")
 
             // Initialize hot word detector
             hotWordDetector = HotWordDetector(this)
@@ -228,7 +278,7 @@ class MainActivity : ComponentActivity() {
 
             initializeWeather()
             statusMessage = "D.A.V.I.D systems ready!"
-            Log.d(TAG, "All systems operational")
+            Log.d(TAG, "All systems operational - Voice and Gesture fully integrated")
         } catch (e: Exception) {
             Log.e(TAG, "Initialization error", e)
             statusMessage = "Error: ${e.localizedMessage ?: e.message ?: "Unknown error"}"
@@ -834,6 +884,9 @@ class MainActivity : ComponentActivity() {
             hotWordDetector?.stopListening()
             textToSpeechEngine?.release()
             pointerController?.release()
+            gestureController?.release()
+            voiceController = null
+            Log.d(TAG, "All resources cleaned up")
         } catch (e: Exception) {
             Log.e(TAG, "Error cleaning up resources", e)
         }
