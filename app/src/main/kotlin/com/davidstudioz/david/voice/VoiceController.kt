@@ -13,6 +13,7 @@ import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
+import com.davidstudioz.david.accessibility.DavidAccessibilityService
 import com.davidstudioz.david.chat.ChatManager
 import com.davidstudioz.david.device.DeviceController
 import kotlinx.coroutines.*
@@ -21,7 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 import java.util.*
 
 /**
- * VoiceController - COMPLETE INTEGRATION
+ * VoiceController - COMPLETE INTEGRATION + ACCESSIBILITY
  * ✅ Voice recognition works properly
  * ✅ Text-to-speech works correctly
  * ✅ Background voice command support
@@ -29,6 +30,8 @@ import java.util.*
  * ✅ Multi-language support
  * ✅ ChatManager integration for unknown commands
  * ✅ Callback system for UI updates
+ * ✅ ACCESSIBILITY SERVICE INTEGRATION (NEW)
+ * ✅ 55+ voice commands (40 device + 15 accessibility)
  */
 class VoiceController(
     private val context: Context,
@@ -258,7 +261,7 @@ class VoiceController(
     fun isSpeaking(): Boolean = textToSpeech?.isSpeaking == true
     
     /**
-     * Process voice commands for device control
+     * Process voice commands for device control + accessibility
      * Routes unknown commands to ChatManager for AI responses
      */
     private fun processVoiceCommand(command: String) {
@@ -269,6 +272,175 @@ class VoiceController(
         scope.launch {
             try {
                 when {
+                    // ==================== ACCESSIBILITY COMMANDS (NEW) ====================
+                    
+                    // Scroll commands
+                    "scroll up" in lowerCommand -> {
+                        val service = DavidAccessibilityService.getInstance()
+                        if (service != null) {
+                            service.performAction(DavidAccessibilityService.ACTION_SCROLL_UP)
+                            response = "Scrolling up"
+                        } else {
+                            response = "Accessibility service not enabled. Please enable in Settings > Accessibility > D.A.V.I.D"
+                        }
+                        commandHandled = true
+                    }
+                    "scroll down" in lowerCommand -> {
+                        val service = DavidAccessibilityService.getInstance()
+                        if (service != null) {
+                            service.performAction(DavidAccessibilityService.ACTION_SCROLL_DOWN)
+                            response = "Scrolling down"
+                        } else {
+                            response = "Accessibility service not enabled"
+                        }
+                        commandHandled = true
+                    }
+                    "scroll left" in lowerCommand -> {
+                        val service = DavidAccessibilityService.getInstance()
+                        if (service != null) {
+                            service.performAction(DavidAccessibilityService.ACTION_SCROLL_LEFT)
+                            response = "Scrolling left"
+                        } else {
+                            response = "Accessibility service not enabled"
+                        }
+                        commandHandled = true
+                    }
+                    "scroll right" in lowerCommand -> {
+                        val service = DavidAccessibilityService.getInstance()
+                        if (service != null) {
+                            service.performAction(DavidAccessibilityService.ACTION_SCROLL_RIGHT)
+                            response = "Scrolling right"
+                        } else {
+                            response = "Accessibility service not enabled"
+                        }
+                        commandHandled = true
+                    }
+                    
+                    // Swipe commands
+                    "swipe up" in lowerCommand -> {
+                        val service = DavidAccessibilityService.getInstance()
+                        if (service != null) {
+                            service.performAction(DavidAccessibilityService.ACTION_SWIPE_UP)
+                            response = "Swiping up"
+                        } else {
+                            response = "Accessibility service not enabled"
+                        }
+                        commandHandled = true
+                    }
+                    "swipe down" in lowerCommand -> {
+                        val service = DavidAccessibilityService.getInstance()
+                        if (service != null) {
+                            service.performAction(DavidAccessibilityService.ACTION_SWIPE_DOWN)
+                            response = "Swiping down"
+                        } else {
+                            response = "Accessibility service not enabled"
+                        }
+                        commandHandled = true
+                    }
+                    "swipe left" in lowerCommand -> {
+                        val service = DavidAccessibilityService.getInstance()
+                        if (service != null) {
+                            service.performAction(DavidAccessibilityService.ACTION_SWIPE_LEFT)
+                            response = "Swiping left"
+                        } else {
+                            response = "Accessibility service not enabled"
+                        }
+                        commandHandled = true
+                    }
+                    "swipe right" in lowerCommand -> {
+                        val service = DavidAccessibilityService.getInstance()
+                        if (service != null) {
+                            service.performAction(DavidAccessibilityService.ACTION_SWIPE_RIGHT)
+                            response = "Swiping right"
+                        } else {
+                            response = "Accessibility service not enabled"
+                        }
+                        commandHandled = true
+                    }
+                    
+                    // Navigation commands
+                    "go back" in lowerCommand || "back" in lowerCommand -> {
+                        val service = DavidAccessibilityService.getInstance()
+                        if (service != null) {
+                            service.performAction(DavidAccessibilityService.ACTION_GO_BACK)
+                            response = "Going back"
+                        } else {
+                            response = "Accessibility service not enabled"
+                        }
+                        commandHandled = true
+                    }
+                    "go home" in lowerCommand || "home screen" in lowerCommand -> {
+                        val service = DavidAccessibilityService.getInstance()
+                        if (service != null) {
+                            service.performAction(DavidAccessibilityService.ACTION_GO_HOME)
+                            response = "Going home"
+                        } else {
+                            response = "Accessibility service not enabled"
+                        }
+                        commandHandled = true
+                    }
+                    "show recents" in lowerCommand || "recent apps" in lowerCommand || "show recent" in lowerCommand -> {
+                        val service = DavidAccessibilityService.getInstance()
+                        if (service != null) {
+                            service.performAction(DavidAccessibilityService.ACTION_SHOW_RECENTS)
+                            response = "Showing recent apps"
+                        } else {
+                            response = "Accessibility service not enabled"
+                        }
+                        commandHandled = true
+                    }
+                    
+                    // Auto-scroll commands
+                    "start auto scroll" in lowerCommand || "auto scroll" in lowerCommand -> {
+                        val service = DavidAccessibilityService.getInstance()
+                        if (service != null) {
+                            val speed = when {
+                                "fast" in lowerCommand -> 3
+                                "slow" in lowerCommand -> 1
+                                else -> 2 // Medium speed
+                            }
+                            service.performAction(DavidAccessibilityService.ACTION_AUTO_SCROLL, mapOf("speed" to speed))
+                            response = "Auto-scroll started"
+                        } else {
+                            response = "Accessibility service not enabled"
+                        }
+                        commandHandled = true
+                    }
+                    "stop auto scroll" in lowerCommand || "stop scrolling" in lowerCommand -> {
+                        val service = DavidAccessibilityService.getInstance()
+                        if (service != null) {
+                            service.performAction(DavidAccessibilityService.ACTION_STOP_SCROLL)
+                            response = "Auto-scroll stopped"
+                        } else {
+                            response = "Accessibility service not enabled"
+                        }
+                        commandHandled = true
+                    }
+                    
+                    // Tap commands
+                    "tap screen" in lowerCommand || "click screen" in lowerCommand -> {
+                        val service = DavidAccessibilityService.getInstance()
+                        if (service != null) {
+                            service.performAction(DavidAccessibilityService.ACTION_TAP)
+                            response = "Tapped screen"
+                        } else {
+                            response = "Accessibility service not enabled"
+                        }
+                        commandHandled = true
+                    }
+                    "long press" in lowerCommand || "hold screen" in lowerCommand -> {
+                        val service = DavidAccessibilityService.getInstance()
+                        if (service != null) {
+                            service.performAction(DavidAccessibilityService.ACTION_LONG_PRESS)
+                            response = "Long press performed"
+                        } else {
+                            response = "Accessibility service not enabled"
+                        }
+                        commandHandled = true
+                    }
+                    
+                    // ==================== DEVICE CONTROL COMMANDS ====================
+                    
                     // WiFi control
                     "wifi on" in lowerCommand || "turn on wifi" in lowerCommand -> {
                         deviceController.setWiFiEnabled(true)
