@@ -13,25 +13,29 @@ import android.util.Log
 import com.davidstudioz.david.accessibility.DavidAccessibilityService
 import com.davidstudioz.david.chat.ChatManager
 import com.davidstudioz.david.device.DeviceController
+import com.davidstudioz.david.services.WeatherService
+import com.davidstudioz.david.services.SearchService
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.*
 
 /**
- * VoiceController - COMPLETE INTEGRATION + ACCESSIBILITY
+ * VoiceController - COMPLETE INTEGRATION + ACCESSIBILITY + WEB SERVICES
  * ✅ Voice recognition with SpeechRecognizer
  * ✅ Text-to-speech with TTS
  * ✅ Background voice command support
  * ✅ Complete device control via voice (40+ commands)
  * ✅ Accessibility commands (15+ commands)
+ * ✅ Weather via API (not browser)
+ * ✅ Web search via API (not browser)
  * ✅ Multi-language support
  * ✅ ChatManager integration for unknown commands
  * ✅ StateFlow for UI updates
  * ✅ Auto-restart on timeout
  * ✅ Callback system for command results
- * ✅ TOTAL: 55+ VOICE COMMANDS
- * Connected to: SafeMainActivity, DeviceController, DavidAccessibilityService, ChatManager
+ * ✅ TOTAL: 60+ VOICE COMMANDS
+ * Connected to: SafeMainActivity, DeviceController, DavidAccessibilityService, ChatManager, WeatherService, SearchService
  */
 class VoiceController(
     private val context: Context,
@@ -43,6 +47,10 @@ class VoiceController(
     private var isListening = false
     private var isTtsReady = false
     private val scope = CoroutineScope(Dispatchers.Main + Job())
+    
+    // Services for web data
+    private val weatherService = WeatherService(context)
+    private val searchService = SearchService(context)
     
     // StateFlows for UI observation
     private val _isListening = MutableStateFlow(false)
@@ -303,9 +311,9 @@ class VoiceController(
     fun isSpeaking(): Boolean = textToSpeech?.isSpeaking == true
     
     /**
-     * Process voice commands for device control + accessibility
+     * Process voice commands for device control + accessibility + web services
      * Routes unknown commands to ChatManager for AI responses
-     * TOTAL: 55+ COMMANDS
+     * TOTAL: 60+ COMMANDS
      */
     private fun processVoiceCommand(command: String) {
         val lowerCommand = command.lowercase()
@@ -315,6 +323,48 @@ class VoiceController(
         scope.launch {
             try {
                 when {
+                    // ==================== WEATHER COMMANDS (2) - NOW USES API ====================
+                    
+                    "weather" in lowerCommand || "temperature" in lowerCommand -> {
+                        if ("in" in lowerCommand) {
+                            // Extract city name: "weather in New York"
+                            val city = lowerCommand.substringAfter("in").trim()
+                            response = weatherService.getWeatherForCity(city)
+                        } else {
+                            // Current location weather
+                            response = weatherService.getCurrentWeather()
+                        }
+                        commandHandled = true
+                    }
+                    
+                    // ==================== SEARCH COMMANDS (5) - NOW USES API ====================
+                    
+                    "search for" in lowerCommand || "search" in lowerCommand -> {
+                        val query = searchService.extractSearchQuery(command)
+                        response = searchService.search(query)
+                        commandHandled = true
+                    }
+                    "google" in lowerCommand -> {
+                        val query = searchService.extractSearchQuery(command)
+                        response = searchService.search(query)
+                        commandHandled = true
+                    }
+                    "find" in lowerCommand && ("what is" in lowerCommand || "who is" in lowerCommand || "where is" in lowerCommand) -> {
+                        val query = searchService.extractSearchQuery(command)
+                        response = searchService.search(query)
+                        commandHandled = true
+                    }
+                    "what is" in lowerCommand || "who is" in lowerCommand || "where is" in lowerCommand || "when is" in lowerCommand -> {
+                        val query = searchService.extractSearchQuery(command)
+                        response = searchService.search(query)
+                        commandHandled = true
+                    }
+                    "how to" in lowerCommand -> {
+                        val query = searchService.extractSearchQuery(command)
+                        response = searchService.search(query)
+                        commandHandled = true
+                    }
+                    
                     // ==================== ACCESSIBILITY COMMANDS (15+) ====================
                     
                     // Scroll commands (4)
@@ -324,7 +374,7 @@ class VoiceController(
                             service.performAction(DavidAccessibilityService.ACTION_SCROLL_UP)
                             response = "Scrolling up"
                         } else {
-                            response = "Accessibility service not enabled. Please enable in Settings > Accessibility > D.A.V.I.D"
+                            response = "Accessibility service not enabled. Please enable in Settings > Accessibility > D.A.V.I.D AI"
                         }
                         commandHandled = true
                     }
@@ -482,7 +532,7 @@ class VoiceController(
                         commandHandled = true
                     }
                     
-                    // ==================== DEVICE CONTROL COMMANDS (40+) ====================
+                    // ==================== DEVICE CONTROL COMMANDS (38) ====================
                     
                     // WiFi control (2)
                     "wifi on" in lowerCommand || "turn on wifi" in lowerCommand -> {
@@ -610,13 +660,6 @@ class VoiceController(
                         commandHandled = true
                     }
                     
-                    // Weather (1)
-                    "weather" in lowerCommand || "temperature" in lowerCommand -> {
-                        response = "Opening weather app"
-                        deviceController.openWeatherApp()
-                        commandHandled = true
-                    }
-                    
                     // Media controls (4)
                     "play" in lowerCommand -> {
                         deviceController.mediaPlay()
@@ -640,7 +683,7 @@ class VoiceController(
                     }
                     
                     // Browser (1)
-                    "open browser" in lowerCommand || "open google" in lowerCommand -> {
+                    "open browser" in lowerCommand -> {
                         deviceController.openBrowser()
                         response = "Opening browser"
                         commandHandled = true
