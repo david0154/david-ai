@@ -8,7 +8,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.wifi.WifiManager
 import android.os.Build
-import android.os.Bundle
 import android.provider.Settings
 import android.speech.tts.TextToSpeech
 import android.util.Log
@@ -52,7 +51,7 @@ class SafeMainActivity : ComponentActivity() {
     private lateinit var bluetoothManager: BluetoothManager
     private var tts: TextToSpeech? = null
     
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
 
         try {
@@ -883,15 +882,17 @@ class SafeMainActivity : ComponentActivity() {
                 }
             }
             val adapter = bluetoothManager.adapter
-            if (enable && !adapter.isEnabled) {
-                startActivity(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
-            } else if (!enable && adapter.isEnabled) {
-                // Use system settings for disabling Bluetooth on newer Android versions
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
-                } else {
-                    @Suppress("DEPRECATION")
-                    adapter.disable()
+            if (adapter != null) {
+                if (enable && !adapter.isEnabled) {
+                    startActivity(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+                } else if (!enable && adapter.isEnabled) {
+                    // Use system settings for disabling Bluetooth on newer Android versions
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+                    } else {
+                        @Suppress("DEPRECATION")
+                        adapter.disable()
+                    }
                 }
             }
         } catch (e: Exception) {
