@@ -215,8 +215,8 @@ class ModelManager(private val context: Context) {
         
         return AIModel(
             "D.A.V.I.D Language $language",
-            "https://tfhub.dev/google/lite-model/universal-sentence-encoder-multilingual/3?lite-format=tflite",
-            "50 MB", 1, "Language", "TFLite", langCode
+            "https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/onnx/model.onnx",
+            "120 MB", 1, "Language", "TFLite", langCode
         )
     }
     
