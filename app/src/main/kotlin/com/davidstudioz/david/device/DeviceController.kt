@@ -99,7 +99,9 @@ class DeviceController(private val context: Context) {
     @Suppress("DEPRECATION")
     fun toggleBluetooth(enable: Boolean): Boolean {
         return try {
-            if (bluetoothAdapter == null) {
+            // Store in local variable to enable smart casting
+            val adapter = bluetoothAdapter
+            if (adapter == null) {
                 showToast("Bluetooth not supported")
                 return false
             }
@@ -112,11 +114,11 @@ class DeviceController(private val context: Context) {
                 showToast("Opening Bluetooth settings...")
                 true
             } else {
-                if (enable && !bluetoothAdapter.isEnabled) {
-                    bluetoothAdapter.enable()
+                if (enable && !adapter.isEnabled) {
+                    adapter.enable()
                     showToast("Bluetooth enabled")
-                } else if (!enable && bluetoothAdapter.isEnabled) {
-                    bluetoothAdapter.disable()
+                } else if (!enable && adapter.isEnabled) {
+                    adapter.disable()
                     showToast("Bluetooth disabled")
                 }
                 true
