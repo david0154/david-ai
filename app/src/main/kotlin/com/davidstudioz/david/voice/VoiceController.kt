@@ -13,6 +13,7 @@ import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
+import com.davidstudioz.david.chat.ChatManager
 import com.davidstudioz.david.device.DeviceController
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,16 +21,19 @@ import kotlinx.coroutines.flow.StateFlow
 import java.util.*
 
 /**
- * VoiceController - FULLY FIXED
+ * VoiceController - COMPLETE INTEGRATION
  * ✅ Voice recognition works properly
  * ✅ Text-to-speech works correctly
  * ✅ Background voice command support
  * ✅ Complete device control via voice
  * ✅ Multi-language support
+ * ✅ ChatManager integration for unknown commands
+ * ✅ Callback system for UI updates
  */
 class VoiceController(
     private val context: Context,
-    private val deviceController: DeviceController
+    private val deviceController: DeviceController,
+    private var chatManager: ChatManager? = null
 ) {
     private var speechRecognizer: SpeechRecognizer? = null
     private var textToSpeech: TextToSpeech? = null
@@ -48,9 +52,27 @@ class VoiceController(
     
     private var currentLanguage = Locale.ENGLISH
     
+    // Callback for command results
+    private var onCommandProcessed: ((command: String, response: String) -> Unit)? = null
+    
     init {
         initializeSpeechRecognizer()
         initializeTextToSpeech()
+    }
+    
+    /**
+     * Set ChatManager for AI responses to unknown commands
+     */
+    fun setChatManager(chatManager: ChatManager) {
+        this.chatManager = chatManager
+        Log.d(TAG, "ChatManager connected to VoiceController")
+    }
+    
+    /**
+     * Set callback for command processing results
+     */
+    fun setOnCommandProcessed(callback: (command: String, response: String) -> Unit) {
+        this.onCommandProcessed = callback
     }
     
     private fun initializeSpeechRecognizer() {
@@ -237,9 +259,12 @@ class VoiceController(
     
     /**
      * Process voice commands for device control
+     * Routes unknown commands to ChatManager for AI responses
      */
     private fun processVoiceCommand(command: String) {
         val lowerCommand = command.lowercase()
+        var commandHandled = false
+        var response = ""
         
         scope.launch {
             try {
@@ -247,67 +272,80 @@ class VoiceController(
                     // WiFi control
                     "wifi on" in lowerCommand || "turn on wifi" in lowerCommand -> {
                         deviceController.setWiFiEnabled(true)
-                        speak("WiFi turned on")
+                        response = "WiFi turned on"
+                        commandHandled = true
                     }
                     "wifi off" in lowerCommand || "turn off wifi" in lowerCommand -> {
                         deviceController.setWiFiEnabled(false)
-                        speak("WiFi turned off")
+                        response = "WiFi turned off"
+                        commandHandled = true
                     }
                     
                     // Bluetooth control
                     "bluetooth on" in lowerCommand || "turn on bluetooth" in lowerCommand -> {
                         deviceController.setBluetoothEnabled(true)
-                        speak("Bluetooth turned on")
+                        response = "Bluetooth turned on"
+                        commandHandled = true
                     }
                     "bluetooth off" in lowerCommand || "turn off bluetooth" in lowerCommand -> {
                         deviceController.setBluetoothEnabled(false)
-                        speak("Bluetooth turned off")
+                        response = "Bluetooth turned off"
+                        commandHandled = true
                     }
                     
                     // Location/GPS
                     "location on" in lowerCommand || "gps on" in lowerCommand -> {
-                        speak("Please enable location in settings")
+                        response = "Please enable location in settings"
                         deviceController.openLocationSettings()
+                        commandHandled = true
                     }
                     
                     // Flashlight
                     "flash on" in lowerCommand || "flashlight on" in lowerCommand || "torch on" in lowerCommand -> {
                         deviceController.setFlashlightEnabled(true)
-                        speak("Flashlight on")
+                        response = "Flashlight on"
+                        commandHandled = true
                     }
                     "flash off" in lowerCommand || "flashlight off" in lowerCommand || "torch off" in lowerCommand -> {
                         deviceController.setFlashlightEnabled(false)
-                        speak("Flashlight off")
+                        response = "Flashlight off"
+                        commandHandled = true
                     }
                     
                     // Camera/Selfie
                     "take selfie" in lowerCommand || "selfie" in lowerCommand -> {
                         deviceController.takeSelfie()
-                        speak("Taking selfie")
+                        response = "Taking selfie"
+                        commandHandled = true
                     }
                     "take photo" in lowerCommand || "take picture" in lowerCommand -> {
                         deviceController.takePhoto()
-                        speak("Taking photo")
+                        response = "Taking photo"
+                        commandHandled = true
                     }
                     
                     // Device lock
                     "lock device" in lowerCommand || "lock phone" in lowerCommand || "lock screen" in lowerCommand -> {
                         deviceController.lockDevice()
-                        speak("Locking device")
+                        response = "Locking device"
+                        commandHandled = true
                     }
                     
                     // Volume control
                     "volume up" in lowerCommand || "increase volume" in lowerCommand -> {
                         deviceController.increaseVolume()
-                        speak("Volume increased")
+                        response = "Volume increased"
+                        commandHandled = true
                     }
                     "volume down" in lowerCommand || "decrease volume" in lowerCommand -> {
                         deviceController.decreaseVolume()
-                        speak("Volume decreased")
+                        response = "Volume decreased"
+                        commandHandled = true
                     }
                     "mute" in lowerCommand -> {
                         deviceController.muteVolume()
-                        speak("Muted")
+                        response = "Muted"
+                        commandHandled = true
                     }
                     
                     // Calls
@@ -315,72 +353,121 @@ class VoiceController(
                         val phoneNumber = extractPhoneNumber(command)
                         if (phoneNumber != null) {
                             deviceController.makeCall(phoneNumber)
-                            speak("Calling $phoneNumber")
+                            response = "Calling $phoneNumber"
                         } else {
-                            speak("Please say the phone number")
+                            response = "Please say the phone number"
                         }
+                        commandHandled = true
                     }
                     
                     // SMS
                     "send message" in lowerCommand || "send sms" in lowerCommand -> {
-                        speak("Opening messaging app")
+                        response = "Opening messaging app"
                         deviceController.openMessaging()
+                        commandHandled = true
                     }
                     
                     // Email
                     "send email" in lowerCommand || "compose email" in lowerCommand -> {
-                        speak("Opening email app")
+                        response = "Opening email app"
                         deviceController.openEmail()
+                        commandHandled = true
                     }
                     
                     // Time
                     "what time" in lowerCommand || "tell me time" in lowerCommand || "current time" in lowerCommand -> {
                         val time = deviceController.getCurrentTime()
-                        speak("The time is $time")
+                        response = "The time is $time"
+                        commandHandled = true
+                    }
+                    
+                    // Date
+                    "what date" in lowerCommand || "tell me date" in lowerCommand || "current date" in lowerCommand -> {
+                        val date = deviceController.getCurrentDate()
+                        response = "Today is $date"
+                        commandHandled = true
                     }
                     
                     // Alarm
                     "set alarm" in lowerCommand -> {
-                        speak("Opening alarm app")
+                        response = "Opening alarm app"
                         deviceController.openAlarmApp()
+                        commandHandled = true
                     }
                     
                     // Weather
                     "weather" in lowerCommand || "temperature" in lowerCommand -> {
-                        speak("Opening weather app")
+                        response = "Opening weather app"
                         deviceController.openWeatherApp()
+                        commandHandled = true
                     }
                     
                     // Movie/Media controls
                     "play" in lowerCommand -> {
                         deviceController.mediaPlay()
-                        speak("Playing")
+                        response = "Playing"
+                        commandHandled = true
                     }
                     "pause" in lowerCommand || "stop" in lowerCommand -> {
                         deviceController.mediaPause()
-                        speak("Paused")
+                        response = "Paused"
+                        commandHandled = true
                     }
                     "next" in lowerCommand || "next song" in lowerCommand -> {
                         deviceController.mediaNext()
-                        speak("Next")
+                        response = "Next"
+                        commandHandled = true
                     }
                     "previous" in lowerCommand || "previous song" in lowerCommand -> {
                         deviceController.mediaPrevious()
-                        speak("Previous")
+                        response = "Previous"
+                        commandHandled = true
                     }
                     
                     // Browser
                     "open browser" in lowerCommand || "open google" in lowerCommand -> {
                         deviceController.openBrowser()
-                        speak("Opening browser")
+                        response = "Opening browser"
+                        commandHandled = true
                     }
                     
+                    // Unknown command - send to ChatManager
                     else -> {
-                        Log.d(TAG, "No matching command for: $command")
+                        Log.d(TAG, "Unknown command, sending to ChatManager: $command")
+                        commandHandled = false
+                        
+                        // Try to get AI response
+                        chatManager?.let { chat ->
+                            try {
+                                // Send command to AI and get response
+                                response = chat.sendMessage(command) ?: "I didn't understand that command."
+                                commandHandled = true
+                                Log.d(TAG, "AI response: $response")
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Error getting AI response", e)
+                                response = "I'm having trouble processing that request."
+                                commandHandled = true
+                            }
+                        } ?: run {
+                            response = "I didn't recognize that command."
+                            commandHandled = true
+                        }
                     }
                 }
+                
+                // Speak the response
+                if (response.isNotEmpty()) {
+                    speak(response)
+                }
+                
+                // Notify callback
+                onCommandProcessed?.invoke(command, response)
+                
             } catch (e: Exception) {
                 Log.e(TAG, "Error processing command", e)
+                val errorResponse = "Error processing command: ${e.message}"
+                speak(errorResponse)
+                onCommandProcessed?.invoke(command, errorResponse)
             }
         }
     }
