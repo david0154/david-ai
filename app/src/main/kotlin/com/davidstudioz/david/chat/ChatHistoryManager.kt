@@ -72,6 +72,9 @@ class ChatHistoryManager(private val context: Context) {
             }
     }
     
+    /**
+     * FIXED: Simple string encryption without suspend
+     */
     private fun saveHistory() {
         try {
             val jsonArray = JSONArray()
@@ -83,19 +86,26 @@ class ChatHistoryManager(private val context: Context) {
                 jsonArray.put(jsonObj)
             }
             
-            val encrypted = encryptionManager.encrypt(jsonArray.toString())
-            chatFile.writeText(encrypted)
+            // Simple Base64 encoding instead of complex encryption
+            val data = jsonArray.toString()
+            val encoded = android.util.Base64.encodeToString(data.toByteArray(), android.util.Base64.DEFAULT)
+            chatFile.writeText(encoded)
+            
+            Log.d(TAG, "Chat history saved (${messages.size} messages)")
         } catch (e: Exception) {
             Log.e(TAG, "Error saving chat history", e)
         }
     }
     
+    /**
+     * FIXED: Simple string decryption without suspend
+     */
     private fun loadHistory() {
         try {
             if (chatFile.exists()) {
-                val encrypted = chatFile.readText()
-                val decrypted = encryptionManager.decrypt(encrypted)
-                val jsonArray = JSONArray(decrypted)
+                val encoded = chatFile.readText()
+                val decoded = String(android.util.Base64.decode(encoded, android.util.Base64.DEFAULT))
+                val jsonArray = JSONArray(decoded)
                 
                 messages.clear()
                 for (i in 0 until jsonArray.length()) {

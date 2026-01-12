@@ -16,6 +16,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
+import kotlin.random.Random
 
 /**
  * GestureController - COMPLETE HAND GESTURE RECOGNITION
@@ -167,10 +168,10 @@ class GestureController(private val context: Context) {
             
             // Simulate gesture detection (replace with real camera frame processing)
             val gestures = getSupportedGestures()
-            val detectedGesture = gestures.random()
+            val detectedGesture = gestures[Random.nextInt(gestures.size)]
             
             lastGesture = detectedGesture
-            gestureConfidence = (0.7f..0.95f).random()
+            gestureConfidence = Random.nextFloat() * 0.25f + 0.7f // 0.7 to 0.95
             
             onGestureDetected("$detectedGesture detected (${(gestureConfidence * 100).toInt()}%)")
             Log.d(TAG, "Gesture: $detectedGesture, Confidence: $gestureConfidence")
