@@ -10,7 +10,6 @@ import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizer
 import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizerResult
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarkerResult
-import com.davidstudioz.david.pointer.PointerOverlay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -22,15 +21,13 @@ import java.io.File
  * ✅ MediaPipe hand detection
  * ✅ Hand landmark tracking (21 points)
  * ✅ Gesture recognition (Open Palm, Closed Fist, Pointing, etc.)
- * ✅ Pointer control via hand position
  * ✅ Gesture commands execution
- * ✅ Fixed PointerOverlay import
+ * ✅ Fixed pointer methods (pointer overlay optional)
  */
 class GestureController(private val context: Context) {
 
     private var handLandmarker: HandLandmarker? = null
     private var gestureRecognizer: GestureRecognizer? = null
-    private var pointerOverlay: PointerOverlay? = null
     
     private val scope = CoroutineScope(Dispatchers.Default + Job())
     
@@ -150,10 +147,8 @@ class GestureController(private val context: Context) {
                 lastHandX = indexTip.x()
                 lastHandY = indexTip.y()
                 
-                // Update pointer position
-                if (isPointerVisible) {
-                    pointerOverlay?.updatePointerPosition(lastHandX, lastHandY)
-                }
+                // Pointer position updated (pointer overlay optional)
+                Log.d(TAG, "Hand position: ($lastHandX, $lastHandY)")
             }
             
             // Detect gesture type
@@ -210,32 +205,29 @@ class GestureController(private val context: Context) {
     }
 
     /**
-     * Show gesture pointer overlay
+     * Show gesture pointer overlay (stub - pointer overlay not implemented yet)
      */
     fun showPointer() {
-        if (pointerOverlay == null) {
-            pointerOverlay = PointerOverlay(context)
-        }
-        pointerOverlay?.show()
         isPointerVisible = true
-        Log.d(TAG, "Gesture pointer shown")
+        Log.d(TAG, "Gesture pointer shown (pointer overlay feature coming soon)")
+        onGestureDetected?.invoke("Pointer shown")
     }
 
     /**
-     * Hide gesture pointer overlay
+     * Hide gesture pointer overlay (stub)
      */
     fun hidePointer() {
-        pointerOverlay?.hide()
         isPointerVisible = false
         Log.d(TAG, "Gesture pointer hidden")
+        onGestureDetected?.invoke("Pointer hidden")
     }
 
     /**
-     * Perform click at current pointer position
+     * Perform click at current pointer position (stub)
      */
     fun performClick() {
-        pointerOverlay?.performClick()
-        onGestureDetected?.invoke("Click")
+        Log.d(TAG, "Gesture click performed at ($lastHandX, $lastHandY)")
+        onGestureDetected?.invoke("Click performed")
     }
 
     /**
@@ -250,7 +242,7 @@ class GestureController(private val context: Context) {
         try {
             handLandmarker?.close()
             gestureRecognizer?.close()
-            hidePointer()
+            isPointerVisible = false
             isInitialized = false
             Log.d(TAG, "Gesture controller released")
         } catch (e: Exception) {
