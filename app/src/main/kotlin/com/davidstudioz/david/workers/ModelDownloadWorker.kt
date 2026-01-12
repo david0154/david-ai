@@ -16,13 +16,13 @@ import kotlinx.coroutines.withContext
  * Runs on background thread with proper network checks and memory management
  * 
  * ALL FIXES APPLIED:
- * ✅ Network availability check
- * ✅ WiFi connection check
- * ✅ Memory availability check
- * ✅ Better error handling with error codes
- * ✅ Fixed all unresolved references
- * ✅ Fixed AIModel property access (name instead of id)
- * ✅ Fixed Result<File> handling
+ * Network availability check
+ * WiFi connection check
+ * Memory availability check
+ * Better error handling with error codes
+ * Fixed all unresolved references
+ * Fixed AIModel property access (name instead of id)
+ * Fixed Result<File> handling
  */
 class ModelDownloadWorker(
     private val context: Context,
