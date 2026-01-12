@@ -140,7 +140,7 @@ class ModelManager(private val context: Context) {
             )
             "standard" -> AIModel(
                 "D.A.V.I.D Chat Standard",
-                "https://huggingface.co/second-state/Qwen1.5-1.8B-Chat-GGUF/resolve/main/qwen1.5-1.8b-chat-q4_k_m.gguf",
+                "https://huggingface.co/Qwen/Qwen1.5-1.8B-Chat-GGUF/resolve/main/qwen1_5-1_8b-chat-q4_k_m.gguf",
                 "1.1 GB", 3, "LLM", "GGUF", "en"
             )
             "pro" -> AIModel(
