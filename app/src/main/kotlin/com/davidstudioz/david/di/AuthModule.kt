@@ -2,7 +2,7 @@ package com.davidstudioz.david.di
 
 import android.content.Context
 import com.davidstudioz.david.auth.GoogleAuthManager
-import com.davidstudioz.david.models.ModelManager
+// import com.davidstudioz.david.models.ModelManager
 import com.davidstudioz.david.sync.DeviceOnlySync
 import dagger.Module
 import dagger.Provides
@@ -21,11 +21,12 @@ object AuthModule {
         return GoogleAuthManager(context)
     }
     
-    @Singleton
-    @Provides
-    fun provideModelManager(@ApplicationContext context: Context): ModelManager {
-        return ModelManager(context)
-    }
+    // Temporarily commented to isolate build error
+    // @Singleton
+    // @Provides
+    // fun provideModelManager(@ApplicationContext context: Context): ModelManager {
+    //     return ModelManager(context)
+    // }
     
     @Singleton
     @Provides
