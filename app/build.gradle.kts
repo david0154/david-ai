@@ -87,9 +87,11 @@ android {
     }
 }
 
-// Compose Compiler configuration (optional)
+// Compose Compiler configuration - Using new featureFlags API
 composeCompiler {
-    enableStrongSkippingMode = true
+    featureFlags = setOf(
+        "StrongSkipping"
+    )
 }
 
 dependencies {
