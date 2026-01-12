@@ -80,16 +80,6 @@ class HotWordDetectionService : Service() {
     // Detection settings
     private val detectionWindowMs = 2000L // 2 second rolling window
     private val confidenceThreshold = 0.6f // 60% match confidence
-    
-    companion object {
-        private const val TAG = "HotWordService"
-        private const val NOTIFICATION_ID = 1001
-        private const val CHANNEL_ID = "david_hotword_channel"
-        private const val WAKE_LOCK_TAG = "david:hotword_detection"
-        
-        var isServiceRunning = false
-            private set
-    }
 
     override fun onCreate() {
         super.onCreate()
@@ -442,10 +432,20 @@ class HotWordDetectionService : Service() {
     }
 
     companion object {
+        private const val TAG = "HotWordService"
+        private const val NOTIFICATION_ID = 1001
+        private const val CHANNEL_ID = "david_hotword_channel"
+        private const val WAKE_LOCK_TAG = "david:hotword_detection"
+        
+        var isServiceRunning = false
+            private set
+        
+        // Action constants
         const val ACTION_STOP = "com.davidstudioz.david.ACTION_STOP_HOTWORD"
         const val ACTION_HOTWORD_DETECTED = "com.davidstudioz.david.HOTWORD_DETECTED"
         const val EXTRA_HOTWORD = "hotword"
         
+        // Service control methods
         fun start(context: Context) {
             val intent = Intent(context, HotWordDetectionService::class.java)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
