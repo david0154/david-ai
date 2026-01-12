@@ -3,12 +3,12 @@
     <!-- App Name & Branding -->
     <string name="app_name">D.A.V.I.D</string>
     <string name="app_full_name">D.A.V.I.D</string>
-    <string name="app_tagline">Digital Assistant with Voice & Intelligent Decisions</string>
+    <string name="app_tagline">Digital Assistant with Voice &amp; Intelligent Decisions</string>
     <string name="app_description">Your AI-Powered Voice Assistant</string>
     <string name="developed_by">Developed by Nexuzy Tech Pvt</string>
     
     <!-- Main Screen -->
-    <string name="title_digital_assistant">Digital Assistant with Voice & Intelligent Decisions</string>
+    <string name="title_digital_assistant">Digital Assistant with Voice &amp; Intelligent Decisions</string>
     <string name="greeting_message">Hi %1$s, I\'m ready!</string>
     <string name="initializing">Initializing D.A.V.I.D…</string>
     <string name="systems_online">Voice systems online</string>
@@ -111,7 +111,7 @@
     <string name="accessibility_service_label">D.A.V.I.D AI</string>
     <string name="accessibility_enabled">Screen control enabled</string>
     <string name="accessibility_disabled">Screen control disabled</string>
-    <string name="accessibility_enable_prompt">Enable in Settings > Accessibility > D.A.V.I.D AI</string>
+    <string name="accessibility_enable_prompt">Enable in Settings &gt; Accessibility &gt; D.A.V.I.D AI</string>
     <string name="accessibility_required">Required for scroll/swipe voice commands</string>
     <string name="btn_open_accessibility_settings">Open Accessibility Settings</string>
     
