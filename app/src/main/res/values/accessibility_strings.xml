@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Accessibility Service -->
+    <string name="accessibility_service_description">D.A.V.I.D Accessibility Service enables advanced voice and gesture control including scroll, swipe, navigation, and screen reading capabilities. This service allows hands-free device control and is essential for voice commands like \"scroll up\", \"go back\", and \"swipe left\".</string>
+</resources>

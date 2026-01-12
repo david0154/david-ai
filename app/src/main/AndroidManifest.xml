@@ -53,6 +53,10 @@
     
     <!-- ====== BOOT RECEIVER (AUTO-START) ====== -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    
+    <!-- ====== ACCESSIBILITY SERVICE ====== -->
+    <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE"
+        tools:ignore="ProtectedPermissions" />
 
     <!-- ====== FOREGROUND SERVICES ====== -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -156,6 +160,20 @@
             android:exported="false"
             android:foregroundServiceType="camera"
             android:stopWithTask="false" />
+
+        <!-- Accessibility Service - Scroll/Swipe/Navigation Control -->
+        <service
+            android:name="com.davidstudioz.david.accessibility.DavidAccessibilityService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
 
         <!-- ====== BROADCAST RECEIVERS ====== -->
         
