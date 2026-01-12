@@ -87,12 +87,10 @@ android {
     }
 }
 
-// Compose Compiler Configuration
-// Strong skipping mode is enabled by default in Kotlin 2.0+
-// No additional stability configuration needed for standard cases
+// Compose Compiler Configuration (Modern API)
 composeCompiler {
-    // Enable strong skipping mode (default in Kotlin 2.0+)
-    enableStrongSkippingMode.set(true)
+    // Use modern featureFlags API instead of deprecated enableStrongSkippingMode
+    featureFlags.add(org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag.StrongSkipping)
     
     // Include source information for better debugging
     includeSourceInformation.set(true)
