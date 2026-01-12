@@ -125,11 +125,11 @@ class ModelDownloadActivity : ComponentActivity() {
             // High-end devices (4GB+ RAM) - Pro models
             deviceRam >= 4 -> listOf(
                 // ✅ Voice Pro = Whisper Small
-                ModelInfo("D.A.V.I.D Voice Pro", "High-accuracy voice (Whisper Small)", "🎤", "466 MB", 466f, "voice_small", "Pro"),
+                ModelInfo("D.A.V.I.D Voice Pro", "High-accuracy voice", "🎤", "466 MB", 466f, "voice_small", "Pro"),
                 // ✅ Chat Pro = Phi-2
-                ModelInfo("D.A.V.I.D Chat Pro", "Advanced AI conversations (Phi-2)", "💬", "1.6 GB", 1600f, "llm_pro", "Pro"),
+                ModelInfo("D.A.V.I.D Chat Pro", "Advanced AI conversations", "💬", "1.6 GB", 1600f, "llm_pro", "Pro"),
                 // ✅ Vision Standard = ResNet50 (ModelManager only has lite/standard, no "pro")
-                ModelInfo("D.A.V.I.D Vision", "Advanced object recognition (ResNet50)", "👁️", "98 MB", 98f, "vision_standard", "Pro"),
+                ModelInfo("D.A.V.I.D Vision", "Advanced object recognition", "👁️", "98 MB", 98f, "vision_standard", "Pro"),
                 // ✅ Language = Multilingual
                 ModelInfo("D.A.V.I.D Multilingual", "15 languages: EN, HI, TA, TE, BN, MR, GU, KN, ML, PA, OR, UR, SA, KS, AS", "🌐", "120 MB", 120f, "language_multilingual", "Shared"),
                 // ✅ Gesture Hand = MediaPipe Hand
@@ -141,11 +141,11 @@ class ModelDownloadActivity : ComponentActivity() {
             // Mid-range devices (3GB RAM) - Standard models
             deviceRam >= 3 -> listOf(
                 // ✅ Voice Base = Whisper Base
-                ModelInfo("D.A.V.I.D Voice Base", "Balanced voice recognition (Whisper Base)", "🎤", "142 MB", 142f, "voice_base", "Standard"),
+                ModelInfo("D.A.V.I.D Voice Base", "Balanced voice recognition", "🎤", "142 MB", 142f, "voice_base", "Standard"),
                 // ✅ Chat Standard = Qwen
-                ModelInfo("D.A.V.I.D Chat Standard", "Smart AI conversations (Qwen 1.5-1.8B)", "💬", "1.1 GB", 1100f, "llm_standard", "Standard"),
+                ModelInfo("D.A.V.I.D Chat Standard", "Smart AI conversations", "💬", "1.1 GB", 1100f, "llm_standard", "Standard"),
                 // ✅ Vision Standard = ResNet50
-                ModelInfo("D.A.V.I.D Vision", "Standard object recognition (ResNet50)", "👁️", "98 MB", 98f, "vision_standard", "Standard"),
+                ModelInfo("D.A.V.I.D Vision", "Standard object recognition", "👁️", "98 MB", 98f, "vision_standard", "Standard"),
                 // ✅ Language = Multilingual
                 ModelInfo("D.A.V.I.D Multilingual", "15 languages: EN, HI, TA, TE, BN, MR, GU, KN, ML, PA, OR, UR, SA, KS, AS", "🌐", "120 MB", 120f, "language_multilingual", "Shared"),
                 // ✅ Gesture Hand
@@ -157,11 +157,11 @@ class ModelDownloadActivity : ComponentActivity() {
             // Budget devices (2GB RAM) - Light models
             deviceRam >= 2 -> listOf(
                 // ✅ Voice Base = Whisper Base (same as 3GB)
-                ModelInfo("D.A.V.I.D Voice Base", "Fast voice recognition (Whisper Base)", "🎤", "142 MB", 142f, "voice_base", "Light"),
+                ModelInfo("D.A.V.I.D Voice Base", "Fast voice recognition", "🎤", "142 MB", 142f, "voice_base", "Light"),
                 // ✅ Chat Light = TinyLlama
-                ModelInfo("D.A.V.I.D Chat Light", "Efficient AI chat (TinyLlama 1.1B)", "💬", "669 MB", 669f, "llm_light", "Light"),
+                ModelInfo("D.A.V.I.D Chat Light", "Efficient AI chat", "💬", "669 MB", 669f, "llm_light", "Light"),
                 // ✅ Vision Lite = MobileNetV2
-                ModelInfo("D.A.V.I.D Vision Lite", "Fast object detection (MobileNetV2)", "👁️", "14 MB", 14f, "vision_lite", "Light"),
+                ModelInfo("D.A.V.I.D Vision Lite", "Fast object detection", "👁️", "14 MB", 14f, "vision_lite", "Light"),
                 // ✅ Language = Multilingual
                 ModelInfo("D.A.V.I.D Multilingual", "15 languages: EN, HI, TA, TE, BN, MR, GU, KN, ML, PA, OR, UR, SA, KS, AS", "🌐", "120 MB", 120f, "language_multilingual", "Shared"),
                 // ✅ Gesture Hand
@@ -173,11 +173,11 @@ class ModelDownloadActivity : ComponentActivity() {
             // Very low-end devices (1GB RAM) - Ultra-light models
             else -> listOf(
                 // ✅ Voice Tiny = Whisper Tiny
-                ModelInfo("D.A.V.I.D Voice Tiny", "Ultra-fast voice (Whisper Tiny)", "🎤", "75 MB", 75f, "voice_tiny", "Mini"),
+                ModelInfo("D.A.V.I.D Voice Tiny", "Ultra-fast voice", "🎤", "75 MB", 75f, "voice_tiny", "Mini"),
                 // ✅ Chat Light = TinyLlama (same as 2GB)
-                ModelInfo("D.A.V.I.D Chat Light", "Basic AI chat (TinyLlama 1.1B)", "💬", "669 MB", 669f, "llm_light", "Mini"),
+                ModelInfo("D.A.V.I.D Chat Light", "Basic AI chat", "💬", "669 MB", 669f, "llm_light", "Mini"),
                 // ✅ Vision Lite = MobileNetV2
-                ModelInfo("D.A.V.I.D Vision Lite", "Basic object detection (MobileNetV2)", "👁️", "14 MB", 14f, "vision_lite", "Mini"),
+                ModelInfo("D.A.V.I.D Vision Lite", "Basic object detection", "👁️", "14 MB", 14f, "vision_lite", "Mini"),
                 // ✅ Language = Multilingual
                 ModelInfo("D.A.V.I.D Multilingual", "15 languages: EN, HI, TA, TE, BN, MR, GU, KN, ML, PA, OR, UR, SA, KS, AS", "🌐", "120 MB", 120f, "language_multilingual", "Shared"),
                 // ✅ Gesture Hand
