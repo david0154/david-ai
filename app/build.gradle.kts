@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.devtools.ksp")
     id("kotlin-parcelize")
     // Hilt for dependency injection
@@ -60,16 +61,11 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
-        // No experimental opt-ins needed - Material3 and Foundation are stable
     }
 
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
     }
 
     packaging {
@@ -89,6 +85,11 @@ android {
         abortOnError = false
         quiet = true
     }
+}
+
+// Compose Compiler configuration (optional)
+composeCompiler {
+    enableStrongSkippingMode = true
 }
 
 dependencies {
