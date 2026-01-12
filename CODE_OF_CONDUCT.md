@@ -2,7 +2,7 @@
 
 ## Our Pledge
 
-In the interest of fostering an open and welcoming environment, we as contributors and maintainers pledge to make participation in D.A.V.I.D AI and our community a harassment-free experience for everyone, regardless of:
+In the interest of fostering an open and welcoming environment, we as contributors and maintainers of D.A.V.I.D AI pledge to make participation in our project and community a harassment-free experience for everyone, regardless of:
 
 - Age
 - Body size
@@ -19,32 +19,45 @@ In the interest of fostering an open and welcoming environment, we as contributo
 - Religion
 - Sexual identity and orientation
 
----
-
 ## Our Standards
 
-### ✅ Examples of Positive Behavior:
+### Positive Behavior ✅
+
+Examples of behavior that contributes to a positive environment:
 
 - **Using welcoming and inclusive language**
-- **Being respectful** of differing viewpoints and experiences
-- **Gracefully accepting** constructive criticism
-- **Focusing on what is best** for the community
-- **Showing empathy** towards other community members
-- **Helping others** learn and grow
-- **Giving credit** where credit is due
-- **Being patient** with beginners
+- **Being respectful of differing viewpoints and experiences**
+- **Gracefully accepting constructive criticism**
+- **Focusing on what is best for the community**
+- **Showing empathy towards other community members**
+- **Helping newcomers get started**
+- **Giving credit where credit is due**
+- **Being patient with those learning**
 
-### ❌ Examples of Unacceptable Behavior:
+### Unacceptable Behavior ❌
 
-- **Harassment** of any kind
-- **Trolling**, insulting, or derogatory comments
-- **Personal or political attacks**
-- **Public or private harassment**
-- **Publishing others' private information** without permission
-- **Sexual language or imagery**
+Examples of unacceptable behavior:
+
+- **Harassment of any kind**
+  - Sexual language or imagery
+  - Unwelcome sexual attention or advances
+  - Trolling, insulting/derogatory comments
+  - Personal or political attacks
+
+- **Publishing others' private information**
+  - Physical addresses
+  - Email addresses
+  - Other personal information without explicit permission
+
+- **Intimidation or threats**
+  - Threatening to release private information
+  - Intimidating contributors
+
 - **Other unprofessional conduct**
-
----
+  - Sustained disruption of discussions
+  - Spamming
+  - Off-topic discussions in issues/PRs
+  - Repeatedly ignoring maintainer guidance
 
 ## Our Responsibilities
 
@@ -56,181 +69,162 @@ In the interest of fostering an open and welcoming environment, we as contributo
   - Comments
   - Commits
   - Code
+  - Wiki edits
   - Issues
-  - Pull requests
   - Other contributions that violate this Code of Conduct
-- Temporarily or permanently banning contributors for behaviors deemed inappropriate, threatening, offensive, or harmful
-
----
+- Banning temporarily or permanently any contributor for behaviors deemed:
+  - Inappropriate
+  - Threatening
+  - Offensive
+  - Harmful
 
 ## Scope
 
-This Code of Conduct applies within all project spaces, including:
+This Code of Conduct applies:
 
-- **GitHub repository** (issues, pull requests, discussions)
-- **Project communications** (emails, messages)
-- **Public spaces** when representing the project
-- **Events** (meetups, conferences)
+- **Within project spaces**:
+  - GitHub repository
+  - Issue tracker
+  - Pull requests
+  - Discussions
+  - Wiki
 
----
+- **In public spaces** when representing the project:
+  - Using official project email
+  - Posting via official social media
+  - Acting as project representative at events
 
 ## Enforcement
 
-### Reporting Violations:
+### Reporting
 
-If you experience or witness unacceptable behavior, please report it:
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by:
 
-**Email**: david@nexuzy.in  
-**Subject**: "Code of Conduct Violation - D.A.V.I.D AI"
+**Email**: [david@nexuzy.in](mailto:david@nexuzy.in)
 
-All reports will be:
-- ✅ Reviewed promptly
-- ✅ Kept confidential
-- ✅ Handled fairly
-- ✅ Investigated thoroughly
+All complaints will be:
+- Reviewed promptly
+- Investigated thoroughly
+- Kept confidential
+- Responded to appropriately
 
-### What to Include in Reports:
+### What to Include in Report
 
-- **Description** of the incident
-- **Date and time**
-- **Location** (GitHub issue, PR, etc.)
-- **Usernames** involved
-- **Screenshots** (if applicable)
-- **Any other relevant information**
+When reporting, please include:
 
-### Response Timeline:
+1. **Your contact information**
+2. **Names of people involved**
+3. **Description of incident**
+4. **When and where it happened**
+5. **Any additional context**
+6. **Links to relevant issues/PRs/comments**
 
-- **24 hours**: Acknowledgment of report
-- **7 days**: Initial investigation
-- **14 days**: Resolution communicated
+### Enforcement Guidelines
 
----
+Project maintainers will follow these Community Impact Guidelines:
 
-## Enforcement Guidelines
+#### 1. Correction
 
-### 1. 📝 Correction
+**Community Impact**: Use of inappropriate language or unprofessional behavior.
 
-**Community Impact**: Use of inappropriate language or other unprofessional behavior.
+**Consequence**: Private written warning, providing clarity on violation and why behavior was inappropriate. Public apology may be requested.
 
-**Consequence**: Private written warning explaining the violation and why it was inappropriate. A public apology may be requested.
-
-### 2. ⚠️ Warning
+#### 2. Warning
 
 **Community Impact**: Violation through a single incident or series of actions.
 
-**Consequence**: Warning with consequences for continued behavior. No interaction with involved parties for a specified period. This includes:
-- Avoiding interactions in community spaces
+**Consequence**: Warning with consequences for continued behavior. No interaction with people involved for specified period. This includes:
+- Avoiding project spaces
 - Avoiding external channels like social media
 
 Violating these terms may lead to temporary or permanent ban.
 
-### 3. 🚫 Temporary Ban
+#### 3. Temporary Ban
 
 **Community Impact**: Serious violation of community standards, including sustained inappropriate behavior.
 
-**Consequence**: Temporary ban from any interaction or public communication with the community for a specified period. No public or private interaction with involved parties is allowed during this period.
+**Consequence**: Temporary ban from any interaction or public communication with the community for specified period. No public or private interaction with people involved allowed during this period. Violating these terms may lead to permanent ban.
 
-Violating these terms may lead to permanent ban.
+#### 4. Permanent Ban
 
-### 4. ❌ Permanent Ban
+**Community Impact**: Demonstrating pattern of violation, harassment, aggression toward individuals, or disparagement of classes of individuals.
 
-**Community Impact**: Demonstrating a pattern of violation of community standards, including sustained inappropriate behavior, harassment, or aggression.
-
-**Consequence**: Permanent ban from any public interaction within the community.
-
----
+**Consequence**: Permanent ban from any public interaction within the project community.
 
 ## Examples of Enforcement
 
-### Scenario 1: Inappropriate Language
+### Example 1: Minor Issue
 
-**Situation**: A contributor uses offensive language in a PR comment.
+**Scenario**: Contributor uses mildly inappropriate language in PR comment.
 
-**Action**:
-1. Comment is removed
-2. Private warning sent
-3. Public apology requested
-4. Monitoring for future behavior
+**Action**: 
+1. Maintainer privately messages contributor
+2. Explains why language was inappropriate
+3. Asks for edit or deletion
+4. Contributor complies
+5. No further action needed
 
-### Scenario 2: Personal Attack
+### Example 2: Serious Issue
 
-**Situation**: A user personally attacks another user in an issue.
-
-**Action**:
-1. Comment is hidden
-2. Formal warning issued
-3. 7-day interaction ban
-4. Required to acknowledge Code of Conduct
-
-### Scenario 3: Repeated Violations
-
-**Situation**: User continues inappropriate behavior after warning.
+**Scenario**: Contributor repeatedly ignores maintainer feedback and becomes hostile.
 
 **Action**:
-1. Permanent ban from repository
-2. Reports filed with GitHub
-3. Community notified (if necessary)
+1. Maintainer issues formal warning
+2. Documents incidents
+3. Temporarily restricts contributor access
+4. If behavior continues, permanent ban
 
----
+### Example 3: Harassment
 
-## Positive Community Culture
+**Scenario**: Contributor harasses another community member.
 
-### We Encourage:
+**Action**:
+1. Immediate temporary ban
+2. Investigation of incident
+3. Communication with victim
+4. Likely permanent ban
+5. Report to GitHub if necessary
 
-- 🤝 **Collaboration** over competition
-- 💡 **Learning** from mistakes
-- 🌟 **Celebrating** successes
-- 🗣️ **Constructive** feedback
-- 🤗 **Welcoming** newcomers
-- 📚 **Sharing** knowledge
-- 🙏 **Gratitude** for contributions
+## Appeals
 
-### We Value:
+If you believe you were wrongly accused or the enforcement was too harsh:
 
-- **Diversity** of thought and background
-- **Inclusion** of all skill levels
-- **Respect** for different perspectives
-- **Patience** with learning processes
-- **Kindness** in all interactions
+1. Email [david@nexuzy.in](mailto:david@nexuzy.in)
+2. Explain your perspective
+3. Provide evidence if available
+4. Maintainers will review and respond
 
----
+## Questions
 
-## Contact
+Questions about this Code of Conduct?
 
-### Questions About This Code of Conduct:
-
-**Email**: david@nexuzy.in  
-**GitHub**: [@david0154](https://github.com/david0154)  
-**Repository**: [david-ai](https://github.com/david0154/david-ai)
-
----
+- **Email**: [david@nexuzy.in](mailto:david@nexuzy.in)
+- **GitHub**: [Open a discussion](https://github.com/david0154/david-ai/discussions)
 
 ## Attribution
 
 This Code of Conduct is adapted from:
 
-- **Contributor Covenant**, version 2.1
-- Available at: [https://www.contributor-covenant.org/version/2/1/code_of_conduct.html](https://www.contributor-covenant.org/version/2/1/code_of_conduct.html)
+- [Contributor Covenant](https://www.contributor-covenant.org), version 2.1
+- [Mozilla Community Participation Guidelines](https://www.mozilla.org/en-US/about/governance/policies/participation/)
 
----
+For answers to common questions, see:
+[https://www.contributor-covenant.org/faq](https://www.contributor-covenant.org/faq)
 
-## Updates
+## Changes
 
-This Code of Conduct may be updated periodically. Changes will be:
+This Code of Conduct may be updated. When updated:
 
-- Posted to the repository
-- Announced in GitHub Discussions
-- Effective immediately upon posting
+- New version will be posted on GitHub
+- Notification in project README
+- Effective date will be updated
 
+**Current Version**: 1.0  
+**Effective Date**: January 12, 2026  
 **Last Updated**: January 12, 2026
 
 ---
 
-## Summary (TL;DR)
+**© 2026 Nexuzy Tech Ltd. All rights reserved.**
 
-✅ **Be respectful, kind, and professional**  
-❌ **No harassment, trolling, or attacks**  
-🚫 **Violations will be enforced**  
-📧 **Report issues to: david@nexuzy.in**  
-
-**Let's build an amazing community together!** 🚀
+Thank you for helping make D.A.V.I.D AI a welcoming, inclusive community! 🙏

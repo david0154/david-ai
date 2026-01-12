@@ -2,411 +2,460 @@
 
 Thank you for considering contributing to D.A.V.I.D AI! 🎉
 
-We welcome contributions from the community and are excited to work with you.
-
----
+We welcome contributions from everyone. This document provides guidelines for contributing to the project.
 
 ## 📋 Table of Contents
 
 - [Code of Conduct](#code-of-conduct)
 - [How Can I Contribute?](#how-can-i-contribute)
-  - [Reporting Bugs](#reporting-bugs)
-  - [Suggesting Features](#suggesting-features)
-  - [Improving Documentation](#improving-documentation)
-  - [Contributing Code](#contributing-code)
-  - [Adding Translations](#adding-translations)
-- [Development Setup](#development-setup)
-- [Coding Standards](#coding-standards)
+- [Reporting Bugs](#reporting-bugs)
+- [Suggesting Features](#suggesting-features)
+- [Code Contributions](#code-contributions)
+- [Translation Contributions](#translation-contributions)
+- [Documentation](#documentation)
+- [Style Guidelines](#style-guidelines)
+- [Commit Messages](#commit-messages)
 - [Pull Request Process](#pull-request-process)
-- [Community](#community)
 
----
+## 📜 Code of Conduct
 
-## Code of Conduct
+This project adheres to a Code of Conduct that all contributors are expected to follow. Please read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before contributing.
 
-This project adheres to a [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
+## 🤝 How Can I Contribute?
 
----
+### Reporting Bugs
 
-## How Can I Contribute?
+Before creating bug reports, please check existing issues to avoid duplicates.
 
-### 🐛 Reporting Bugs
+**When reporting a bug, include**:
 
-Before creating a bug report, please:
-
-1. **Check existing issues** to avoid duplicates
-2. **Use the latest version** of the app
-3. **Collect diagnostic information**:
+1. **Device Information**:
    - Device model (e.g., Samsung Galaxy S23)
    - Android version (e.g., Android 14)
    - RAM size (e.g., 8GB)
-   - App version
+   - Storage available
+
+2. **App Information**:
+   - App version (from Settings → About)
+   - Build number
+   - Which AI models are downloaded
+
+3. **Bug Description**:
+   - Clear, concise title
    - Steps to reproduce
-   - Expected vs actual behavior
-   - LogCat output (if possible)
-   - Screenshots or screen recordings
-
-**Create a bug report**: [GitHub Issues](https://github.com/david0154/david-ai/issues/new?template=bug_report.md)
-
-### ✨ Suggesting Features
-
-We love new ideas! Before suggesting:
-
-1. **Check existing feature requests**
-2. **Ensure it aligns with project goals** (privacy-first, on-device AI)
-3. **Provide detailed information**:
-   - Clear description
-   - Use cases
    - Expected behavior
-   - Mockups or wireframes (if UI-related)
-   - Technical feasibility
+   - Actual behavior
+   - Screenshots/screen recordings
+   - LogCat output (if available)
 
-**Suggest a feature**: [GitHub Discussions](https://github.com/david0154/david-ai/discussions/new?category=ideas)
+4. **Environment**:
+   - Which language is selected
+   - Which features were being used
+   - Internet connection status
 
-### 📝 Improving Documentation
+**Bug Report Template**:
 
-Documentation improvements are always welcome:
+```markdown
+### Bug Description
+A clear description of the bug.
 
-- Fix typos or grammar
-- Clarify confusing sections
-- Add missing information
-- Improve code comments
-- Create tutorials or guides
+### Steps to Reproduce
+1. Open app
+2. Say "Hey David"
+3. ...
 
-Just submit a PR with your changes!
+### Expected Behavior
+What should happen
 
-### 💻 Contributing Code
+### Actual Behavior
+What actually happens
 
-We accept code contributions for:
+### Device Information
+- Device: Samsung Galaxy S23
+- Android: 14
+- RAM: 8GB
+- App Version: 1.0.0
 
-- Bug fixes
-- New features
-- Performance improvements
-- Code refactoring
-- Test coverage
+### Screenshots
+[Attach screenshots]
 
-See [Development Setup](#development-setup) below.
+### LogCat Output
+```
+[Paste relevant logs]
+```
+```
 
-### 🌍 Adding Translations
+### Suggesting Features
 
-We support 15 languages! To add or improve translations:
+We love feature suggestions! Before creating a feature request:
 
-1. Fork the repository
-2. Update `LanguageManager.kt`
-3. Add translation strings in `res/values-{lang}/strings.xml`
-4. Test thoroughly
-5. Submit a PR
+1. Check if the feature already exists
+2. Search existing feature requests
+3. Consider if it fits D.A.V.I.D's goals (privacy, local AI, voice control)
 
-**Current languages**: English, Hindi, Tamil, Telugu, Bengali, Marathi, Gujarati, Kannada, Malayalam, Punjabi, Odia, Urdu, Sanskrit, Kashmiri, Assamese
+**When suggesting a feature, include**:
 
----
+1. **Feature Title**: Clear, descriptive title
+2. **Problem**: What problem does this solve?
+3. **Proposed Solution**: How should it work?
+4. **Alternatives**: Other ways to solve the problem
+5. **Use Case**: Example scenarios
+6. **Mockups**: UI mockups if applicable
 
-## 🛠️ Development Setup
+**Feature Request Template**:
 
-### Prerequisites:
+```markdown
+### Feature Title
+Add [feature name]
 
-- **Android Studio**: Iguana (2023.2.1) or later
-- **JDK**: 17 or later
-- **Minimum SDK**: API 24 (Android 7.0)
-- **Target SDK**: API 34 (Android 14)
-- **Kotlin**: 2.0.21+
-- **Git**: For version control
+### Problem
+Describe the problem this feature solves
 
-### Setup Steps:
+### Proposed Solution
+How should this feature work?
 
-1. **Fork the repository**:
+### Alternatives
+Other approaches considered
+
+### Use Case
+Example: "When I say 'Set timer for 5 minutes', D.A.V.I.D should..."
+
+### Mockups
+[Attach mockups if applicable]
+```
+
+## 💻 Code Contributions
+
+### Getting Started
+
+1. **Fork the repository**
    ```bash
-   # Click 'Fork' on GitHub, then:
-   git clone https://github.com/YOUR_USERNAME/david-ai.git
+   git clone https://github.com/YOUR-USERNAME/david-ai.git
    cd david-ai
    ```
 
-2. **Add upstream remote**:
+2. **Create a branch**
    ```bash
-   git remote add upstream https://github.com/david0154/david-ai.git
+   git checkout -b feature/amazing-feature
    ```
+   
+   Branch naming:
+   - `feature/` for new features
+   - `bugfix/` for bug fixes
+   - `docs/` for documentation
+   - `refactor/` for refactoring
 
-3. **Open in Android Studio**:
-   - File → Open → Select `david-ai` folder
-   - Wait for Gradle sync
-
-4. **Create a branch**:
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-5. **Make your changes**:
-   - Follow coding standards (see below)
+3. **Make your changes**
+   - Follow code style guidelines
    - Add tests if applicable
    - Update documentation
 
-6. **Test your changes**:
+4. **Test thoroughly**
+   - Test on real device
+   - Test voice commands
+   - Test gestures
+   - Check for memory leaks
+
+5. **Commit your changes**
    ```bash
-   ./gradlew test
-   ./gradlew connectedAndroidTest
+   git commit -m 'Add: Amazing feature that does X'
    ```
 
-7. **Commit your changes**:
+6. **Push to your fork**
    ```bash
-   git add .
-   git commit -m "feat: Add amazing feature"
+   git push origin feature/amazing-feature
    ```
 
-8. **Push to your fork**:
-   ```bash
-   git push origin feature/your-feature-name
-   ```
+7. **Create Pull Request**
+   - Use PR template
+   - Link related issues
+   - Add screenshots/videos
 
-9. **Create Pull Request**:
-   - Go to your fork on GitHub
-   - Click "Compare & pull request"
-   - Fill in the PR template
+### Development Setup
 
----
+**Requirements**:
+- Android Studio Hedgehog (2023.1.1) or later
+- JDK 17 or later
+- Android SDK 35
+- Minimum 16GB RAM (for AI model testing)
+- Physical Android device (recommended for testing)
 
-## 📏 Coding Standards
+**Build the app**:
+```bash
+./gradlew assembleDebug
+```
 
-### Kotlin Style Guide:
+**Run tests**:
+```bash
+./gradlew test
+./gradlew connectedAndroidTest
+```
 
-Follow the [Kotlin official style guide](https://kotlinlang.org/docs/coding-conventions.html):
+### Code Areas
 
-- **Indentation**: 4 spaces (no tabs)
-- **Line length**: 120 characters max
-- **Naming conventions**:
-  - Classes: `PascalCase`
-  - Functions: `camelCase`
-  - Constants: `UPPER_SNAKE_CASE`
-  - Private properties: `camelCase`
+**Easy for beginners**:
+- UI improvements
+- Documentation
+- Translations
+- Bug fixes in settings
 
-### Code Quality:
+**Medium difficulty**:
+- Voice command additions
+- Gesture improvements
+- Device control features
+
+**Advanced**:
+- AI model integration
+- Performance optimization
+- Background processing
+
+## 🌍 Translation Contributions
+
+We support 15 languages! Help us improve translations:
+
+### Current Languages
+
+- English (en) ✅
+- Hindi (hi) ✅
+- Tamil (ta) ✅
+- Telugu (te) ✅
+- Bengali (bn) ✅
+- Marathi (mr) ✅
+- Gujarati (gu) ✅
+- Kannada (kn) ✅
+- Malayalam (ml) ✅
+- Punjabi (pa) ✅
+- Odia (or) ✅
+- Urdu (ur) ✅
+- Sanskrit (sa) ✅
+- Kashmiri (ks) ✅
+- Assamese (as) ✅
+
+### How to Contribute Translations
+
+1. Fork the repository
+2. Edit `strings.xml` files in `res/values-XX/`
+3. Test the translations in the app
+4. Create a Pull Request
+
+**Translation files**:
+- `app/src/main/res/values-hi/strings.xml` (Hindi)
+- `app/src/main/res/values-ta/strings.xml` (Tamil)
+- etc.
+
+## 📚 Documentation
+
+Documentation improvements are always welcome:
+
+- README improvements
+- Code comments
+- Wiki pages
+- Tutorial videos
+- Blog posts
+
+## 🎨 Style Guidelines
+
+### Kotlin Code Style
+
+Follow [Kotlin official style guide](https://kotlinlang.org/docs/coding-conventions.html):
 
 ```kotlin
-// ✅ GOOD: Clear, documented, safe
-class VoiceController(
-    private val context: Context,
-    private val deviceController: DeviceController
-) {
-    /**
-     * Start listening for voice commands
-     * @throws SecurityException if RECORD_AUDIO permission not granted
-     */
-    fun startListening() {
-        // Implementation
+// Good
+fun processVoiceCommand(command: String) {
+    val lowerCommand = command.lowercase()
+    when {
+        "wifi on" in lowerCommand -> enableWiFi()
+        else -> handleUnknownCommand(command)
     }
 }
 
-// ❌ BAD: Unclear, undocumented, unsafe
-class VC(c: Context, dc: DeviceController) {
-    fun start() {
-        // Implementation
+// Bad
+fun ProcessVoiceCommand(Command:String){
+val Lower_Command=Command.lowercase()
+if(Lower_Command.contains("wifi on")){EnableWiFi()}
+}
+```
+
+**Key points**:
+- Use `camelCase` for variables and functions
+- Use `PascalCase` for classes
+- Indent with 4 spaces
+- Max line length: 120 characters
+- Use meaningful names
+- Add KDoc comments for public APIs
+
+### XML Style
+
+```xml
+<!-- Good -->
+<Button
+    android:id="@+id/btnSettings"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="@string/settings" />
+
+<!-- Bad -->
+<Button android:id="@+id/button1" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Settings"/>
+```
+
+### Compose Style
+
+```kotlin
+@Composable
+fun SettingsButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text("Settings")
     }
 }
 ```
 
-### Best Practices:
+## 📝 Commit Messages
 
-1. **Null Safety**: Use Kotlin's null safety features
-   ```kotlin
-   // ✅ Good
-   val name: String? = user?.name ?: "Unknown"
+Use clear, descriptive commit messages:
+
+### Format
+
+```
+Type: Brief description (50 chars max)
+
+Detailed description if needed (wrap at 72 chars).
+Explain what and why, not how.
+
+Fixes #123
+```
+
+### Types
+
+- `Add:` New feature
+- `Fix:` Bug fix
+- `Update:` Update existing feature
+- `Refactor:` Code refactoring
+- `Docs:` Documentation changes
+- `Style:` Formatting changes
+- `Test:` Add or update tests
+- `Chore:` Maintenance tasks
+
+### Examples
+
+```
+Add: Voice command for setting alarms
+
+Implemented voice recognition for alarm setting.
+Users can now say "Set alarm for 7 AM".
+
+Fixes #45
+```
+
+```
+Fix: Crash when camera permission denied
+
+Added null check before accessing camera.
+Show error message to user.
+
+Fixes #78
+```
+
+## 🔄 Pull Request Process
+
+1. **Before creating PR**:
+   - Update README if needed
+   - Add tests
+   - Update documentation
+   - Test on real device
+   - Check for merge conflicts
+
+2. **PR Title**:
+   - Clear and descriptive
+   - Start with type prefix
+   - Example: `Add: Settings screen with language selector`
+
+3. **PR Description**:
+   ```markdown
+   ## Changes
+   - Added SettingsActivity
+   - Implemented language selector
+   - Added about page
    
-   // ❌ Bad
-   val name = user!!.name
+   ## Testing
+   - Tested on Samsung Galaxy S23 (Android 14)
+   - All 15 languages load correctly
+   - Settings persist after app restart
+   
+   ## Screenshots
+   [Attach screenshots]
+   
+   ## Related Issues
+   Fixes #123
+   Relates to #456
    ```
 
-2. **Coroutines**: Use for async operations
-   ```kotlin
-   // ✅ Good
-   lifecycleScope.launch {
-       val result = withContext(Dispatchers.IO) {
-           // Heavy operation
-       }
-   }
-   ```
+4. **Review Process**:
+   - Address reviewer feedback
+   - Keep PR focused (one feature per PR)
+   - Be responsive to comments
 
-3. **Error Handling**: Always handle exceptions
-   ```kotlin
-   // ✅ Good
-   try {
-       riskyOperation()
-   } catch (e: Exception) {
-       Log.e(TAG, "Error", e)
-       // Handle gracefully
-   }
-   ```
+5. **After Merge**:
+   - Delete your branch
+   - Pull latest changes
+   - Thank reviewers! 🙏
 
-4. **Logging**: Use appropriate log levels
-   ```kotlin
-   Log.d(TAG, "Debug info")
-   Log.i(TAG, "Info")
-   Log.w(TAG, "Warning")
-   Log.e(TAG, "Error", exception)
-   ```
+## 🧪 Testing
 
-5. **Resource Management**: Clean up properly
-   ```kotlin
-   override fun onDestroy() {
-       super.onDestroy()
-       cleanup()
-   }
-   ```
+### Before Submitting PR
 
-### Compose UI:
+**Manual Testing**:
+- [ ] App builds successfully
+- [ ] No compilation errors
+- [ ] App runs on device
+- [ ] Feature works as expected
+- [ ] No crashes
+- [ ] UI looks good
+- [ ] Performance is acceptable
+- [ ] Battery usage is reasonable
 
-```kotlin
-// ✅ Good: Reusable, documented
-@Composable
-fun SettingsCard(
-    icon: ImageVector,
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit
-) {
-    // Implementation
-}
+**Voice Testing**:
+- [ ] Voice commands recognized
+- [ ] TTS speaks correctly
+- [ ] Multiple languages work
+- [ ] Background listening works
 
-// ❌ Bad: Monolithic, hard to maintain
-@Composable
-fun SettingsScreen() {
-    // 500 lines of UI code...
-}
-```
+**Gesture Testing**:
+- [ ] Gestures detected correctly
+- [ ] Pointer moves smoothly
+- [ ] Click actions work
+- [ ] No false positives
 
-### Comments:
+## 🏆 Recognition
 
-- **What**: KDoc for public APIs
-- **Why**: Inline comments for complex logic
-- **How**: Code should be self-explanatory
+Contributors will be:
 
-```kotlin
-/**
- * Processes voice command and routes to appropriate handler
- * 
- * @param command The recognized voice command
- * @return Response message or null if command not recognized
- */
-fun processCommand(command: String): String? {
-    // Route unknown commands to AI chat
-    // This provides fallback for unrecognized voice input
-    return chatManager?.sendMessage(command)
-}
-```
+- Listed in README acknowledgments
+- Mentioned in release notes
+- Credited in About page
+- Given contributor badge (if applicable)
 
----
+## 📧 Questions?
 
-## 🔀 Pull Request Process
+Need help? Have questions?
 
-### Before Submitting:
-
-- ✅ Code builds without errors
-- ✅ All tests pass
-- ✅ No new warnings
-- ✅ Follows coding standards
-- ✅ Documentation updated
-- ✅ Commit messages are clear
-
-### Commit Message Format:
-
-```
-type(scope): Brief description
-
-Detailed explanation (optional)
-
-Fixes #123
-```
-
-**Types**:
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation
-- `style`: Code style (formatting)
-- `refactor`: Code refactoring
-- `test`: Adding tests
-- `chore`: Maintenance
-
-**Examples**:
-```
-feat(voice): Add support for custom wake words
-
-fix(gesture): Fix crash when camera permission denied
-
-docs(readme): Update installation instructions
-```
-
-### PR Template:
-
-Use this template when creating a PR:
-
-```markdown
-## Description
-[Brief description of changes]
-
-## Type of Change
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Breaking change
-- [ ] Documentation update
-
-## Testing
-- [ ] Tested on physical device
-- [ ] Tested on emulator
-- [ ] Added unit tests
-- [ ] All tests pass
-
-## Checklist
-- [ ] Code follows style guidelines
-- [ ] Self-reviewed code
-- [ ] Commented complex logic
-- [ ] Updated documentation
-- [ ] No new warnings
-
-## Screenshots (if applicable)
-[Add screenshots]
-
-## Related Issues
-Fixes #123
-```
-
-### Review Process:
-
-1. **Automated Checks**: CI/CD runs tests
-2. **Code Review**: Maintainers review code
-3. **Feedback**: Address review comments
-4. **Approval**: At least 1 approval required
-5. **Merge**: Squash and merge to main
-
----
-
-## 🤝 Community
-
-### Get Help:
-
-- **GitHub Discussions**: [Ask questions](https://github.com/david0154/david-ai/discussions)
-- **Issues**: [Report bugs](https://github.com/david0154/david-ai/issues)
-- **Email**: david@nexuzy.in
-
-### Stay Updated:
-
-- **Watch** the repository for updates
-- **Star** ⭐ to show support
-- **Follow** [@david0154](https://github.com/david0154)
-
-### Contributors:
-
-Check out our [Contributors](https://github.com/david0154/david-ai/graphs/contributors) page!
-
----
+- **Email**: [david@nexuzy.in](mailto:david@nexuzy.in)
+- **Issues**: [GitHub Issues](https://github.com/david0154/david-ai/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/david0154/david-ai/discussions)
 
 ## 📄 License
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+By contributing, you agree that your contributions will be licensed under the same license as the project (Apache 2.0).
 
 ---
 
-## 🙏 Thank You!
+Thank you for contributing to D.A.V.I.D AI! 🚀
 
-Every contribution makes D.A.V.I.D AI better. Thank you for being part of this journey! 🚀
-
----
-
-**Questions?** Email: david@nexuzy.in
+**© 2026 Nexuzy Tech Ltd.**
