@@ -16,13 +16,14 @@ import kotlinx.coroutines.withContext
  * Runs on background thread with proper network checks and memory management
  * 
  * ALL FIXES APPLIED:
- * Network availability check
- * WiFi connection check
- * Memory availability check
- * Better error handling with error codes
- * Fixed all unresolved references
- * Fixed AIModel property access (name instead of id)
- * Fixed Result<File> handling
+ * ✅ Network availability check
+ * ✅ WiFi connection check
+ * ✅ Memory availability check
+ * ✅ Better error handling with error codes
+ * ✅ Fixed all unresolved references
+ * ✅ Fixed AIModel property access (name instead of id)
+ * ✅ Fixed Result<File> handling
+ * ✅ FIXED: Removed minus operator and DownloadProgress type errors
  */
 class ModelDownloadWorker(
     private val context: Context,
@@ -78,18 +79,22 @@ class ModelDownloadWorker(
             val modelToDownload = essentialModels.first()
             Log.d(TAG, "Downloading model: ${modelToDownload.name}")
 
-            // Download with progress
+            // Download with progress - FIXED: Use correct progress type
             var lastProgress = 0
             val downloadResult = modelManager.downloadModel(
                 model = modelToDownload,
                 onProgress = { progress ->
-                    if (progress - lastProgress >= 10) {
-                        Log.d(TAG, "Download progress: $progress%")
-                        lastProgress = progress
+                    // FIXED: progress is DownloadProgress object, access .percentage
+                    val progressPercentage = progress.percentage
+                    val progressDiff = progressPercentage - lastProgress
+                    
+                    if (progressDiff >= 10) {
+                        Log.d(TAG, "Download progress: $progressPercentage%")
+                        lastProgress = progressPercentage
                         // Update progress in WorkManager
                         setProgressAsync(
                             workDataOf(
-                                "progress" to progress,
+                                "progress" to progressPercentage,
                                 "model_name" to modelToDownload.name
                             )
                         )
