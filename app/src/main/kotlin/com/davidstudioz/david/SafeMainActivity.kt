@@ -24,6 +24,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -61,6 +63,7 @@ import java.util.*
  * ✅ Privacy connected to EncryptionManager
  * ✅ Device control connected to DeviceController
  * ✅ ChatManager connected to VoiceController for AI responses
+ * ✅ FIXED: Use AutoMirrored icons for Chat and Send
  */
 @OptIn(ExperimentalMaterial3Api::class)
 class SafeMainActivity : ComponentActivity() {
@@ -205,7 +208,7 @@ class SafeMainActivity : ComponentActivity() {
                     NavigationBarItem(
                         selected = currentScreen == "chat",
                         onClick = { currentScreen = "chat" },
-                        icon = { Icon(Icons.Default.Chat, "Chat") },
+                        icon = { Icon(Icons.AutoMirrored.Filled.Chat, "Chat") },
                         label = { Text("Chat", fontSize = 10.sp) }
                     )
                     NavigationBarItem(
@@ -710,7 +713,7 @@ class SafeMainActivity : ComponentActivity() {
                     onClick = onSendMessage,
                     containerColor = Color(0xFF00E5FF)
                 ) {
-                    Icon(Icons.Default.Send, "Send", tint = Color.Black)
+                    Icon(Icons.AutoMirrored.Filled.Send, "Send", tint = Color.Black)
                 }
             }
         }
