@@ -87,11 +87,17 @@ android {
     }
 }
 
-// Compose Compiler configuration - Using correct SetProperty syntax
+// ✅ FIXED: Compose Compiler configuration - Modern syntax for Gradle 9.0+
 composeCompiler {
-    featureFlags.set(setOf(
-        "StrongSkipping"
-    ))
+    // Use enableStrongSkippingMode instead of featureFlags
+    enableStrongSkippingMode.set(true)
+    
+    // Optional: Enable stability configuration
+    stabilityConfigurationFile.set(rootProject.layout.projectDirectory.file("stability_config.conf"))
+    
+    // Optional: Generate reports
+    reportsDestination.set(layout.buildDirectory.dir("compose_compiler"))
+    metricsDestination.set(layout.buildDirectory.dir("compose_compiler"))
 }
 
 dependencies {
