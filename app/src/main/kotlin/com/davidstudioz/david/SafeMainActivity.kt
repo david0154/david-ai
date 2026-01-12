@@ -100,7 +100,7 @@ class SafeMainActivity : ComponentActivity() {
         val scope = rememberCoroutineScope()
 
         Scaffold(
-            topBar {
+            topBar = {
                 TopAppBar(
                     title = {
                         Column {
