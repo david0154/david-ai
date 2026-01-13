@@ -253,7 +253,7 @@ class ChatManager(private val context: Context) {
             
             // Identity
             lowerInput.contains("who are you") || lowerInput.contains("what are you") || lowerInput.contains("your name") -> {
-                "I'm D.A.V.I.D (Digital Assistant with Voice Interaction and Device control), an advanced AI assistant created by David Studioz. I'm here to make your life easier!"
+                "I'm D.A.V.I.D (Digital Assistant with Voice & Intelligent Decisions), an advanced AI assistant created by Neexuzy Tech. I'm here to make your life easier!"
             }
             
             // Questions
