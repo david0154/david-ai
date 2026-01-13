@@ -44,12 +44,12 @@ enum class DownloadStatus {
 }
 
 /**
- * ModelManager - COMPREHENSIVE FIX
- * ✅ FIXED: Download status verification
- * ✅ FIXED: Pause/Resume download functionality
- * ✅ FIXED: Model loading verification
- * ✅ FIXED: Language model caching
- * ✅ FIXED: Network interruption handling
+ * ModelManager - WITH PAUSE/RESUME & VERIFICATION
+ * ✅ Pause/resume downloads with HTTP Range requests
+ * ✅ Download state persistence (resume after app restart)
+ * ✅ Model file integrity validation
+ * ✅ Resume from partial downloads
+ * ✅ Better error handling
  */
 class ModelManager(private val context: Context) {
     
@@ -64,10 +64,11 @@ class ModelManager(private val context: Context) {
         
     private val modelsDir = File(context.filesDir, "david_models")
     private val tempDir = File(context.cacheDir, "david_temp_downloads") // NEW: Temp downloads
+    private val stateDir = File(context.filesDir, "david_state") // NEW: Download state
     
     private val activeDownloads = mutableMapOf<String, Job>()
     private val downloadProgress = mutableMapOf<String, DownloadProgress>()
-    private val pausedDownloads = mutableSetOf<String>() // NEW: Track paused downloads
+    private val pauseFlags = mutableMapOf<String, Boolean>() // NEW: Pause control flags
     
     init {
         try {
@@ -79,9 +80,13 @@ class ModelManager(private val context: Context) {
                 tempDir.mkdirs()
                 Log.d(TAG, "Created temp directory: ${tempDir.absolutePath}")
             }
+            if (!stateDir.exists()) {
+                stateDir.mkdirs()
+                Log.d(TAG, "Created state directory: ${stateDir.absolutePath}")
+            }
             
-            // Load saved download progress
-            loadDownloadProgress()
+            // Load saved download states
+            loadDownloadStates()
         } catch (e: Exception) {
             Log.e(TAG, "Error creating directories", e)
         }
@@ -244,9 +249,6 @@ class ModelManager(private val context: Context) {
         return getAllLanguages().contains(language)
     }
     
-    /**
-     * NEW: Check if language model is downloaded and valid
-     */
     fun isLanguageModelDownloaded(): Boolean {
         val modelPath = getLanguageModelPath()
         return modelPath != null && modelPath.exists() && modelPath.length() > 1024 * 1024
@@ -259,7 +261,7 @@ class ModelManager(private val context: Context) {
     }
     
     /**
-     * FIXED: Download model with pause/resume support
+     * ✅ Download model with PAUSE/RESUME support
      */
     suspend fun downloadModel(
         model: AIModel,
@@ -270,11 +272,15 @@ class ModelManager(private val context: Context) {
             
             // Check if paused download exists
             val tempFile = File(tempDir, "${model.type}_${model.language}_temp")
-            val resumeFrom = if (tempFile.exists() && pausedDownloads.contains(model.name)) {
-                tempFile.length()
+            val resumeFrom = if (tempFile.exists()) {
+                val state = getDownloadState(model.name)
+                state?.downloadedBytes ?: tempFile.length()
             } else {
                 0L
             }
+            
+            // Reset pause flag
+            pauseFlags[model.name] = false
             
             // Initial progress
             val initialProgress = DownloadProgress(
@@ -313,10 +319,10 @@ class ModelManager(private val context: Context) {
                 .url(model.url)
                 .header("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36")
             
-            // Add range header for resume
+            // ✅ Add HTTP Range header for resume support
             if (resumeFrom > 0) {
                 requestBuilder.header("Range", "bytes=$resumeFrom-")
-                Log.d(TAG, "Resuming download from byte: $resumeFrom")
+                Log.d(TAG, "📂 Resuming download from byte: $resumeFrom")
             }
             
             val request = requestBuilder.build()
@@ -331,6 +337,7 @@ class ModelManager(private val context: Context) {
             val totalBytes = if (response.code == 206) resumeFrom + contentLength else contentLength
             val totalMB = totalBytes / (1024f * 1024f)
             
+            // ✅ Append to existing file if resuming
             FileOutputStream(tempFile, resumeFrom > 0).use { output ->
                 body.byteStream().use { input ->
                     val buffer = ByteArray(8192)
@@ -339,9 +346,9 @@ class ModelManager(private val context: Context) {
                     var lastProgressUpdate = 0
                     
                     while (input.read(buffer).also { read = it } != -1) {
-                        // Check if download is paused
-                        if (pausedDownloads.contains(model.name)) {
-                            Log.d(TAG, "Download paused: ${model.name}")
+                        // ✅ Check pause flag
+                        if (pauseFlags[model.name] == true) {
+                            Log.d(TAG, "⏸️ Download paused: ${model.name}")
                             val pausedProgress = DownloadProgress(
                                 model.name, 
                                 ((downloaded * 100) / totalBytes).toInt(),
@@ -353,7 +360,7 @@ class ModelManager(private val context: Context) {
                             )
                             downloadProgress[model.name] = pausedProgress
                             withContext(Dispatchers.Main) { onProgress(pausedProgress) }
-                            saveDownloadProgress()
+                            saveDownloadState(model.name, pausedProgress)
                             return@withContext Result.failure(Exception("Download paused"))
                         }
                         
@@ -379,9 +386,9 @@ class ModelManager(private val context: Context) {
                                     onProgress(progressUpdate)
                                 }
                                 
-                                // Save progress periodically
+                                // ✅ Save state every 10%
                                 if (progress % 10 == 0) {
-                                    saveDownloadProgress()
+                                    saveDownloadState(model.name, progressUpdate)
                                 }
                             }
                         }
@@ -397,10 +404,10 @@ class ModelManager(private val context: Context) {
                 tempFile.delete()
             }
             
-            // Verify downloaded file
+            // ✅ Verify downloaded file
             if (!isModelFileValid(modelFile)) {
                 modelFile.delete()
-                throw Exception("Downloaded file is corrupted")
+                throw Exception("Downloaded file is corrupted or incomplete")
             }
             
             // Completion
@@ -408,9 +415,8 @@ class ModelManager(private val context: Context) {
                 model.name, 100, totalMB, totalMB, DownloadStatus.COMPLETED
             )
             downloadProgress[model.name] = completeProgress
-            pausedDownloads.remove(model.name)
             withContext(Dispatchers.Main) { onProgress(completeProgress) }
-            saveDownloadProgress()
+            clearDownloadState(model.name)
             
             Log.d(TAG, "✅ Downloaded: ${model.name} → ${modelFile.absolutePath} (${modelFile.length() / (1024 * 1024)}MB)")
             Result.success(modelFile)
@@ -424,34 +430,33 @@ class ModelManager(private val context: Context) {
             )
             downloadProgress[model.name] = failedProgress
             withContext(Dispatchers.Main) { onProgress(failedProgress) }
-            saveDownloadProgress()
             
             Result.failure(e)
         }
     }
     
     /**
-     * NEW: Pause active download
+     * ✅ Pause active download
      */
     fun pauseDownload(modelName: String) {
-        pausedDownloads.add(modelName)
-        activeDownloads[modelName]?.cancel()
-        Log.d(TAG, "Download pause requested: $modelName")
+        pauseFlags[modelName] = true
+        Log.d(TAG, "🛑 Pause requested: $modelName")
     }
     
     /**
-     * NEW: Resume paused download
+     * ✅ Resume paused download
      */
     suspend fun resumeDownload(
         model: AIModel,
         onProgress: (DownloadProgress) -> Unit = {}
     ): Result<File> {
-        pausedDownloads.remove(model.name)
+        pauseFlags[model.name] = false
+        Log.d(TAG, "▶️ Resuming download: ${model.name}")
         return downloadModel(model, onProgress)
     }
     
     /**
-     * NEW: Validate model file integrity
+     * ✅ Validate model file integrity
      */
     private fun isModelFileValid(file: File): Boolean {
         return try {
@@ -465,35 +470,78 @@ class ModelManager(private val context: Context) {
     }
     
     /**
-     * NEW: Save download progress to preferences
+     * ✅ Save download state to disk
      */
-    private fun saveDownloadProgress() {
+    private fun saveDownloadState(modelName: String, progress: DownloadProgress) {
         try {
-            val prefs = context.getSharedPreferences("david_downloads", Context.MODE_PRIVATE)
-            val editor = prefs.edit()
-            
-            downloadProgress.forEach { (name, progress) ->
-                editor.putInt("${name}_progress", progress.progress)
-                editor.putLong("${name}_bytes", progress.downloadedBytes)
-                editor.putString("${name}_status", progress.status.name)
-            }
-            
-            editor.apply()
+            val stateFile = File(stateDir, "${modelName.replace(" ", "_")}.state")
+            stateFile.writeText(
+                "${progress.downloadedBytes}|${progress.progress}|${progress.totalMB}"
+            )
+            Log.d(TAG, "💾 Saved state: $modelName at ${progress.downloadedBytes} bytes")
         } catch (e: Exception) {
-            Log.e(TAG, "Error saving download progress", e)
+            Log.e(TAG, "Error saving download state", e)
         }
     }
     
     /**
-     * NEW: Load saved download progress
+     * ✅ Get saved download state
      */
-    private fun loadDownloadProgress() {
-        try {
-            val prefs = context.getSharedPreferences("david_downloads", Context.MODE_PRIVATE)
-            // Progress loaded and available for resume
-            Log.d(TAG, "Download progress loaded")
+    fun getDownloadState(modelName: String): DownloadProgress? {
+        return try {
+            val stateFile = File(stateDir, "${modelName.replace(" ", "_")}.state")
+            if (stateFile.exists()) {
+                val parts = stateFile.readText().split("|")
+                if (parts.size == 3) {
+                    DownloadProgress(
+                        modelName,
+                        parts[1].toInt(),
+                        parts[0].toLong() / (1024f * 1024f),
+                        parts[2].toFloat(),
+                        DownloadStatus.PAUSED,
+                        canResume = true,
+                        downloadedBytes = parts[0].toLong()
+                    )
+                } else null
+            } else null
         } catch (e: Exception) {
-            Log.e(TAG, "Error loading download progress", e)
+            Log.e(TAG, "Error loading download state", e)
+            null
+        }
+    }
+    
+    /**
+     * ✅ Load all saved download states
+     */
+    private fun loadDownloadStates() {
+        try {
+            stateDir.listFiles()?.forEach { file ->
+                if (file.extension == "state") {
+                    val modelName = file.nameWithoutExtension.replace("_", " ")
+                    val state = getDownloadState(modelName)
+                    if (state != null) {
+                        downloadProgress[modelName] = state
+                        Log.d(TAG, "📂 Loaded state: $modelName at ${state.progress}%")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading download states", e)
+        }
+    }
+    
+    /**
+     * ✅ Clear saved download state
+     */
+    private fun clearDownloadState(modelName: String) {
+        try {
+            val stateFile = File(stateDir, "${modelName.replace(" ", "_")}.state")
+            if (stateFile.exists()) {
+                stateFile.delete()
+                Log.d(TAG, "🗑️ Cleared state: $modelName")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error clearing download state", e)
         }
     }
     
@@ -529,11 +577,13 @@ class ModelManager(private val context: Context) {
     fun cancelDownload(modelName: String) {
         activeDownloads[modelName]?.cancel()
         activeDownloads.remove(modelName)
-        pausedDownloads.remove(modelName)
+        pauseFlags[modelName] = true
         
         downloadProgress[modelName] = downloadProgress[modelName]?.copy(
             status = DownloadStatus.CANCELLED
         ) ?: return
+        
+        clearDownloadState(modelName)
     }
     
     private fun parseSizeMB(size: String): Float {
