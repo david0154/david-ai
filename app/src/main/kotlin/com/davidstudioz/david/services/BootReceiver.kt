@@ -10,6 +10,7 @@ import com.davidstudioz.david.voice.HotWordDetectionService
 /**
  * ✅ BootReceiver - Auto-start services on device boot
  * Enables always-on voice assistant functionality
+ * Supports multiple manufacturer-specific boot actions
  */
 class BootReceiver : BroadcastReceiver() {
     
@@ -18,9 +19,11 @@ class BootReceiver : BroadcastReceiver() {
         
         when (intent.action) {
             Intent.ACTION_BOOT_COMPLETED,
-            Intent.ACTION_QUICKBOOT_POWERON,
-            "android.intent.action.MY_PACKAGE_REPLACED" -> {
-                Log.d(TAG, "Boot completed - starting background services")
+            ACTION_QUICKBOOT_POWERON,
+            ACTION_HTC_QUICKBOOT_POWERON,
+            ACTION_XIAOMI_QUICKBOOT_POWERON,
+            ACTION_MY_PACKAGE_REPLACED -> {
+                Log.d(TAG, "Boot completed (${intent.action}) - starting background services")
                 
                 try {
                     // Check if hot word service is enabled
@@ -43,5 +46,11 @@ class BootReceiver : BroadcastReceiver() {
     
     companion object {
         private const val TAG = "BootReceiver"
+        
+        // Manufacturer-specific boot actions (not in Android SDK)
+        private const val ACTION_QUICKBOOT_POWERON = "android.intent.action.QUICKBOOT_POWERON"
+        private const val ACTION_HTC_QUICKBOOT_POWERON = "com.htc.intent.action.QUICKBOOT_POWERON"
+        private const val ACTION_XIAOMI_QUICKBOOT_POWERON = "android.intent.action.REBOOT"
+        private const val ACTION_MY_PACKAGE_REPLACED = "android.intent.action.MY_PACKAGE_REPLACED"
     }
 }
