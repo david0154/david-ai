@@ -24,11 +24,13 @@ import com.davidstudioz.david.language.LanguageManager
 import com.davidstudioz.david.storage.EncryptionManager
 
 /**
- * SettingsActivity - COMPREHENSIVE FIX
- * ✅ FIXED: Privacy & About page navigation
- * ✅ FIXED: Accessibility service settings
+ * SettingsActivity - COMPREHENSIVE FIX v2.0
+ * ✅ FIXED: Privacy & About page navigation (issue #11)
+ * ✅ FIXED: Accessibility service settings (issue #8)
  * ✅ FIXED: All settings clickable and functional
- * ✅ FIXED: Proper intent handling
+ * ✅ FIXED: Proper intent handling with fallbacks
+ * ✅ NEW: User-friendly error messages
+ * ✅ NEW: Accessibility dialog with clear instructions
  */
 @OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : ComponentActivity() {
@@ -117,7 +119,7 @@ class SettingsActivity : ComponentActivity() {
     }
     
     /**
-     * NEW: Handle settings item clicks
+     * FIXED: Handle settings item clicks with proper navigation (issue #11)
      */
     private fun handleSettingsClick(section: SettingsSection, onShowAccessibility: () -> Unit) {
         try {
@@ -153,7 +155,7 @@ class SettingsActivity : ComponentActivity() {
     }
     
     /**
-     * NEW: Open notification settings
+     * Open notification settings
      */
     private fun openNotificationSettings() {
         try {
@@ -161,55 +163,95 @@ class SettingsActivity : ComponentActivity() {
                 putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
             }
             startActivity(intent)
+            Log.d(TAG, "Opened notification settings")
         } catch (e: Exception) {
             Log.e(TAG, "Error opening notification settings", e)
         }
     }
     
     /**
-     * FIXED: Open privacy policy page
+     * FIXED: Open privacy policy page with fallback (issue #11)
      */
     private fun openPrivacyPage() {
         try {
+            Log.d(TAG, "Attempting to open PrivacyActivity...")
+            
             // Try to open PrivacyActivity if it exists
-            val intent = Intent(this, PrivacyActivity::class.java)
-            startActivity(intent)
-        } catch (e: Exception) {
-            // Fallback: Open privacy markdown file or URL
-            Log.e(TAG, "PrivacyActivity not found, using fallback", e)
             try {
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    data = Uri.parse("https://github.com/david0154/david-ai/blob/main/PRIVACY_POLICY.md")
-                }
+                val intent = Intent(this, PrivacyActivity::class.java)
                 startActivity(intent)
+                Log.d(TAG, "✅ Opened PrivacyActivity successfully")
+                return
+            } catch (e: Exception) {
+                Log.w(TAG, "PrivacyActivity not found, using fallback", e)
+            }
+            
+            // Fallback: Open privacy markdown file in browser
+            Log.d(TAG, "Opening privacy policy URL as fallback...")
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                data = Uri.parse("https://github.com/david0154/david-ai/blob/main/PRIVACY_POLICY.md")
+            }
+            startActivity(intent)
+            Log.d(TAG, "✅ Opened privacy policy URL successfully")
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Error opening privacy page", e)
+            // Show error message to user
+            try {
+                android.widget.Toast.makeText(
+                    this,
+                    "Unable to open privacy policy. Please visit GitHub repository.",
+                    android.widget.Toast.LENGTH_LONG
+                ).show()
             } catch (e2: Exception) {
-                Log.e(TAG, "Error opening privacy URL", e2)
+                Log.e(TAG, "Error showing toast", e2)
             }
         }
     }
     
     /**
-     * FIXED: Open about page
+     * FIXED: Open about page with fallback (issue #11)
      */
     private fun openAboutPage() {
         try {
+            Log.d(TAG, "Attempting to open AboutActivity...")
+            
             // Try to open AboutActivity if it exists
-            val intent = Intent(this, AboutActivity::class.java)
-            startActivity(intent)
-        } catch (e: Exception) {
-            // Fallback: Open GitHub README
-            Log.e(TAG, "AboutActivity not found, using fallback", e)
             try {
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    data = Uri.parse("https://github.com/david0154/david-ai")
-                }
+                val intent = Intent(this, AboutActivity::class.java)
                 startActivity(intent)
+                Log.d(TAG, "✅ Opened AboutActivity successfully")
+                return
+            } catch (e: Exception) {
+                Log.w(TAG, "AboutActivity not found, using fallback", e)
+            }
+            
+            // Fallback: Open GitHub README
+            Log.d(TAG, "Opening about page URL as fallback...")
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                data = Uri.parse("https://github.com/david0154/david-ai")
+            }
+            startActivity(intent)
+            Log.d(TAG, "✅ Opened about page URL successfully")
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Error opening about page", e)
+            // Show error message to user
+            try {
+                android.widget.Toast.makeText(
+                    this,
+                    "Unable to open about page. Please visit GitHub repository.",
+                    android.widget.Toast.LENGTH_LONG
+                ).show()
             } catch (e2: Exception) {
-                Log.e(TAG, "Error opening about URL", e2)
+                Log.e(TAG, "Error showing toast", e2)
             }
         }
     }
     
+    /**
+     * NEW: Accessibility service dialog with clear instructions (issue #8)
+     */
     @Composable
     private fun AccessibilityDialog(onDismiss: () -> Unit) {
         AlertDialog(
@@ -217,29 +259,45 @@ class SettingsActivity : ComponentActivity() {
             title = {
                 Text(
                     "Enable Accessibility Service",
-                    color = Color(0xFF00E5FF)
+                    color = Color(0xFF00E5FF),
+                    fontWeight = FontWeight.Bold
                 )
             },
             text = {
                 Column {
                     Text(
                         "D.A.V.I.D needs accessibility service to:",
-                        color = Color.White
+                        color = Color.White,
+                        fontWeight = FontWeight.Medium
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        "• Enable background voice activation\n" +
-                        "• Control device with gestures\n" +
+                        "• Enable always-on voice activation\n" +
+                        "• Control device with hand gestures\n" +
                         "• Perform actions without opening the app\n" +
-                        "• Scroll, swipe, and navigate for you",
-                        fontSize = 12.sp,
-                        color = Color(0xFF9CA3AF)
+                        "• Scroll, swipe, and navigate for you\n" +
+                        "• Work in the background",
+                        fontSize = 13.sp,
+                        color = Color(0xFF9CA3AF),
+                        lineHeight = 20.sp
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        "⚠️ Your privacy is protected. D.A.V.I.D does not collect or transmit any data.",
-                        fontSize = 10.sp,
-                        color = Color(0xFF00FF88)
+                        "🛡️ Your privacy is protected. D.A.V.I.D does not collect or transmit any data. All processing is done locally on your device.",
+                        fontSize = 11.sp,
+                        color = Color(0xFF00FF88),
+                        lineHeight = 16.sp
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "Steps to enable:\n" +
+                        "1. Tap 'Open Settings' below\n" +
+                        "2. Find 'D.A.V.I.D' in the list\n" +
+                        "3. Toggle the switch to ON\n" +
+                        "4. Confirm the permission",
+                        fontSize = 11.sp,
+                        color = Color(0xFF64B5F6),
+                        lineHeight = 16.sp
                     )
                 }
             },
@@ -253,7 +311,7 @@ class SettingsActivity : ComponentActivity() {
                         containerColor = Color(0xFF00E5FF)
                     )
                 ) {
-                    Text("Open Settings", color = Color.Black)
+                    Text("Open Settings", color = Color.Black, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -266,14 +324,24 @@ class SettingsActivity : ComponentActivity() {
     }
     
     /**
-     * NEW: Open accessibility settings
+     * FIXED: Open accessibility settings (issue #8)
      */
     private fun openAccessibilitySettings() {
         try {
             val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
             startActivity(intent)
+            Log.d(TAG, "✅ Opened accessibility settings")
         } catch (e: Exception) {
             Log.e(TAG, "Error opening accessibility settings", e)
+            try {
+                android.widget.Toast.makeText(
+                    this,
+                    "Unable to open accessibility settings. Please find it manually in your device settings.",
+                    android.widget.Toast.LENGTH_LONG
+                ).show()
+            } catch (e2: Exception) {
+                Log.e(TAG, "Error showing toast", e2)
+            }
         }
     }
     
@@ -308,55 +376,66 @@ class SettingsActivity : ComponentActivity() {
     }
     
     /**
-     * FIXED: Build settings sections with proper IDs
+     * Build settings sections with proper IDs
      */
     private fun getSettingsSections(): List<SettingsSection> {
-        val downloadedLanguages = languageManager.getDownloadedLanguages()
+        val downloadedLanguages = try {
+            languageManager.getDownloadedLanguages()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting languages", e)
+            emptyList()
+        }
+        
         val languageCount = downloadedLanguages.size
-        val encryptionStatus = if (encryptionManager.isEncryptionEnabled()) "Enabled" else "Disabled"
+        val encryptionStatus = try {
+            if (encryptionManager.isEncryptionEnabled()) "Enabled" else "Disabled"
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking encryption", e)
+            "Unknown"
+        }
         
         return listOf(
             SettingsSection(
                 "languages",
                 "🌐",
                 "Languages",
-                "$languageCount languages available"
+                "$languageCount of 15 languages available"
             ),
             SettingsSection(
                 "voice",
                 "🎤",
                 "Voice Settings",
-                "Voice recognition and TTS configuration"
+                "Voice recognition and text-to-speech configuration"
             ),
             SettingsSection(
                 "gesture",
                 "✋",
                 "Gesture Settings",
-                "Gesture recognition sensitivity and controls"
+                "Hand gesture recognition sensitivity and controls"
             ),
             SettingsSection(
                 "notifications",
                 "🔔",
                 "Notifications",
-                "Manage notification preferences"
+                "Manage app notification preferences"
             ),
             SettingsSection(
                 "accessibility",
                 "♿",
                 "Accessibility Service",
-                "Enable background voice and gesture control"
+                "Enable background voice and gesture control (tap for instructions)"
             ),
             SettingsSection(
                 "privacy",
                 "🔒",
                 "Privacy & Security",
-                "Data encryption: $encryptionStatus"
+                "Data encryption: $encryptionStatus | View privacy policy"
             ),
             SettingsSection(
                 "about",
                 "ℹ️",
                 "About D.A.V.I.D",
-                "Version 1.0.0 - AI Assistant by David Studioz"
+                "Version 1.0.0 | AI Assistant by David Studioz"
             )
         )
     }
