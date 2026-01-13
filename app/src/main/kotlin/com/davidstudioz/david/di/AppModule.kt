@@ -37,8 +37,9 @@ object AppModule {
     
     @Singleton
     @Provides
-    fun provideWebSearchEngine(): WebSearchEngine {
-        return WebSearchEngine()
+    fun provideWebSearchEngine(@ApplicationContext context: Context): WebSearchEngine {
+        // ✅ FIXED: WebSearchEngine now receives context parameter
+        return WebSearchEngine(context)
     }
     
     @Singleton
