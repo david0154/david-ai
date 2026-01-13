@@ -7,6 +7,7 @@ import com.davidstudioz.david.device.DeviceController
 import com.davidstudioz.david.models.ModelManager
 import com.davidstudioz.david.voice.VoiceCommandProcessor
 import com.davidstudioz.david.web.WebSearchEngine
+import com.davidstudioz.david.weather.WeatherService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -35,7 +36,10 @@ class ChatManager(private val context: Context) {
     // Real LLM inference engine
     private val llmEngine = LLMInferenceEngine(context)
 
-    // ✅ NEW: Web search engine
+    // ✅ NEW: Weather service for actual weather data
+    private val weatherService = WeatherService(context)
+
+    // Web search engine
     private val webSearch = WebSearchEngine(context)
 
     init {
@@ -63,7 +67,7 @@ class ChatManager(private val context: Context) {
                     Log.w(TAG, "⚠️ LLM model file found but failed to load")
                 }
             } else {
-                Log.w(TAG, "⚠️ No LLM model downloaded - using smart fallback + web search")
+                Log.w(TAG, "⚠️ No LLM model downloaded - using smart fallback + weather + web search")
                 isModelLoaded = false
             }
         } catch (e: Exception) {
@@ -83,8 +87,11 @@ class ChatManager(private val context: Context) {
 
             val response = if (isCommand(userMessage)) {
                 executeCommand(userMessage)
+            } else if (weatherService.isWeatherQuery(userMessage)) {
+                // ✅ Use weather service for actual weather data
+                getWeather(userMessage)
             } else if (webSearch.needsWebSearch(userMessage)) {
-                // ✅ Use web search for current information
+                // Use web search for current information
                 searchWeb(userMessage)
             } else if (isModelReady()) {
                 // Use real LLM inference
@@ -94,12 +101,15 @@ class ChatManager(private val context: Context) {
                 generateSmartFallback(userMessage)
             }
 
-            val aiMsg = ChatMessage(text = response, isUser = false)
+            // ✅ Filter internal code from response
+            val cleanResponse = filterInternalCode(response)
+
+            val aiMsg = ChatMessage(text = cleanResponse, isUser = false)
             messages.add(aiMsg)
 
             saveChatHistory()
 
-            Log.d(TAG, "✅ Message: '$userMessage' -> '$response'")
+            Log.d(TAG, "✅ Message: '$userMessage' -> '$cleanResponse'")
             aiMsg
         } catch (e: Exception) {
             Log.e(TAG, "Error sending message", e)
@@ -113,7 +123,86 @@ class ChatManager(private val context: Context) {
     }
 
     /**
-     * ✅ NEW: Search the web for current information
+     * ✅ NEW: Get actual weather using WeatherService
+     */
+    private suspend fun getWeather(query: String): String {
+        return try {
+            Log.d(TAG, "Getting weather for: $query")
+            
+            val location = weatherService.extractLocation(query)
+            val result = weatherService.getCurrentWeather(location)
+            
+            if (result.success) {
+                result.message
+            } else {
+                result.message
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Weather error", e)
+            "I couldn't get the weather right now. Please check your internet connection and try again."
+        }
+    }
+
+    /**
+     * ✅ NEW: Filter internal code, debug text, and technical terms from responses
+     */
+    private fun filterInternalCode(text: String): String {
+        var filtered = text
+        
+        // Remove common code patterns
+        val codePatterns = listOf(
+            "```.*?```".toRegex(RegexOption.DOT_MATCHES_ALL), // Code blocks
+            "\\{.*?\\}".toRegex(), // JSON objects
+            "\\[.*?\\]".toRegex(), // Arrays (but keep citations)
+            "<.*?>".toRegex(), // XML/HTML tags
+            "\\$\\{.*?\\}".toRegex(), // Template strings
+            "function\\s+\\w+\\s*\\(".toRegex(), // Function declarations
+            "class\\s+\\w+".toRegex(), // Class declarations
+            "import\\s+.*".toRegex(), // Import statements
+            "package\\s+.*".toRegex(), // Package declarations
+            "@\\w+".toRegex(), // Annotations
+            "//.*".toRegex(), // Single line comments
+            "/\\*.*?\\*/".toRegex(RegexOption.DOT_MATCHES_ALL) // Multi-line comments
+        )
+        
+        for (pattern in codePatterns) {
+            filtered = filtered.replace(pattern, "")
+        }
+        
+        // Remove debug/log prefixes
+        val debugPatterns = listOf(
+            "^(DEBUG|INFO|WARN|ERROR|Log\\.d|Log\\.i|Log\\.w|Log\\.e):.*".toRegex(RegexOption.MULTILINE),
+            "^\\[.*?\\]\\s*".toRegex(RegexOption.MULTILINE), // [TAG] prefixes
+            "✅|❌|⚠️|\ud83d\udca1".toRegex() // Status emojis that might leak from logs
+        )
+        
+        for (pattern in debugPatterns) {
+            filtered = filtered.replace(pattern, "")
+        }
+        
+        // Remove technical variable names and syntax
+        filtered = filtered
+            .replace("\\bval\\s+\\w+\\s*=".toRegex(), "")
+            .replace("\\bvar\\s+\\w+\\s*=".toRegex(), "")
+            .replace("\\breturn\\s+".toRegex(), "")
+            .replace("\\bnull\\b".toRegex(), "")
+            .replace("\\bundefined\\b".toRegex(), "")
+        
+        // Clean up multiple spaces and newlines
+        filtered = filtered
+            .replace("\\s+".toRegex(), " ")
+            .trim()
+        
+        // If filtering removed everything, return a safe fallback
+        if (filtered.isBlank() || filtered.length < 10) {
+            return "I'm here to help! What would you like to know?"
+        }
+        
+        return filtered
+    }
+
+    /**
+     * Search the web for current information
      */
     private suspend fun searchWeb(query: String): String {
         return try {
@@ -264,7 +353,7 @@ class ChatManager(private val context: Context) {
 
         // 3. CAPABILITIES
         if (lower.contains("what can you do") || lower.contains("help") || lower.contains("capabilities")) {
-            return "I can:\n• Control device (WiFi, Bluetooth, flashlight, volume)\n• Make calls & send messages\n• Search the web for current info\n• Check weather & time\n• Answer questions\n• Set reminders\n• Open apps\n• And much more! Just ask!"
+            return "I can:\n• Control device (WiFi, Bluetooth, flashlight, volume)\n• Make calls & send messages\n• Get real-time weather\n• Search the web for current info\n• Check time & date\n• Answer questions\n• Set reminders\n• Open apps\n• And much more! Just ask!"
         }
 
         // 4. TIME & DATE
@@ -287,17 +376,12 @@ class ChatManager(private val context: Context) {
             return "Checking your device storage..."
         }
 
-        // 6. WEATHER
-        if (lower.contains("weather")) {
-            return "Let me check the weather for you..."
-        }
-
-        // 7. MATH CALCULATIONS
+        // 6. MATH CALCULATIONS
         if (lower.matches(".*(\\d+\\s*[+\\-*/]\\s*\\d+).*".toRegex())) {
             return calculateMath(lower)
         }
 
-        // 8. THANK YOU
+        // 7. THANK YOU
         if (lower.matches(".*(thank|thanks|thx).*".toRegex())) {
             return listOf(
                 "You're welcome!",
@@ -307,18 +391,18 @@ class ChatManager(private val context: Context) {
             ).random()
         }
 
-        // 9. GOODBYE
+        // 8. GOODBYE
         if (lower.matches(".*(bye|goodbye|see you|cya).*".toRegex())) {
             return "Goodbye! Let me know if you need anything else!"
         }
 
-        // 10. GENERAL KNOWLEDGE - Science
+        // 9. GENERAL KNOWLEDGE - Science
         if (lower.contains("speed of light")) return "The speed of light is approximately 299,792,458 meters per second."
         if (lower.contains("gravity")) return "Gravity is the force that attracts objects toward each other. On Earth, it's about 9.8 m/s²."
         if (lower.contains("earth") && lower.contains("sun")) return "Earth is about 93 million miles (150 million km) from the Sun."
         if (lower.contains("planets")) return "There are 8 planets in our solar system: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune."
 
-        // 11. GENERAL KNOWLEDGE - Geography
+        // 10. GENERAL KNOWLEDGE - Geography
         if (lower.contains("capital of india")) return "The capital of India is New Delhi."
         if (lower.contains("capital of usa") || lower.contains("capital of america")) return "The capital of the USA is Washington, D.C."
         if (lower.contains("capital of france")) return "The capital of France is Paris."
@@ -326,7 +410,7 @@ class ChatManager(private val context: Context) {
         if (lower.contains("largest country")) return "Russia is the largest country by land area."
         if (lower.contains("smallest country")) return "Vatican City is the smallest country in the world."
 
-        // 12. JOKES
+        // 11. JOKES
         if (lower.contains("joke") || lower.contains("funny")) {
             return listOf(
                 "Why don't programmers like nature? It has too many bugs!",
@@ -335,17 +419,17 @@ class ChatManager(private val context: Context) {
             ).random()
         }
 
-        // 13. COMPLIMENTS
+        // 12. COMPLIMENTS
         if (lower.contains("smart") || lower.contains("intelligent") || lower.contains("amazing")) {
             return "Thank you! I try my best to help you!"
         }
 
-        // 14. QUESTIONS ABOUT AI
+        // 13. QUESTIONS ABOUT AI
         if (lower.contains("what is ai") || lower.contains("artificial intelligence")) {
             return "AI (Artificial Intelligence) is technology that enables machines to learn, reason, and make decisions like humans. I'm an example of AI, created by Nexuzy Tech!"
         }
 
-        // 15. YES/NO RESPONSES
+        // 14. YES/NO RESPONSES
         if (lower == "yes" || lower == "yeah" || lower == "yep") {
             return "Great! What would you like me to do?"
         }
@@ -353,25 +437,25 @@ class ChatManager(private val context: Context) {
             return "Okay, no problem. Let me know if you need anything else!"
         }
 
-        // 16. SORRY/APOLOGY
+        // 15. SORRY/APOLOGY
         if (lower.contains("sorry")) {
             return "No worries! How can I help you?"
         }
 
-        // 17. LOVE/LIKE
+        // 16. LOVE/LIKE
         if (lower.contains("i love you") || lower.contains("love you")) {
             return "Aww, that's sweet! I'm here to help you anytime!"
         }
 
-        // 18. DEFAULT SMART RESPONSES
+        // 17. DEFAULT SMART RESPONSES
         return when {
-            input.endsWith("?") -> "That's a great question! I can help with device control, web searches, time, weather, and more. What do you need?"
+            input.endsWith("?") -> "That's a great question! I can help with device control, weather, web searches, time, and more. What do you need?"
             input.length < 3 -> "I'm listening. What would you like me to do?"
-            lower.contains("how") -> "Let me help you with that. I can control your device, search the web, and answer questions."
+            lower.contains("how") -> "Let me help you with that. I can control your device, get weather, search the web, and answer questions."
             lower.contains("why") -> "That's a thoughtful question. I can search the web for current information if you need!"
             lower.contains("when") -> "I can help you check times, dates, and schedules. What specifically do you need?"
             lower.contains("where") -> "I can help with location queries. What are you looking for?"
-            else -> "I understand you're asking about that. Try saying 'search for [topic]' and I'll look it up online, or ask me to control your device!"
+            else -> "I understand you're asking about that. Try saying 'search for [topic]' for web results, or ask me about weather, time, or device control!"
         }
     }
 
@@ -440,9 +524,9 @@ class ChatManager(private val context: Context) {
 
     fun getModelStatus(): String {
         return if (isModelReady()) {
-            "✅ LLM Model: Loaded (TensorFlow Lite - Advanced AI)\n✅ Web Search: Available"
+            "✅ LLM Model: Loaded (TensorFlow Lite - Advanced AI)\n✅ Weather: Real-time data\n✅ Web Search: Available"
         } else {
-            "⚠️ LLM Model: Not loaded (Using smart responses + web search)"
+            "⚠️ LLM Model: Not loaded (Using smart responses)\n✅ Weather: Real-time data\n✅ Web Search: Available"
         }
     }
 
