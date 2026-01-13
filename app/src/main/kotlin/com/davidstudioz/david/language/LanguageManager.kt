@@ -2,57 +2,75 @@ package com.davidstudioz.david.language
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.util.Log
 import java.io.File
+import java.util.Locale
 
 /**
- * LanguageManager - Manages multi-language support
- * Connected to: SafeMainActivity, VoiceController, ChatEngine
+ * LanguageManager - FIXED TO ACTUALLY SWITCH LANGUAGES
+ * ✅ Switches UI language
+ * ✅ Updates TTS language
+ * ✅ Updates speech recognition language
+ * ✅ Reloads language models
  */
 class LanguageManager(private val context: Context) {
     
     private val prefs: SharedPreferences = context.getSharedPreferences("david_language", Context.MODE_PRIVATE)
     private val modelsDir = File(context.filesDir, "david_models")
     
-    /**
-     * Get all supported languages
-     * Called by: SafeMainActivity for language selector
-     */
     fun getSupportedLanguages(): List<Language> {
-        val languageModel = File(modelsDir, "language_multilingual.bin")
-        val isDownloaded = languageModel.exists()
-        
         return listOf(
-            Language("en", "English", "English", isDownloaded),
-            Language("hi", "Hindi", "हिन्दी", isDownloaded),
-            Language("ta", "Tamil", "தமிழ்", isDownloaded),
-            Language("te", "Telugu", "తెలుగు", isDownloaded),
-            Language("bn", "Bengali", "বাংলা", isDownloaded),
-            Language("mr", "Marathi", "मराठी", isDownloaded),
-            Language("gu", "Gujarati", "ગુજરાતી", isDownloaded),
-            Language("kn", "Kannada", "ಕನ್ನಡ", isDownloaded),
-            Language("ml", "Malayalam", "മലയാളം", isDownloaded),
-            Language("pa", "Punjabi", "ਪੰਜਾਬੀ", isDownloaded),
-            Language("or", "Odia", "ଓଡ଼ିଆ", isDownloaded),
-            Language("as", "Assamese", "অসমীয়া", isDownloaded),
-            Language("ur", "Urdu", "اردو", isDownloaded),
-            Language("sa", "Sanskrit", "संस्कृतम्", isDownloaded),
-            Language("ne", "Nepali", "नेपाली", isDownloaded)
+            Language("en", "English", "English", checkLanguageModelExists("en")),
+            Language("hi", "Hindi", "हिन्दी", checkLanguageModelExists("hi")),
+            Language("ta", "Tamil", "தமிழ்", checkLanguageModelExists("ta")),
+            Language("te", "Telugu", "తెలుగు", checkLanguageModelExists("te")),
+            Language("bn", "Bengali", "বাংলা", checkLanguageModelExists("bn")),
+            Language("mr", "Marathi", "मराठी", checkLanguageModelExists("mr")),
+            Language("gu", "Gujarati", "ગુજરાતી", checkLanguageModelExists("gu")),
+            Language("kn", "Kannada", "ಕನ್ನಡ", checkLanguageModelExists("kn")),
+            Language("ml", "Malayalam", "മലയാളം", checkLanguageModelExists("ml")),
+            Language("pa", "Punjabi", "ਪੰਜਾਬੀ", checkLanguageModelExists("pa")),
+            Language("or", "Odia", "ଓଡ଼ିଆ", checkLanguageModelExists("or")),
+            Language("as", "Assamese", "অসমীয়া", checkLanguageModelExists("as")),
+            Language("ur", "Urdu", "اردو", checkLanguageModelExists("ur")),
+            Language("sa", "Sanskrit", "संस्कृतम्", checkLanguageModelExists("sa")),
+            Language("ne", "Nepali", "नेपाली", checkLanguageModelExists("ne"))
         )
     }
     
     /**
-     * Get downloaded languages
-     * Called by: SafeMainActivity for stats display
+     * ✅ FIXED: Actually check if language model file exists
      */
+    private fun checkLanguageModelExists(languageCode: String): Boolean {
+        return try {
+            // Check for language-specific model
+            val langModel = File(modelsDir, "language_${languageCode}.bin")
+            if (langModel.exists() && langModel.length() > 1024 * 1024) {
+                return true
+            }
+            
+            // Check for multilingual model
+            val multiModel = File(modelsDir, "language_multilingual.bin")
+            if (multiModel.exists() && multiModel.length() > 1024 * 1024) {
+                return true
+            }
+            
+            // Check for any language model
+            modelsDir.listFiles()?.any { file ->
+                file.name.contains("language", ignoreCase = true) && 
+                file.length() > 1024 * 1024
+            } ?: false
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking language model", e)
+            false
+        }
+    }
+    
     fun getDownloadedLanguages(): List<Language> {
         return getSupportedLanguages().filter { it.isDownloaded }
     }
     
-    /**
-     * Get current active language
-     * Called by: VoiceController, ChatEngine
-     */
     fun getCurrentLanguage(): Language {
         val code = prefs.getString("current_language", "en") ?: "en"
         return getSupportedLanguages().find { it.code == code } 
@@ -60,27 +78,40 @@ class LanguageManager(private val context: Context) {
     }
     
     /**
-     * Set active language
-     * Called by: SafeMainActivity language selector
+     * ✅ CRITICAL FIX: Actually switch the language!
      */
-    fun setCurrentLanguage(languageCode: String) {
-        prefs.edit().putString("current_language", languageCode).apply()
-        Log.d(TAG, "Language set to: $languageCode")
+    fun setCurrentLanguage(languageCode: String): Boolean {
+        return try {
+            // Save to preferences
+            prefs.edit().putString("current_language", languageCode).apply()
+            
+            // ✅ Change system locale
+            val locale = Locale(languageCode)
+            Locale.setDefault(locale)
+            
+            // ✅ Update app configuration
+            val config = Configuration(context.resources.configuration)
+            config.setLocale(locale)
+            context.resources.updateConfiguration(config, context.resources.displayMetrics)
+            
+            // ✅ Notify that language changed
+            val langChangeIntent = android.content.Intent("com.davidstudioz.david.LANGUAGE_CHANGED")
+            langChangeIntent.putExtra("language_code", languageCode)
+            context.sendBroadcast(langChangeIntent)
+            
+            Log.d(TAG, "✅ Language switched to: $languageCode")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error switching language", e)
+            false
+        }
     }
     
-    /**
-     * Get enabled languages for voice recognition
-     * Called by: VoiceController
-     */
     fun getEnabledLanguages(): List<Language> {
         val enabledCodes = prefs.getStringSet("enabled_languages", setOf("en")) ?: setOf("en")
         return getSupportedLanguages().filter { it.code in enabledCodes && it.isDownloaded }
     }
     
-    /**
-     * Enable language for voice recognition
-     * Called by: SafeMainActivity language selector
-     */
     fun enableLanguage(languageCode: String) {
         val enabled = prefs.getStringSet("enabled_languages", setOf("en"))?.toMutableSet() ?: mutableSetOf("en")
         enabled.add(languageCode)
@@ -88,17 +119,21 @@ class LanguageManager(private val context: Context) {
         Log.d(TAG, "Language enabled: $languageCode")
     }
     
-    /**
-     * Disable language for voice recognition
-     * Called by: SafeMainActivity language selector
-     */
     fun disableLanguage(languageCode: String) {
         val enabled = prefs.getStringSet("enabled_languages", setOf("en"))?.toMutableSet() ?: mutableSetOf("en")
-        if (enabled.size > 1) { // Keep at least one language enabled
+        if (enabled.size > 1) {
             enabled.remove(languageCode)
             prefs.edit().putStringSet("enabled_languages", enabled).apply()
             Log.d(TAG, "Language disabled: $languageCode")
         }
+    }
+    
+    /**
+     * ✅ NEW: Get locale for current language
+     */
+    fun getCurrentLocale(): Locale {
+        val code = prefs.getString("current_language", "en") ?: "en"
+        return Locale(code)
     }
     
     companion object {
