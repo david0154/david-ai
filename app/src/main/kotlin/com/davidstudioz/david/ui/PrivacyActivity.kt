@@ -1,7 +1,5 @@
 package com.davidstudioz.david.ui
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,12 +17,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
- * PrivacyActivity - Display privacy policy and data handling
- * NEW: Created to fix settings privacy navigation
+ * PrivacyActivity - Privacy Policy Screen
+ * NEW: Complete privacy policy viewer
  */
 @OptIn(ExperimentalMaterial3Api::class)
 class PrivacyActivity : ComponentActivity() {
-    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
@@ -38,7 +35,7 @@ class PrivacyActivity : ComponentActivity() {
                 Scaffold(
                     topBar = {
                         TopAppBar(
-                            title = { Text("Privacy & Security", color = Color.White) },
+                            title = { Text("Privacy Policy", color = Color.White) },
                             navigationIcon = {
                                 IconButton(onClick = { finish() }) {
                                     Icon(
@@ -70,63 +67,117 @@ class PrivacyActivity : ComponentActivity() {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                text = "🔒 Privacy First",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF00E5FF)
+            PrivacySection(
+                title = "🔒 Privacy-First Design",
+                content = """D.A.V.I.D (Digital Assistant with Voice Interaction and Device control) is designed with your privacy as the top priority.
+                
+                All AI processing happens ON YOUR DEVICE. We never send your voice, images, or personal data to external servers."""
             )
             
             PrivacySection(
-                title = "Offline-First Design",
-                content = "D.A.V.I.D processes everything locally on your device. All AI models run offline, ensuring your data never leaves your phone."
+                title = "📱 Data Collection",
+                content = """D.A.V.I.D collects:
+                • Voice recordings (processed locally, deleted after use)
+                • Camera images (for gesture control, not stored)
+                • Device settings (stored locally, encrypted)
+                • Chat history (stored locally, never shared)
+                
+                We DO NOT collect:
+                • Personal identification
+                • Location tracking (except when you request weather)
+                • Browsing history
+                • Contacts or messages (unless you command it)"""
             )
             
             PrivacySection(
-                title = "No Data Collection",
-                content = "We don't collect, store, or transmit any personal data. No analytics, no tracking, no cloud servers. Your conversations and commands stay on your device."
+                title = "🔐 Data Storage",
+                content = """All data is stored locally on your device using AES-256 encryption.
+                
+                • AI models: Stored in app directory
+                • Chat history: Encrypted local database
+                • Settings: Encrypted shared preferences
+                • Voice data: Never permanently stored
+                
+                You can delete ALL data anytime from Settings."""
             )
             
             PrivacySection(
-                title = "Encrypted Storage",
-                content = "All local data, including chat history and voice recordings, is encrypted using AES-256 encryption and protected by your device's security."
+                title = "🌐 Network Usage",
+                content = """D.A.V.I.D only uses internet for:
+                • Downloading AI models (one-time)
+                • Weather updates (when you ask)
+                • App updates (optional)
+                
+                You can use D.A.V.I.D completely offline after initial setup."""
             )
             
             PrivacySection(
-                title = "Permissions",
-                content = """D.A.V.I.D requests permissions only for features you use:
-                    |• Camera: For gesture control and visual commands
-                    |• Microphone: For voice commands and speech recognition
-                    |• Accessibility: For background automation
-                    |• Storage: To save AI models locally
-                    |• Network: Only for downloading AI models (optional)
-                    """.trimMargin()
+                title = "♿ Accessibility Service",
+                content = """The accessibility service is used ONLY for:
+                • Background voice activation
+                • Gesture-based device control
+                • Scrolling and navigation commands
+                
+                We DO NOT:
+                • Monitor your activity
+                • Read your screen content
+                • Track your app usage
+                • Send accessibility data anywhere"""
             )
             
             PrivacySection(
-                title = "Open Source",
-                content = "D.A.V.I.D is open source. You can review our code, verify our privacy claims, and contribute on GitHub."
+                title = "📋 Permissions",
+                content = """D.A.V.I.D requests permissions for:
+                • 🎤 Microphone: Voice commands
+                • 📷 Camera: Gesture recognition
+                • 📞 Phone: Making calls (only when you ask)
+                • 💬 SMS: Sending messages (only when you ask)
+                • 📍 Location: Weather updates
+                • 📱 Device Controls: WiFi, Bluetooth, etc.
+                
+                All permissions are used ONLY when you explicitly command D.A.V.I.D."""
             )
             
-            Spacer(modifier = Modifier.height(8.dp))
+            PrivacySection(
+                title = "🛡️ Your Rights",
+                content = """You have the right to:
+                • View all stored data
+                • Delete all data at any time
+                • Disable any feature
+                • Revoke any permission
+                • Export your chat history
+                • Use the app completely offline"""
+            )
             
-            Button(
-                onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW).apply {
-                        data = Uri.parse("https://github.com/david0154/david-ai/blob/main/PRIVACY_POLICY.md")
-                    }
-                    startActivity(intent)
-                },
+            PrivacySection(
+                title = "📧 Contact",
+                content = """For privacy concerns:
+                Email: support@davidstudioz.com
+                GitHub: github.com/david0154/david-ai
+                
+                Last updated: January 2026"""
+            )
+            
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF00E5FF)
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFF00E5FF).copy(alpha = 0.1f)
                 )
             ) {
-                Text(
-                    "View Full Privacy Policy",
-                    color = Color.Black,
-                    fontWeight = FontWeight.Bold
-                )
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "✅ Your Privacy is Protected",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF00E5FF)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "D.A.V.I.D is 100% offline-capable and privacy-focused. Your data never leaves your device.",
+                        fontSize = 12.sp,
+                        color = Color.White
+                    )
+                }
             }
         }
     }
@@ -144,14 +195,14 @@ class PrivacyActivity : ComponentActivity() {
                     text = title,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF00E5FF)
+                    color = Color.White
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = content,
-                    fontSize = 14.sp,
+                    fontSize = 12.sp,
                     color = Color(0xFF9CA3AF),
-                    lineHeight = 20.sp
+                    lineHeight = 18.sp
                 )
             }
         }

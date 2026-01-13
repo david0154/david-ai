@@ -5,10 +5,9 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -16,21 +15,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
- * AboutActivity - Display app information and credits
- * NEW: Created to fix settings about navigation
+ * AboutActivity - About D.A.V.I.D Screen
+ * NEW: Complete about page with app info
  */
 @OptIn(ExperimentalMaterial3Api::class)
 class AboutActivity : ComponentActivity() {
-    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
@@ -77,114 +72,134 @@ class AboutActivity : ComponentActivity() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // App Icon
+            // App Icon & Title
             Text(
                 text = "🤖",
-                fontSize = 64.sp,
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape)
+                fontSize = 64.sp
             )
             
             Text(
-                text = "D.A.V.I.D AI",
+                text = "D.A.V.I.D",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF00E5FF),
-                letterSpacing = 4.sp
+                letterSpacing = 6.sp
             )
             
             Text(
-                text = "Digital Assistant with Voice Interaction & Device control",
+                text = "Digital Assistant with Voice Interaction and Device control",
                 fontSize = 12.sp,
-                color = Color(0xFF9CA3AF),
-                textAlign = TextAlign.Center,
-                letterSpacing = 1.sp
+                color = Color(0xFF9CA3AF)
             )
             
             Spacer(modifier = Modifier.height(8.dp))
             
+            // Version Info
             InfoCard(
-                title = "Version",
-                value = "1.0.0 (Build 2026.01.13)"
+                title = "📱 Version",
+                content = "1.0.0 (Build 1)\nRelease: January 2026"
             )
             
+            // Features
             InfoCard(
-                title = "Developer",
-                value = "David Studioz (Nexuzy Tech Ltd.)"
+                title = "✨ Features",
+                content = """• Voice Control & Recognition
+• Gesture-based Device Control
+• Advanced AI Chat (LLM)
+• Computer Vision
+• 15 Language Support
+• Offline-first & Privacy-focused
+• Smart Device Management
+• Weather & Time Integration
+• Accessibility Service"""
             )
             
+            // Technology
             InfoCard(
-                title = "Features",
-                value = """• Voice Control & Speech Recognition
-                    |• Gesture Control with Hand Tracking
-                    |• 15 Languages Support
-                    |• Offline AI Processing
-                    |• Privacy-First Design
-                    |• Device Automation""".trimMargin()
+                title = "🔧 Technology",
+                content = """• Whisper AI (Voice Recognition)
+• LLaMA/Phi-2 (Language Models)
+• MediaPipe (Gesture Detection)
+• ONNX Runtime (Computer Vision)
+• Jetpack Compose (UI)
+• Kotlin Coroutines
+• End-to-End Encryption"""
             )
             
+            // Developer Info
             InfoCard(
-                title = "Technology Stack",
-                value = """• Kotlin & Jetpack Compose
-                    |• Whisper.cpp for Voice
-                    |• LLaMA/Phi-2 for Chat
-                    |• MediaPipe for Gestures
-                    |• ONNX Runtime for Vision""".trimMargin()
+                title = "👨‍💻 Developer",
+                content = "Created by David Studioz\nNexuzy Tech Ltd.\n\nDeveloped with ❤️ in India"
             )
             
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Row(
+            // Links
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFF1E88E5).copy(alpha = 0.1f)
+                )
             ) {
-                Button(
-                    onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW).apply {
-                            data = Uri.parse("https://github.com/david0154/david-ai")
-                        }
-                        startActivity(intent)
-                    },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF00E5FF)
-                    )
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("GitHub", color = Color.Black)
-                }
-                
-                Button(
-                    onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW).apply {
-                            data = Uri.parse("https://github.com/david0154/david-ai/issues")
-                        }
-                        startActivity(intent)
-                    },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF1E88E5).copy(alpha = 0.3f)
+                    Text(
+                        text = "🔗 Links",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
-                ) {
-                    Text("Report Issue", color = Color.White)
+                    
+                    LinkItem("GitHub Repository", "github.com/david0154/david-ai") {
+                        openUrl("https://github.com/david0154/david-ai")
+                    }
+                    
+                    LinkItem("Report Issues", "Submit bug reports") {
+                        openUrl("https://github.com/david0154/david-ai/issues")
+                    }
+                    
+                    LinkItem("Privacy Policy", "How we protect your data") {
+                        startActivity(Intent(this@AboutActivity, PrivacyActivity::class.java))
+                    }
+                    
+                    LinkItem("License", "Apache License 2.0") {
+                        openUrl("https://github.com/david0154/david-ai/blob/main/LICENSE")
+                    }
                 }
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
+            // Credits
+            InfoCard(
+                title = "🙏 Credits",
+                content = """D.A.V.I.D uses open-source AI models:
+• OpenAI Whisper
+• Meta LLaMA
+• Microsoft Phi-2
+• Google MediaPipe
+• ONNX Runtime
+
+Thank you to the open-source community!"""
+            )
             
+            // Copyright
             Text(
-                text = "© 2026 David Studioz. Licensed under BSD-3-Clause.",
+                text = "© 2026 David Studioz / Nexuzy Tech Ltd.\nAll rights reserved.",
                 fontSize = 10.sp,
                 color = Color(0xFF6B7280),
-                textAlign = TextAlign.Center
+                modifier = Modifier.padding(top = 16.dp)
+            )
+            
+            Text(
+                text = "Made with ❤️ for the AI community",
+                fontSize = 10.sp,
+                color = Color(0xFF00E5FF),
+                modifier = Modifier.padding(bottom = 16.dp)
             )
         }
     }
     
     @Composable
-    private fun InfoCard(title: String, value: String) {
+    private fun InfoCard(title: String, content: String) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
@@ -194,19 +209,49 @@ class AboutActivity : ComponentActivity() {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = title,
-                    fontSize = 12.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF64B5F6),
-                    letterSpacing = 1.sp
+                    color = Color.White
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = value,
-                    fontSize = 14.sp,
-                    color = Color.White,
-                    lineHeight = 20.sp
+                    text = content,
+                    fontSize = 12.sp,
+                    color = Color(0xFF9CA3AF),
+                    lineHeight = 18.sp
                 )
             }
+        }
+    }
+    
+    @Composable
+    private fun LinkItem(title: String, subtitle: String, onClick: () -> Unit) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(vertical = 4.dp)
+        ) {
+            Text(
+                text = title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF00E5FF)
+            )
+            Text(
+                text = subtitle,
+                fontSize = 11.sp,
+                color = Color(0xFF9CA3AF)
+            )
+        }
+    }
+    
+    private fun openUrl(url: String) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(intent)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 }
