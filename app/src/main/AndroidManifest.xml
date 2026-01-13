@@ -62,6 +62,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <!-- ====== FEATURES ====== -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
@@ -173,6 +174,14 @@
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="camera"
+            android:stopWithTask="false" />
+
+        <!-- NEW: Model Download Service - Survives Device Lock -->
+        <service
+            android:name="com.davidstudioz.david.services.ModelDownloadService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync"
             android:stopWithTask="false" />
 
         <!-- Accessibility Service - Scroll/Swipe/Navigation Control -->
