@@ -34,15 +34,19 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.work.*
 import com.davidstudioz.david.R
+import com.davidstudioz.david.SafeMainActivity
+import com.davidstudioz.david.models.ModelManager
 import com.davidstudioz.david.workers.ModelDownloadWorker
 import kotlinx.coroutines.delay
 import java.util.concurrent.TimeUnit
 
 /**
- * D.A.V.I.D Splash Screen - Beautiful Modern Design
- * Complete 500+ line implementation with all animations
- * Shows branding, logo, and initialization progress
- * Digital Assistant with Voice & Intelligent Decisions
+ * D.A.V.I.D Splash Screen - WITH MODEL VERIFICATION
+ * ✅ Verifies essential models are actually downloaded
+ * ✅ Redirects to ModelDownloadActivity if models missing
+ * ✅ Doesn't rely only on SharedPreferences flag
+ * ✅ Checks actual file existence and size
+ * ✅ Handles download failures gracefully
  */
 class SplashActivity : ComponentActivity() {
 
@@ -50,8 +54,8 @@ class SplashActivity : ComponentActivity() {
     private var splashStartTime = 0L
     private var initializationError by mutableStateOf<String?>(null)
     private var permissionsGranted by mutableStateOf(false)
+    private lateinit var modelManager: ModelManager
 
-    // Permission launcher for runtime permissions
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -70,7 +74,10 @@ class SplashActivity : ComponentActivity() {
         splashStartTime = System.currentTimeMillis()
 
         try {
-            // Start model download worker in background (non-blocking)
+            // Initialize ModelManager to check models
+            modelManager = ModelManager(this)
+            Log.d(TAG, "ModelManager initialized")
+            
             startModelDownloadWorker()
             Log.d(TAG, "Model download worker started")
         } catch (e: Exception) {
@@ -104,9 +111,6 @@ class SplashActivity : ComponentActivity() {
         checkAndRequestPermissions()
     }
 
-    /**
-     * Check and request necessary runtime permissions
-     */
     private fun checkAndRequestPermissions() {
         try {
             val permissions = mutableListOf(
@@ -117,7 +121,6 @@ class SplashActivity : ComponentActivity() {
                 android.Manifest.permission.ACCESS_COARSE_LOCATION
             )
 
-            // Add Bluetooth permissions for Android 12+ (API 31+)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 permissions.add(android.Manifest.permission.BLUETOOTH_CONNECT)
                 permissions.add(android.Manifest.permission.BLUETOOTH_SCAN)
@@ -136,13 +139,10 @@ class SplashActivity : ComponentActivity() {
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error checking permissions", e)
-            permissionsGranted = true // Continue anyway
+            permissionsGranted = true
         }
     }
 
-    /**
-     * Beautiful animated splash screen with all effects
-     */
     @Composable
     private fun BeautifulSplashScreen() {
         var progress by remember { mutableStateOf(0f) }
@@ -151,7 +151,6 @@ class SplashActivity : ComponentActivity() {
         var errorMessage by remember { mutableStateOf("") }
         var currentFeature by remember { mutableStateOf(0) }
 
-        // Check for initialization errors
         LaunchedEffect(initializationError) {
             initializationError?.let {
                 hasError = true
@@ -160,7 +159,6 @@ class SplashActivity : ComponentActivity() {
             }
         }
 
-        // Infinite animations for visual effects
         val infiniteTransition = rememberInfiniteTransition(label = "splash_animation")
         
         val pulseScale by infiniteTransition.animateFloat(
@@ -193,17 +191,15 @@ class SplashActivity : ComponentActivity() {
             label = "rotation"
         )
 
-        // Progressive initialization sequence
         LaunchedEffect(Unit) {
-            // Define initialization steps
             data class InitStep(val progress: Float, val message: String, val feature: Int)
             
             val initializationSteps = listOf(
                 InitStep(0.15f, "Loading core systems", 0),
-                InitStep(0.30f, "Initializing AI models", 1),
-                InitStep(0.45f, "Setting up voice recognition", 2),
-                InitStep(0.60f, "Configuring vision systems", 3),
-                InitStep(0.75f, "Loading language models", 4),
+                InitStep(0.30f, "Checking AI models", 1),
+                InitStep(0.45f, "Verifying voice models", 2),
+                InitStep(0.60f, "Checking vision models", 3),
+                InitStep(0.75f, "Verifying language models", 4),
                 InitStep(0.90f, "Preparing user interface", 5),
                 InitStep(1.0f, "Ready to launch", 6)
             )
@@ -215,18 +211,16 @@ class SplashActivity : ComponentActivity() {
                 val duration = 500L
                 val startTime = System.currentTimeMillis()
 
-                // Smooth progress animation
                 while (progress < step.progress) {
                     val elapsed = System.currentTimeMillis() - startTime
                     val animProgress = (elapsed.toFloat() / duration).coerceAtMost(1f)
                     progress = startProgress + (step.progress - startProgress) * animProgress
-                    delay(16) // ~60fps
+                    delay(16)
                 }
                 progress = step.progress
-                delay(200) // Brief pause between steps
+                delay(200)
             }
 
-            // Wait for minimum splash duration
             val elapsed = System.currentTimeMillis() - splashStartTime
             val remaining = splashMinDuration - elapsed
             if (remaining > 0) {
@@ -234,8 +228,8 @@ class SplashActivity : ComponentActivity() {
                 delay(remaining)
             }
 
-            // Navigate to model download (skip login)
-            navigateToModelDownload()
+            // ✅ CRITICAL: Verify models are actually downloaded
+            verifyAndNavigate()
         }
 
         Box(
@@ -253,7 +247,6 @@ class SplashActivity : ComponentActivity() {
                 ),
             contentAlignment = Alignment.Center
         ) {
-            // Background rotating ring
             Box(
                 modifier = Modifier
                     .size(400.dp)
@@ -282,14 +275,12 @@ class SplashActivity : ComponentActivity() {
                         .fillMaxWidth()
                         .padding(32.dp)
                 ) {
-                    // Animated Logo Container with multiple glow layers
                     Box(
                         modifier = Modifier
                             .size(220.dp)
                             .scale(pulseScale),
                         contentAlignment = Alignment.Center
                     ) {
-                        // Outer glow layer
                         Box(
                             modifier = Modifier
                                 .size(220.dp)
@@ -306,7 +297,6 @@ class SplashActivity : ComponentActivity() {
                                 )
                         )
 
-                        // Middle glow layer
                         Box(
                             modifier = Modifier
                                 .size(180.dp)
@@ -322,7 +312,6 @@ class SplashActivity : ComponentActivity() {
                                 )
                         )
 
-                        // Inner background
                         Box(
                             modifier = Modifier
                                 .size(150.dp)
@@ -338,7 +327,6 @@ class SplashActivity : ComponentActivity() {
                                 )
                         )
 
-                        // Logo or Emoji
                         LogoDisplay(
                             modifier = Modifier.size(110.dp),
                             tint = Color(0xFF00E5FF)
@@ -347,7 +335,6 @@ class SplashActivity : ComponentActivity() {
 
                     Spacer(modifier = Modifier.height(48.dp))
 
-                    // Main Title
                     Text(
                         text = "D.A.V.I.D",
                         fontSize = 52.sp,
@@ -359,7 +346,6 @@ class SplashActivity : ComponentActivity() {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Subtitle
                     Text(
                         text = "Digital Assistant with Voice \n& Intelligent Decisions",
                         fontSize = 15.sp,
@@ -372,7 +358,6 @@ class SplashActivity : ComponentActivity() {
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Decorative line
                     Box(
                         modifier = Modifier
                             .width(220.dp)
@@ -403,12 +388,10 @@ class SplashActivity : ComponentActivity() {
 
                     Spacer(modifier = Modifier.height(56.dp))
 
-                    // Progress section
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.width(300.dp)
                     ) {
-                        // Progress bar
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -435,7 +418,6 @@ class SplashActivity : ComponentActivity() {
 
                         Spacer(modifier = Modifier.height(20.dp))
 
-                        // Status text
                         Text(
                             text = statusText,
                             fontSize = 14.sp,
@@ -447,7 +429,6 @@ class SplashActivity : ComponentActivity() {
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Percentage
                         Text(
                             text = "${(progress * 100).toInt()}%",
                             fontSize = 28.sp,
@@ -458,7 +439,6 @@ class SplashActivity : ComponentActivity() {
 
                     Spacer(modifier = Modifier.height(48.dp))
 
-                    // Feature indicators
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
@@ -484,7 +464,6 @@ class SplashActivity : ComponentActivity() {
 
                     Spacer(modifier = Modifier.height(48.dp))
 
-                    // Footer
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -511,22 +490,7 @@ class SplashActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun LogoDisplay(
-        modifier: Modifier = Modifier,
-        tint: Color? = null
-    ) {
-        var useLogoResource by remember { mutableStateOf(true) }
-        
-        if (useLogoResource) {
-            // Try to load logo resource
-            LogoFallback(modifier, tint)
-        } else {
-            LogoFallback(modifier, tint)
-        }
-    }
-
-    @Composable
-    private fun LogoFallback(modifier: Modifier = Modifier, tint: Color? = null) {
+    private fun LogoDisplay(modifier: Modifier = Modifier, tint: Color? = null) {
         Box(
             modifier = modifier
                 .clip(CircleShape)
@@ -540,19 +504,12 @@ class SplashActivity : ComponentActivity() {
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "🤖",
-                fontSize = 56.sp
-            )
+            Text(text = "🤖", fontSize = 56.sp)
         }
     }
 
     @Composable
-    private fun FeatureIndicator(
-        icon: String,
-        label: String,
-        isActive: Boolean
-    ) {
+    private fun FeatureIndicator(icon: String, label: String, isActive: Boolean) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -617,10 +574,7 @@ class SplashActivity : ComponentActivity() {
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "⚠️",
-                    fontSize = 48.sp
-                )
+                Text(text = "⚠️", fontSize = 48.sp)
             }
             
             Spacer(modifier = Modifier.height(32.dp))
@@ -705,24 +659,65 @@ class SplashActivity : ComponentActivity() {
     }
 
     /**
-     * Navigate directly to ModelDownloadActivity (skip login)
+     * ✅ CRITICAL: Verify models are actually downloaded before navigating
+     * Don't rely on SharedPreferences alone - check actual files!
      */
+    private fun verifyAndNavigate() {
+        try {
+            Log.d(TAG, "✅ Verifying model downloads...")
+            
+            // Check if essential models are actually present and valid
+            val modelsPresent = modelManager.areEssentialModelsDownloaded()
+            val downloadedModels = modelManager.getDownloadedModels()
+            val modelCount = downloadedModels.size
+            val totalSizeMB = modelManager.getTotalDownloadedSizeMB()
+            
+            Log.d(TAG, "Models present: $modelsPresent")
+            Log.d(TAG, "Model count: $modelCount")
+            Log.d(TAG, "Total size: ${totalSizeMB.toInt()} MB")
+            
+            if (modelsPresent && modelCount >= 5 && totalSizeMB > 100f) {
+                // Models are actually downloaded - proceed to main app
+                Log.d(TAG, "✅ All essential models verified! Proceeding to main app")
+                navigateToMain()
+            } else {
+                // Models not downloaded - go to download screen
+                Log.w(TAG, "⚠️ Models missing or incomplete. Redirecting to download screen")
+                Log.d(TAG, "Model files found: ${downloadedModels.map { it.name }}")
+                
+                // Clear the false flag if it was set
+                val prefs = getSharedPreferences("david_prefs", MODE_PRIVATE)
+                prefs.edit().apply {
+                    putBoolean("model_downloaded", false)
+                    apply()
+                }
+                
+                navigateToModelDownload()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error verifying models", e)
+            // On error, go to download screen to be safe
+            navigateToModelDownload()
+        }
+    }
+
     private fun navigateToModelDownload() {
         try {
-            Log.d(TAG, "Navigating to ModelDownloadActivity (login skipped)")
+            Log.d(TAG, "Navigating to ModelDownloadActivity")
             val intent = Intent(this, ModelDownloadActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
         } catch (e: Exception) {
-            Log.e(TAG, "Navigation error, trying SafeMainActivity", e)
-            navigateToSafeMain()
+            Log.e(TAG, "Navigation error to ModelDownloadActivity", e)
+            navigateToMain()
         }
     }
 
-    private fun navigateToSafeMain() {
+    private fun navigateToMain() {
         try {
-            val intent = Intent(this, com.davidstudioz.david.SafeMainActivity::class.java)
+            Log.d(TAG, "Navigating to SafeMainActivity")
+            val intent = Intent(this, SafeMainActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
