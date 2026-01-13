@@ -1,5 +1,128 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">D.A.V.I.D AI</string>
-    <string name="accessibility_service_description">D.A.V.I.D AI Accessibility Service enables background voice activation, gesture control, and device automation. Your privacy is protected - no data is collected or transmitted.</string>
+    <!-- App Name & Branding -->
+    <string name="app_name">D.A.V.I.D</string>
+    <string name="app_full_name">D.A.V.I.D</string>
+    <string name="app_tagline">Digital Assistant with Voice &amp; Intelligent Decisions</string>
+    <string name="app_description">Your AI-Powered Voice Assistant</string>
+    <string name="developed_by">Developed by Nexuzy Tech Pvt</string>
+
+    <!-- Main Screen -->
+    <string name="title_digital_assistant">Digital Assistant with Voice &amp; Intelligent Decisions</string>
+    <string name="greeting_message">Hi %1$s, I\'m ready!</string>
+    <string name="initializing">Initializing D.A.V.I.D…</string>
+    <string name="systems_online">Voice systems online</string>
+    <string name="ready">Ready</string>
+
+    <!-- Voice Control -->
+    <string name="listening">Listening for command…</string>
+    <string name="im_listening">I\'m listening</string>
+    <string name="listening_stopped">Listening stopped</string>
+    <string name="wake_word_detected">Wake word detected: %1$s</string>
+    <string name="yes_listening">Yes, I\'m listening…</string>
+
+    <!-- Wake Words -->
+    <string name="wake_word_hey_david">hey david</string>
+    <string name="wake_word_ok_david">ok david</string>
+    <string name="wake_word_jarvis">jarvis</string>
+
+    <!-- Resources -->
+    <string name="system_resources">System Resources</string>
+    <string name="ram_label">RAM</string>
+    <string name="storage_label">STORAGE</string>
+    <string name="cpu_label">CPU</string>
+    <string name="cores_format">%1$d cores</string>
+    <string name="gb_format">%1$d/%2$dGB</string>
+    <string name="percent_format">%1$d%%</string>
+
+    <!-- AI Model -->
+    <string name="ai_model_label">AI MODEL: %1$s</string>
+    <string name="model_ready">✓ Ready</string>
+    <string name="model_limited">⚠ Limited</string>
+
+    <!-- Weather -->
+    <string name="weather_title">🌤 WEATHER</string>
+    <string name="loading_weather">Loading weather…</string>
+    <string name="weather_unavailable">Weather unavailable</string>
+
+    <!-- Chat -->
+    <string name="chat_history">CHAT HISTORY</string>
+    <string name="no_messages">No messages yet…</string>
+    <string name="message_prefix">→ %1$s</string>
+
+    <!-- User -->
+    <string name="user_label">User: %1$s</string>
+    <string name="default_nickname">Friend</string>
+
+    <!-- Actions -->
+    <string name="action_weather">🌤</string>
+    <string name="action_forecast">📅</string>
+    <string name="action_lock">🔒</string>
+    <string name="action_pointer">🖱</string>
+    <string name="action_voice_active">🔊</string>
+    <string name="action_voice_inactive">🎤</string>
+
+    <!-- Buttons -->
+    <string name="btn_weather">🌤 Weather</string>
+    <string name="btn_forecast">📅 Forecast</string>
+    <string name="btn_lock">🔒 Lock</string>
+    <string name="btn_pointer">🖱 Pointer</string>
+    <string name="btn_listen">🎤 Listen</string>
+
+    <!-- Status Messages -->
+    <string name="status_clicked_at">Clicked at (%1$d, %2$d)</string>
+    <string name="status_gesture">Gesture: %1$s - %2$s</string>
+    <string name="status_previous">Previous</string>
+    <string name="status_next">Next</string>
+    <string name="status_tap">Tap</string>
+    <string name="status_double_tap">Double tap</string>
+    <string name="status_long_press">Long press</string>
+
+    <!-- Permissions -->
+    <string name="permission_camera">Camera permission required</string>
+    <string name="permission_audio">Audio recording permission required</string>
+    <string name="permission_location">Location permission required for weather</string>
+    <string name="permission_phone">Phone permission required for calls</string>
+    <string name="permission_sms">SMS permission required for messaging</string>
+
+    <!-- Errors -->
+    <string name="error_prefix">Error: %1$s</string>
+    <string name="error_initialization">Initialization error</string>
+    <string name="error_resources">Error updating resources</string>
+    <string name="error_weather">Weather error</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_logo">D.A.V.I.D Logo</string>
+    <string name="cd_ai_orb">AI Orb Animation</string>
+    <string name="cd_voice_button">Voice Control Button</string>
+    <string name="cd_resource_ring">Resource Usage Ring</string>
+
+    <!-- Welcome Messages -->
+    <string name="welcome_first_launch">Hello %1$s, D.A.V.I.D systems are online!</string>
+    <string name="welcome_greeting">Hello %1$s, I\'m ready to help!</string>
+
+    <!-- Settings -->
+    <string name="settings">Settings</string>
+    <string name="about">About</string>
+    <string name="version">Version %1$s</string>
+
+    <!-- Accessibility Service -->
+    <string name="accessibility_service_description">D.A.V.I.D AI - Voice-controlled screen navigation, scrolling, swiping, and app control. Allows hands-free operation of your device.</string>
+    <string name="accessibility_service_label">D.A.V.I.D AI</string>
+    <string name="accessibility_enabled">Screen control enabled</string>
+    <string name="accessibility_disabled">Screen control disabled</string>
+    <string name="accessibility_enable_prompt">Enable in Settings &gt; Accessibility &gt; D.A.V.I.D AI</string>
+    <string name="accessibility_required">Required for scroll/swipe voice commands</string>
+    <string name="btn_open_accessibility_settings">Open Accessibility Settings</string>
+
+    <!-- Voice Commands Help -->
+    <string name="voice_commands_title">Voice Commands</string>
+    <string name="voice_cmd_scroll_up">"Scroll up" - Scroll page upward</string>
+    <string name="voice_cmd_scroll_down">"Scroll down" - Scroll page downward</string>
+    <string name="voice_cmd_swipe_left">"Swipe left" - Swipe to previous</string>
+    <string name="voice_cmd_swipe_right">"Swipe right" - Swipe to next</string>
+    <string name="voice_cmd_go_back">"Go back" - Navigate back</string>
+    <string name="voice_cmd_go_home">"Go home" - Home screen</string>
+    <string name="voice_cmd_auto_scroll">"Auto scroll" - Continuous scrolling</string>
+    <string name="voice_cmd_stop_scroll">"Stop scrolling" - Stop auto-scroll</string>
 </resources>
