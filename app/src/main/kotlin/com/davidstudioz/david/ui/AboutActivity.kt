@@ -97,7 +97,7 @@ class AboutActivity : ComponentActivity() {
             )
             
             Text(
-                text = "Digital Assistant with Voice Interaction & Device control",
+                text = "Digital Assistant with Voice & Intelligent Decisions",
                 fontSize = 12.sp,
                 color = Color(0xFF9CA3AF),
                 textAlign = TextAlign.Center,
@@ -113,7 +113,7 @@ class AboutActivity : ComponentActivity() {
             
             InfoCard(
                 title = "Developer",
-                value = "David Studioz (Nexuzy Tech Ltd.)"
+                value = "Nexuzy Tech Lt"
             )
             
             InfoCard(
@@ -175,7 +175,7 @@ class AboutActivity : ComponentActivity() {
             Spacer(modifier = Modifier.height(16.dp))
             
             Text(
-                text = "© 2026 David Studioz. Licensed under BSD-3-Clause.",
+                text = "© 2026 Nexuzy Tech Pvt Ltd. Licensed under BSD-3-Clause.",
                 fontSize = 10.sp,
                 color = Color(0xFF6B7280),
                 textAlign = TextAlign.Center
