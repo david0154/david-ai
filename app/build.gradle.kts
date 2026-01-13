@@ -61,9 +61,10 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
-        // Suppress deprecation warnings for Google Sign-In (will be updated to Credential Manager later)
+        // Opt-in to experimental APIs and suppress warnings
         freeCompilerArgs += listOf(
-            "-Xsuppress-warning=DEPRECATION"
+            "-opt-in=kotlin.RequiresOptIn",
+            "-Xjvm-default=all"
         )
     }
 
