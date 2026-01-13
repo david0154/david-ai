@@ -3,44 +3,45 @@ package com.davidstudioz.david.services
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.util.Log
+import com.davidstudioz.david.voice.HotWordDetectionService
 
 /**
- * BootReceiver - Auto-Start Services on Device Boot
- * 
- * ✅ FEATURES:
- * - Listens for BOOT_COMPLETED broadcast
- * - Auto-starts enabled services
- * - Respects user preferences
- * - Handles permissions gracefully
- * 
- * REQUIRED PERMISSIONS:
- * - RECEIVE_BOOT_COMPLETED
+ * ✅ BootReceiver - Auto-start services on device boot
+ * Enables always-on voice assistant functionality
  */
 class BootReceiver : BroadcastReceiver() {
-
-    companion object {
-        private const val TAG = "BootReceiver"
-    }
-
-    override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
-            Log.d(TAG, "Device boot completed, starting services")
-            
-            val serviceManager = ServiceManager(context)
-            
-            // Check if auto-start is enabled
-            if (serviceManager.isAutoStartEnabled()) {
+    
+    override fun onReceive(context: Context?, intent: Intent?) {
+        if (context == null || intent == null) return
+        
+        when (intent.action) {
+            Intent.ACTION_BOOT_COMPLETED,
+            Intent.ACTION_QUICKBOOT_POWERON,
+            "android.intent.action.MY_PACKAGE_REPLACED" -> {
+                Log.d(TAG, "Boot completed - starting background services")
+                
                 try {
-                    // Start all enabled services
-                    serviceManager.startAllServices()
-                    Log.d(TAG, "Services started on boot")
+                    // Check if hot word service is enabled
+                    val prefs = context.getSharedPreferences("david_settings", Context.MODE_PRIVATE)
+                    val isHotWordEnabled = prefs.getBoolean("hot_word_enabled", true)
+                    
+                    if (isHotWordEnabled) {
+                        // Start hot word detection service
+                        HotWordDetectionService.start(context)
+                        Log.d(TAG, "✅ Hot word service started after boot")
+                    } else {
+                        Log.d(TAG, "Hot word service disabled in settings")
+                    }
                 } catch (e: Exception) {
-                    Log.e(TAG, "Failed to start services on boot", e)
+                    Log.e(TAG, "Error starting services after boot", e)
                 }
-            } else {
-                Log.d(TAG, "Auto-start disabled, skipping service start")
             }
         }
+    }
+    
+    companion object {
+        private const val TAG = "BootReceiver"
     }
 }

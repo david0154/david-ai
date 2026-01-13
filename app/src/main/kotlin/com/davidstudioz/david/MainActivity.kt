@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -35,6 +36,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.davidstudioz.david.chat.ChatManager
 import com.davidstudioz.david.device.DeviceAccessManager
@@ -56,27 +58,8 @@ import com.davidstudioz.david.voice.VoiceController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/**
- * DAVID AI - COMPLETE INTEGRATION + BACKGROUND SERVICES
- * 
- * ALL BUGS FIXED + ALL FEATURES IMPLEMENTED:
- * ✅ VoiceController & DeviceController Connected
- * ✅ ChatManager Connected to VoiceController
- * ✅ GestureController Fully Initialized
- * ✅ All DeviceController Methods Added
- * ✅ LanguageManager: 15 languages
- * ✅ Settings Activity with full UI
- * ✅ Privacy Policy documentation
- * ✅ Contributing guidelines
- * ✅ Code of Conduct
- * ✅ Background Services Auto-Start (NEW)
- * ✅ Hot Word Detection Service (NEW)
- * ✅ Accessibility Service Integration (NEW)
- * ✅ Complete integration - 100% PRODUCTION READY
- */
 class MainActivity : ComponentActivity() {
 
-    // Core components - nullable for safe initialization
     private var userProfile: UserProfile? = null
     private var hotWordDetector: HotWordDetector? = null
     private var textToSpeechEngine: TextToSpeechEngine? = null
@@ -90,12 +73,9 @@ class MainActivity : ComponentActivity() {
     private var permissionManager: PermissionManager? = null
     private var deviceAccess: DeviceAccessManager? = null
     private var resourceManager: DeviceResourceManager? = null
-    
-    // NEW: Background service management
     private var serviceManager: ServiceManager? = null
     private var hotWordReceiver: BroadcastReceiver? = null
 
-    // UI State - with default values to prevent null crashes
     private var isListening by mutableStateOf(false)
     private var statusMessage by mutableStateOf("Initializing D.A.V.I.D...")
     private var userInput by mutableStateOf("")
@@ -107,8 +87,9 @@ class MainActivity : ComponentActivity() {
     private var showPermissionDialog by mutableStateOf(false)
     private var missingPermissions by mutableStateOf<List<String>>(emptyList())
     private var initError by mutableStateOf<String?>(null)
+    // ✅ NEW: Gesture model status
+    private var gestureModelStatus by mutableStateOf("Checking gesture models...")
 
-    // Permission launcher with proper error handling
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -117,7 +98,6 @@ class MainActivity : ComponentActivity() {
                 Log.d(TAG, "$permission: $granted")
             }
             
-            // Update UI with permission results
             val denied = permissions.filter { !it.value }.keys.toList()
             if (denied.isNotEmpty()) {
                 missingPermissions = denied
@@ -127,7 +107,10 @@ class MainActivity : ComponentActivity() {
                 statusMessage = "All permissions granted!"
             }
             
-            initializeWeather()
+            // ✅ Reinitialize weather with location permission
+            if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
+                initializeWeather()
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Error handling permission result", e)
             statusMessage = "Error processing permissions"
@@ -138,13 +121,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         try {
-            // Initialize all components with error handling
             initializeComponents()
-            
-            // NEW: Start background services
             startBackgroundServices()
 
-            // Set up unified UI
             setContent {
                 DavidAITheme {
                     when {
@@ -157,8 +136,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            // Start resource monitoring
             startResourceMonitoring()
+            startWeatherUpdates() // ✅ Auto-update weather
         } catch (e: Exception) {
             Log.e(TAG, "Fatal error in onCreate", e)
             initError = e.message ?: "Unknown error"
@@ -173,15 +152,12 @@ class MainActivity : ComponentActivity() {
 
     private fun initializeComponents() {
         try {
-            // Initialize resource manager
             resourceManager = DeviceResourceManager(this)
             resourceStatus = resourceManager?.getResourceStatus()
             
-            // Initialize device access manager
             deviceAccess = DeviceAccessManager(this)
             updatePermissions()
 
-            // Initialize user profile
             userProfile = UserProfile(this).apply {
                 if (isFirstLaunch) {
                     nickname = "Friend"
@@ -190,42 +166,29 @@ class MainActivity : ComponentActivity() {
                 statusMessage = "Hi $nickname, I'm initializing..."
             }
 
-            // Initialize permission manager
             permissionManager = PermissionManager(this)
             requestRequiredPermissions()
 
-            // ✅ FIXED: Initialize text to speech with async callback
             textToSpeechEngine = TextToSpeechEngine(this)
             
-            // Wait for TTS to initialize then speak greeting
             lifecycleScope.launch {
-                delay(1000) // Wait for TTS initialization
-                try {
-                    statusMessage = "Voice systems online"
-                    // ✅ FIXED: Remove SupportedLanguage parameter
-                    textToSpeechEngine?.speak(
-                        "Hello ${userProfile?.nickname}, D.A.V.I.D systems are online!"
-                    )
-                } catch (e: Exception) {
-                    Log.e(TAG, "TTS error", e)
-                }
+                delay(1000)
+                statusMessage = "Voice systems online"
+                textToSpeechEngine?.speak(
+                    "Hello ${userProfile?.nickname}, D.A.V.I.D systems are online!"
+                )
             }
 
-            // Initialize device controller
             deviceController = DeviceController(this)
             Log.d(TAG, "Device controller initialized")
             
-            // Initialize chat manager FIRST
             chatManager = ChatManager(this)
             Log.d(TAG, "Chat manager initialized")
             
-            // Initialize voice controller WITH deviceController AND chatManager
             voiceController = VoiceController(this, deviceController!!, chatManager)
             
-            // Set up voice command callback to update UI
             voiceController?.setOnCommandProcessed { command, response ->
                 lifecycleScope.launch {
-                    // Add to chat history
                     chatHistory = chatHistory + "You: $command" + "DAVID: $response"
                     statusMessage = response
                     Log.d(TAG, "Command processed: $command -> $response")
@@ -233,30 +196,26 @@ class MainActivity : ComponentActivity() {
             }
             Log.d(TAG, "Voice controller initialized with device controller AND chat manager")
             
-            // Initialize weather provider
             weatherTimeProvider = WeatherTimeProvider(this)
-            
-            // Initialize device lock manager
             deviceLockManager = DeviceLockManager(this)
             
-            // Initialize pointer controller
             pointerController = PointerController(this)
             pointerController?.setOnClickListener { x, y ->
                 statusMessage = "Clicked at ($x, $y)"
             }
 
-            // Initialize gesture controller with FULL CALLBACK SETUP
+            // ✅ IMPROVED: Gesture controller with status feedback
             gestureController = GestureController(this)
             gestureController?.initialize { gesture ->
                 lifecycleScope.launch {
                     try {
+                        gestureModelStatus = gestureController?.getModelStatus() ?: "Unknown"
                         statusMessage = "Gesture detected: $gesture"
                         Log.d(TAG, "Gesture: $gesture")
                         
                         when (gesture) {
                             GestureController.GESTURE_OPEN_PALM -> {
                                 pointerController?.showPointer()
-                                // ✅ FIXED: Remove SupportedLanguage parameter
                                 textToSpeechEngine?.speak("Pointer shown")
                             }
                             GestureController.GESTURE_CLOSED_FIST -> {
@@ -279,9 +238,9 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-            Log.d(TAG, "Gesture controller initialized with callbacks")
+            gestureModelStatus = gestureController?.getModelStatus() ?: "Gesture model status unknown"
+            Log.d(TAG, "Gesture controller initialized: $gestureModelStatus")
 
-            // Initialize hot word detector (basic class for UI)
             hotWordDetector = HotWordDetector(this)
             hotWordDetector?.startListening(
                 hotWords = listOf("hey david", "ok david", "jarvis"),
@@ -289,9 +248,7 @@ class MainActivity : ComponentActivity() {
                     try {
                         statusMessage = "Wake word detected: $word"
                         activateListeningMode()
-                        // Start actual voice listening
                         voiceController?.startListening()
-                        // ✅ FIXED: Remove SupportedLanguage parameter
                         textToSpeechEngine?.speak("Yes, I'm listening...")
                     } catch (e: Exception) {
                         Log.e(TAG, "Error in hotword callback", e)
@@ -308,27 +265,19 @@ class MainActivity : ComponentActivity() {
         }
     }
     
-    /**
-     * NEW: Start background services for always-on functionality
-     */
     private fun startBackgroundServices() {
         try {
             Log.d(TAG, "Starting background services...")
             
-            // Initialize service manager
             serviceManager = ServiceManager(this)
-            
-            // Request battery optimization bypass
             serviceManager?.requestBatteryOptimizationBypass()
             
-            // Start hot word detection service (always-on voice)
             if (serviceManager?.isHotWordServiceEnabled() == true) {
                 HotWordDetectionService.start(this)
                 Log.d(TAG, "✅ Hot word detection service started")
                 statusMessage = "Always-on voice assistant active"
             }
             
-            // Register broadcast receiver for hot word detection
             hotWordReceiver = object : BroadcastReceiver() {
                 override fun onReceive(context: Context?, intent: Intent?) {
                     val hotWord = intent?.getStringExtra(HotWordDetectionService.EXTRA_HOTWORD)
@@ -339,12 +288,8 @@ class MainActivity : ComponentActivity() {
                                 statusMessage = "Wake word detected: $hotWord"
                                 chatHistory = chatHistory + "System: Wake word '$hotWord' detected"
                                 
-                                // Start voice listening
                                 activateListeningMode()
                                 voiceController?.startListening()
-                                
-                                // Speak acknowledgment
-                                // ✅ FIXED: Remove SupportedLanguage parameter
                                 textToSpeechEngine?.speak("Yes, I'm listening...")
                             } catch (e: Exception) {
                                 Log.e(TAG, "Error handling hot word", e)
@@ -354,7 +299,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
             
-            // Register receiver with proper flags for different Android versions
             val filter = IntentFilter(HotWordDetectionService.ACTION_HOTWORD_DETECTED)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 registerReceiver(hotWordReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
@@ -363,14 +307,6 @@ class MainActivity : ComponentActivity() {
             }
             
             Log.d(TAG, "✅ Hot word broadcast receiver registered")
-            
-            // Optionally start gesture service (battery intensive - disabled by default)
-            // Uncomment to enable:
-            // if (serviceManager?.isGestureServiceEnabled() == true) {
-            //     GestureRecognitionService.start(this)
-            //     Log.d(TAG, "✅ Gesture recognition service started")
-            // }
-            
             Log.d(TAG, "✅ Background services initialization complete")
             
         } catch (e: Exception) {
@@ -393,15 +329,49 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // ✅ NEW: Auto-update weather every 10 minutes
+    private fun startWeatherUpdates() {
+        lifecycleScope.launch {
+            while (true) {
+                try {
+                    initializeWeather()
+                    delay(600000) // 10 minutes
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error in weather updates", e)
+                    delay(600000)
+                }
+            }
+        }
+    }
+
     private fun initializeWeather() {
         lifecycleScope.launch {
             try {
+                // Check location permission
+                val hasLocationPermission = ContextCompat.checkSelfPermission(
+                    this@MainActivity,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+                
+                if (!hasLocationPermission) {
+                    currentWeather = "⚠️ Location permission required for accurate weather"
+                    return@launch
+                }
+                
                 weatherTimeProvider?.let {
-                    currentWeather = it.getWeatherVoiceReport()
+                    // Start location updates
+                    it.startLocationUpdates { location ->
+                        Log.d(TAG, "Location updated: ${location.latitude}, ${location.longitude}")
+                    }
+                    
+                    // Get weather report
+                    val weatherReport = it.getWeatherVoiceReport()
+                    currentWeather = weatherReport
+                    Log.d(TAG, "Weather updated: $weatherReport")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Weather error", e)
-                currentWeather = "Weather unavailable: ${e.localizedMessage}"
+                currentWeather = "Weather unavailable: ${e.message}"
             }
         }
     }
@@ -581,7 +551,6 @@ class MainActivity : ComponentActivity() {
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Header with Logo, Title, Time, and Settings Button
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -610,7 +579,6 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     
-                    // Time and Settings
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -629,7 +597,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         
-                        // Settings Button
                         IconButton(
                             onClick = {
                                 try {
@@ -675,6 +642,18 @@ class MainActivity : ComponentActivity() {
                         fontSize = 12.sp,
                         color = Color(0xFF00E5FF),
                         modifier = Modifier.padding(12.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // ✅ NEW: Show gesture model status
+                GlassCard {
+                    Text(
+                        text = gestureModelStatus,
+                        fontSize = 10.sp,
+                        color = if (gestureModelStatus.contains("✅")) Color(0xFF00FF88) else Color(0xFFFF6E40),
+                        modifier = Modifier.padding(8.dp)
                     )
                 }
 
@@ -760,9 +739,11 @@ class MainActivity : ComponentActivity() {
                         onClick = {
                             lifecycleScope.launch {
                                 try {
-                                    currentWeather = weatherTimeProvider?.getWeatherVoiceReport() ?: "Unavailable"
+                                    currentWeather = "Refreshing..."
+                                    initializeWeather()
                                 } catch (e: Exception) {
                                     Log.e(TAG, "Weather error", e)
+                                    currentWeather = "Error: ${e.message}"
                                 }
                             }
                         },
@@ -774,7 +755,6 @@ class MainActivity : ComponentActivity() {
                             lifecycleScope.launch {
                                 try {
                                     val forecast = weatherTimeProvider?.getForecastVoiceReport(3) ?: "Forecast unavailable"
-                                    // ✅ FIXED: Remove SupportedLanguage parameter
                                     textToSpeechEngine?.speak(forecast)
                                 } catch (e: Exception) {
                                     Log.e(TAG, "Forecast error", e)
@@ -859,7 +839,6 @@ class MainActivity : ComponentActivity() {
                             } else {
                                 activateListeningMode()
                                 voiceController?.startListening()
-                                // ✅ FIXED: Remove SupportedLanguage parameter
                                 textToSpeechEngine?.speak("I'm listening")
                             }
                         } catch (e: Exception) {
@@ -987,7 +966,6 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         try {
-            // Unregister broadcast receiver
             hotWordReceiver?.let {
                 try {
                     unregisterReceiver(it)
@@ -998,18 +976,12 @@ class MainActivity : ComponentActivity() {
                 hotWordReceiver = null
             }
             
-            // Clean up components
             hotWordDetector?.stopListening()
-            // ✅ FIXED: TextToSpeechEngine cleanup is handled internally
-            // textToSpeechEngine?.release() // Not needed with new API
+            weatherTimeProvider?.stopLocationUpdates()
             pointerController?.release()
             gestureController?.release()
             voiceController?.cleanup()
             voiceController = null
-            
-            // Note: Background services continue running even after app is destroyed
-            // This is intentional for always-on functionality
-            // To stop services, use: serviceManager?.stopAllServices()
             
             Log.d(TAG, "All resources cleaned up")
         } catch (e: Exception) {
