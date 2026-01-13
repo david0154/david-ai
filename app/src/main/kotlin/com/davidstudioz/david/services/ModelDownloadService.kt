@@ -18,14 +18,6 @@ import com.davidstudioz.david.models.ModelManager
 import com.davidstudioz.david.ui.ModelDownloadActivity
 import kotlinx.coroutines.*
 
-/**
- * ModelDownloadService - FOREGROUND SERVICE FOR DOWNLOADS
- * ✅ Prevents download failure when device locks
- * ✅ Uses WakeLock to keep CPU alive during downloads
- * ✅ Shows persistent notification with progress
- * ✅ Battery efficient - releases resources when done
- * ✅ Downloads continue even when screen off
- */
 class ModelDownloadService : Service() {
 
     private lateinit var modelManager: ModelManager
@@ -43,10 +35,7 @@ class ModelDownloadService : Service() {
             modelManager = ModelManager(this)
             notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             
-            // Create notification channel
             createNotificationChannel()
-            
-            // Acquire WakeLock to prevent CPU sleep during downloads
             acquireWakeLock()
             
             Log.d(TAG, "ModelDownloadService created")
@@ -57,7 +46,6 @@ class ModelDownloadService : Service() {
     
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         try {
-            // Start as foreground service with notification
             val notification = createNotification(
                 title = "D.A.V.I.D Model Download",
                 text = "Preparing download...",
@@ -65,19 +53,23 @@ class ModelDownloadService : Service() {
             )
             startForeground(NOTIFICATION_ID, notification)
             
-            // Get model to download from intent
             val modelName = intent?.getStringExtra(EXTRA_MODEL_NAME)
             val modelUrl = intent?.getStringExtra(EXTRA_MODEL_URL)
             val modelType = intent?.getStringExtra(EXTRA_MODEL_TYPE)
             val modelSize = intent?.getStringExtra(EXTRA_MODEL_SIZE)
             val modelLanguage = intent?.getStringExtra(EXTRA_MODEL_LANGUAGE) ?: "en"
+            val modelMinRamGB = intent?.getIntExtra(EXTRA_MODEL_MIN_RAM, 2) ?: 2
+            val modelFormat = intent?.getStringExtra(EXTRA_MODEL_FORMAT) ?: "GGUF"
             
             if (modelName != null && modelUrl != null && modelType != null && modelSize != null) {
+                // ✅ FIXED: Use complete AIModel constructor with all required parameters
                 val model = AIModel(
                     name = modelName,
-                    type = modelType,
                     url = modelUrl,
                     size = modelSize,
+                    minRamGB = modelMinRamGB,
+                    type = modelType,
+                    format = modelFormat,
                     language = modelLanguage,
                     description = "Downloading..."
                 )
@@ -93,7 +85,7 @@ class ModelDownloadService : Service() {
             stopSelf()
         }
         
-        return START_STICKY // Restart if killed by system
+        return START_STICKY
     }
     
     private fun startDownload(model: AIModel) {
@@ -102,7 +94,6 @@ class ModelDownloadService : Service() {
                 Log.d(TAG, "Starting download: ${model.name}")
                 
                 val result = modelManager.downloadModel(model) { progress ->
-                    // Update notification with progress
                     updateNotification(
                         title = "Downloading ${model.name}",
                         text = "${progress.downloadedMB.toInt()}MB / ${progress.totalMB.toInt()}MB",
@@ -114,13 +105,13 @@ class ModelDownloadService : Service() {
                     onSuccess = { file ->
                         Log.d(TAG, "✅ Download completed: ${model.name}")
                         showCompletionNotification(model.name, success = true)
-                        delay(3000) // Show completion for 3 seconds
+                        delay(3000)
                         stopSelf()
                     },
                     onFailure = { error ->
                         Log.e(TAG, "❌ Download failed: ${model.name}", error)
                         showCompletionNotification(model.name, success = false, error = error.message)
-                        delay(5000) // Show error for 5 seconds
+                        delay(5000)
                         stopSelf()
                     }
                 )
@@ -133,33 +124,27 @@ class ModelDownloadService : Service() {
         }
     }
     
-    /**
-     * ✅ Acquire WakeLock to prevent CPU sleep during downloads
-     */
     private fun acquireWakeLock() {
         try {
             val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
             wakeLock = powerManager.newWakeLock(
-                PowerManager.PARTIAL_WAKE_LOCK, // Only CPU stays awake, screen can turn off
+                PowerManager.PARTIAL_WAKE_LOCK,
                 "DavidAI::ModelDownloadWakeLock"
             ).apply {
-                acquire(60 * 60 * 1000L) // Max 1 hour (safety timeout)
+                acquire(60 * 60 * 1000L)
             }
-            Log.d(TAG, "✅ WakeLock acquired - downloads will continue during device lock")
+            Log.d(TAG, "✅ WakeLock acquired")
         } catch (e: Exception) {
             Log.e(TAG, "Error acquiring WakeLock", e)
         }
     }
     
-    /**
-     * ✅ Release WakeLock to save battery
-     */
     private fun releaseWakeLock() {
         try {
             wakeLock?.let {
                 if (it.isHeld) {
                     it.release()
-                    Log.d(TAG, "✅ WakeLock released - battery saving restored")
+                    Log.d(TAG, "✅ WakeLock released")
                 }
             }
             wakeLock = null
@@ -173,7 +158,7 @@ class ModelDownloadService : Service() {
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 "Model Downloads",
-                NotificationManager.IMPORTANCE_LOW // Low priority - less intrusive
+                NotificationManager.IMPORTANCE_LOW
             ).apply {
                 description = "Shows progress of AI model downloads"
                 setShowBadge(false)
@@ -198,7 +183,7 @@ class ModelDownloadService : Service() {
             .setContentText(text)
             .setSmallIcon(android.R.drawable.stat_sys_download)
             .setProgress(100, progress, false)
-            .setOngoing(true) // Cannot be dismissed while downloading
+            .setOngoing(true)
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
@@ -245,13 +230,8 @@ class ModelDownloadService : Service() {
         super.onDestroy()
         
         try {
-            // Cancel ongoing download
             currentDownloadJob?.cancel()
-            
-            // Release WakeLock to save battery
             releaseWakeLock()
-            
-            // Cancel coroutine scope
             serviceScope.cancel()
             
             Log.d(TAG, "ModelDownloadService destroyed")
@@ -272,10 +252,9 @@ class ModelDownloadService : Service() {
         const val EXTRA_MODEL_TYPE = "model_type"
         const val EXTRA_MODEL_SIZE = "model_size"
         const val EXTRA_MODEL_LANGUAGE = "model_language"
+        const val EXTRA_MODEL_MIN_RAM = "model_min_ram"
+        const val EXTRA_MODEL_FORMAT = "model_format"
         
-        /**
-         * ✅ Start download as foreground service (survives device lock)
-         */
         fun startDownload(
             context: Context,
             model: AIModel
@@ -286,6 +265,8 @@ class ModelDownloadService : Service() {
                 putExtra(EXTRA_MODEL_TYPE, model.type)
                 putExtra(EXTRA_MODEL_SIZE, model.size)
                 putExtra(EXTRA_MODEL_LANGUAGE, model.language)
+                putExtra(EXTRA_MODEL_MIN_RAM, model.minRamGB)
+                putExtra(EXTRA_MODEL_FORMAT, model.format)
             }
             
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -297,9 +278,6 @@ class ModelDownloadService : Service() {
             Log.d(TAG, "📥 Starting foreground download: ${model.name}")
         }
         
-        /**
-         * Stop download service
-         */
         fun stopDownload(context: Context) {
             val intent = Intent(context, ModelDownloadService::class.java)
             context.stopService(intent)
