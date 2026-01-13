@@ -6,11 +6,11 @@ import android.util.Log
 import java.util.*
 
 /**
- * TextToSpeechEngine - Enhanced with speed, pitch, gender control, and code filtering
- * ✅ Supports multiple voices (male and female)
- * ✅ Speed and pitch adjustment
- * ✅ Voice selection (David/Dayana)
- * ✅ Filters internal code and debug text from speech
+ * TextToSpeechEngine - Enhanced with male/female voice support
+ * ✅ Male voice (David)
+ * ✅ Female voice (Dayana) 
+ * ✅ Speed and pitch control
+ * ✅ Filters internal code before speaking
  */
 class TextToSpeechEngine(private val context: Context) {
     
@@ -47,7 +47,7 @@ class TextToSpeechEngine(private val context: Context) {
     }
     
     /**
-     * ✅ FIXED: Speak text with code filtering
+     * ✅ Speak text with internal code filtering
      */
     fun speak(text: String) {
         if (!isInitialized || tts == null) {
@@ -60,7 +60,7 @@ class TextToSpeechEngine(private val context: Context) {
             val cleanText = filterInternalCode(text)
             
             if (cleanText.isBlank()) {
-                Log.w(TAG, "Text filtered to empty, not speaking")
+                Log.w(TAG, "Text filtered to empty, skipping TTS")
                 return
             }
             
@@ -72,24 +72,23 @@ class TextToSpeechEngine(private val context: Context) {
     }
     
     /**
-     * ✅ NEW: Filter internal code, debug text, and technical terms from speech
+     * ✅ Filter internal code, debug text, and technical terms
      */
     private fun filterInternalCode(text: String): String {
         var filtered = text
         
-        // Remove code blocks and syntax
+        // Remove code blocks and technical syntax
         val codePatterns = listOf(
             "```.*?```".toRegex(RegexOption.DOT_MATCHES_ALL), // Code blocks
             "\\{.*?\\}".toRegex(), // JSON objects
-            "\\[.*?\\]".toRegex(), // Arrays
             "<.*?>".toRegex(), // XML/HTML tags
             "\\$\\{.*?\\}".toRegex(), // Template strings
-            "function\\s+\\w+".toRegex(), // Functions
-            "class\\s+\\w+".toRegex(), // Classes
-            "import\\s+.*".toRegex(), // Imports
-            "package\\s+.*".toRegex(), // Packages
+            "function\\s+\\w+\\s*\\(".toRegex(), // Function declarations
+            "class\\s+\\w+".toRegex(), // Class declarations
+            "import\\s+.*".toRegex(), // Import statements
+            "package\\s+.*".toRegex(), // Package declarations
             "@\\w+".toRegex(), // Annotations
-            "//.*".toRegex(), // Comments
+            "//.*".toRegex(), // Single line comments
             "/\\*.*?\\*/".toRegex(RegexOption.DOT_MATCHES_ALL) // Multi-line comments
         )
         
@@ -101,25 +100,26 @@ class TextToSpeechEngine(private val context: Context) {
         val debugPatterns = listOf(
             "^(DEBUG|INFO|WARN|ERROR|Log\\.d|Log\\.i|Log\\.w|Log\\.e):.*".toRegex(RegexOption.MULTILINE),
             "^\\[.*?\\]\\s*".toRegex(RegexOption.MULTILINE), // [TAG] prefixes
-            "✅|❌|⚠️|\ud83d\udca1|\ud83d\ude80|\ud83d\udc4d".toRegex(), // Status emojis
-            "✋|✊|☝️|✌️|\ud83d\udc4c".toRegex() // Gesture emojis in text
+            "✅|❌|⚠️|💡|🔧|🌐|📱".toRegex() // Status emojis
         )
         
         for (pattern in debugPatterns) {
             filtered = filtered.replace(pattern, "")
         }
         
-        // Remove technical syntax
+        // Remove technical variable syntax
         filtered = filtered
             .replace("\\bval\\s+\\w+\\s*=".toRegex(), "")
             .replace("\\bvar\\s+\\w+\\s*=".toRegex(), "")
             .replace("\\breturn\\s+".toRegex(), "")
             .replace("\\bnull\\b".toRegex(), "")
             .replace("\\bundefined\\b".toRegex(), "")
-            .replace("\\.kt\\b".toRegex(), "") // Remove .kt extensions
-            .replace("\\.java\\b".toRegex(), "") // Remove .java extensions
+            .replace("\\bBoolean\\b".toRegex(), "")
+            .replace("\\bString\\b".toRegex(), "")
+            .replace("\\bInt\\b".toRegex(), "")
+            .replace("\\bFloat\\b".toRegex(), "")
         
-        // Clean up whitespace
+        // Clean up multiple spaces and newlines
         filtered = filtered
             .replace("\\s+".toRegex(), " ")
             .trim()
@@ -132,7 +132,6 @@ class TextToSpeechEngine(private val context: Context) {
      */
     fun setSpeechRate(rate: Float) {
         try {
-            // Clamp rate between 0.5 and 2.0
             val clampedRate = rate.coerceIn(0.5f, 2.0f)
             tts?.setSpeechRate(clampedRate)
             prefs.edit().putFloat("voice_speed", clampedRate).apply()
@@ -147,7 +146,6 @@ class TextToSpeechEngine(private val context: Context) {
      */
     fun setPitch(pitch: Float) {
         try {
-            // Clamp pitch between 0.5 and 2.0
             val clampedPitch = pitch.coerceIn(0.5f, 2.0f)
             tts?.setPitch(clampedPitch)
             prefs.edit().putFloat("voice_pitch", clampedPitch).apply()
@@ -158,7 +156,7 @@ class TextToSpeechEngine(private val context: Context) {
     }
     
     /**
-     * ✅ FIXED: Set voice based on user preference with male voice support
+     * ✅ Set voice based on user preference with male/female support
      */
     private fun setVoiceFromPreferences() {
         try {
@@ -167,55 +165,47 @@ class TextToSpeechEngine(private val context: Context) {
             // Get available voices
             val voices = tts?.voices ?: return
             
-            Log.d(TAG, "Available TTS voices: ${voices.size}")
-            voices.forEach { voice ->
-                Log.d(TAG, "Voice: ${voice.name}, Locale: ${voice.locale}")
+            Log.d(TAG, "Available voices: ${voices.size}")
+            voices.forEach {
+                Log.d(TAG, "Voice: ${it.name}, Locale: ${it.locale}")
             }
             
-            // ✅ Try to find matching voice with gender preference
+            // ✅ Try to find matching voice
             val voice = when (selectedVoice) {
                 "david" -> {
-                    // Try to find male voice
-                    Log.d(TAG, "Looking for male voice...")
+                    // ✅ Male voice options
                     voices.firstOrNull { 
                         it.name.contains("male", ignoreCase = true) && 
                         !it.name.contains("female", ignoreCase = true) &&
                         it.locale.language == "en"
                     } ?: voices.firstOrNull {
-                        // Fallback: Use lower pitch voice (typically male)
+                        // Fallback: lower pitch for male-like voice
                         it.locale.language == "en"
                     }?.also {
-                        // Set lower pitch for male voice if no explicit male voice found
-                        if (!it.name.contains("male", ignoreCase = true)) {
-                            setPitch(0.8f) // Lower pitch for male sound
-                            Log.d(TAG, "Using default voice with lower pitch for male sound")
-                        }
+                        // Apply lower pitch for male-like effect
+                        setPitch(0.85f)
                     }
                 }
                 "dayana" -> {
-                    // Try to find female voice
-                    Log.d(TAG, "Looking for female voice...")
+                    // ✅ Female voice options
                     voices.firstOrNull { 
                         it.name.contains("female", ignoreCase = true) &&
                         it.locale.language == "en"
                     } ?: voices.firstOrNull {
-                        // Fallback: Use higher pitch voice (typically female)
+                        // Fallback: higher pitch for female-like voice
                         it.locale.language == "en"
                     }?.also {
-                        // Set higher pitch for female voice if no explicit female voice found
-                        if (!it.name.contains("female", ignoreCase = true)) {
-                            setPitch(1.2f) // Higher pitch for female sound
-                            Log.d(TAG, "Using default voice with higher pitch for female sound")
-                        }
+                        // Apply higher pitch for female-like effect
+                        setPitch(1.15f)
                     }
                 }
-                else -> voices.firstOrNull { it.locale.language == "en" }
+                else -> voices.firstOrNull()
             }
             
             voice?.let {
                 tts?.voice = it
                 Log.d(TAG, "✅ Voice set to: ${it.name} (${selectedVoice})")
-            } ?: Log.w(TAG, "No suitable voice found for: $selectedVoice")
+            } ?: Log.w(TAG, "Could not find suitable voice for: $selectedVoice")
             
         } catch (e: Exception) {
             Log.e(TAG, "Error setting voice", e)
@@ -223,44 +213,29 @@ class TextToSpeechEngine(private val context: Context) {
     }
     
     /**
-     * ✅ NEW: Get available voice options
-     */
-    fun getAvailableVoices(): List<VoiceOption> {
-        val voiceOptions = mutableListOf<VoiceOption>()
-        
-        // Always include David (male) and Dayana (female) as options
-        voiceOptions.add(
-            VoiceOption(
-                id = "david",
-                name = "David (Male)",
-                gender = "male",
-                language = "en-US"
-            )
-        )
-        
-        voiceOptions.add(
-            VoiceOption(
-                id = "dayana",
-                name = "Dayana (Female)",
-                gender = "female",
-                language = "en-US"
-            )
-        )
-        
-        return voiceOptions
-    }
-    
-    /**
-     * Change voice (call after user changes selection)
+     * ✅ Change voice (David = male, Dayana = female)
      */
     fun changeVoice(voiceId: String) {
         prefs.edit().putString("selected_voice", voiceId).apply()
         setVoiceFromPreferences()
-        Log.d(TAG, "Voice changed to: $voiceId")
+        
+        // Announce voice change
+        val voiceName = if (voiceId == "david") "David" else "Dayana"
+        speak("Voice changed to $voiceName")
     }
     
     /**
-     * Get current voice selection
+     * Get available voice options
+     */
+    fun getAvailableVoices(): List<VoiceOption> {
+        return listOf(
+            VoiceOption("david", "David", "Male voice"),
+            VoiceOption("dayana", "Dayana", "Female voice")
+        )
+    }
+    
+    /**
+     * Get current voice
      */
     fun getCurrentVoice(): String {
         return prefs.getString("selected_voice", "david") ?: "david"
@@ -278,18 +253,14 @@ class TextToSpeechEngine(private val context: Context) {
     }
     
     /**
-     * Check if TTS is speaking
+     * Check if speaking
      */
     fun isSpeaking(): Boolean {
-        return try {
-            tts?.isSpeaking ?: false
-        } catch (e: Exception) {
-            false
-        }
+        return tts?.isSpeaking ?: false
     }
     
     /**
-     * Cleanup (called automatically)
+     * Cleanup
      */
     fun shutdown() {
         try {
@@ -303,14 +274,10 @@ class TextToSpeechEngine(private val context: Context) {
         }
     }
     
-    /**
-     * Voice option data class
-     */
     data class VoiceOption(
         val id: String,
         val name: String,
-        val gender: String,
-        val language: String
+        val description: String
     )
     
     companion object {
