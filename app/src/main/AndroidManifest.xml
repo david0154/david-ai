@@ -143,6 +143,20 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.DavidAI" />
 
+        <!-- NEW: Privacy Activity -->
+        <activity
+            android:name="com.davidstudioz.david.ui.PrivacyActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.DavidAI" />
+
+        <!-- NEW: About Activity -->
+        <activity
+            android:name="com.davidstudioz.david.ui.AboutActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.DavidAI" />
+
         <!-- ====== SERVICES ====== -->
         
         <!-- Hot Word Detection Service - Always-On Voice -->
