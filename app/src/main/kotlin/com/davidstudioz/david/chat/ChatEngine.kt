@@ -127,7 +127,7 @@ class ChatEngine(private val context: Context) {
             
             // Identity
             lowerPrompt.contains("who are you") || lowerPrompt.contains("what are you") -> {
-                "I'm D.A.V.I.D - Digital Artificial Voice Intelligent Device. I'm an advanced AI assistant that can help you with voice commands, device control, and conversations."
+                "I'm D.A.V.I.D - Digital Assistant with Voice & Intelligent Decisions. I'm an advanced AI assistant that can help you with voice commands, device control, and conversations."
             }
             
             // Capabilities
