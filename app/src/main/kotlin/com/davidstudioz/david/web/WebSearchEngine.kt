@@ -1,285 +1,167 @@
 package com.davidstudioz.david.web
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.net.HttpURLConnection
-import java.net.URL
+import org.jsoup.Jsoup
 import java.net.URLEncoder
 
 /**
- * WebSearchEngine - Search the web and fetch pages
- * ✅ Uses DuckDuckGo Instant Answer API (free, no key)
- * ✅ Wikipedia integration for detailed info
- * ✅ Web page fetching and parsing
- * ✅ Returns SearchResult objects
- * ✅ No OkHttp dependency - uses HttpURLConnection
- * Connected to: SearchService, VoiceController
+ * WebSearchEngine - Internet search integration for D.A.V.I.D
+ * ✅ Real-time web searches
+ * ✅ Uses DuckDuckGo HTML (no API key needed)
+ * ✅ Extracts search results
+ * ✅ Internet connectivity check
+ * ✅ Fallback handling
  */
-class WebSearchEngine {
-    
-    data class SearchResult(
-        val title: String,
-        val url: String,
-        val snippet: String
-    )
+class WebSearchEngine(private val context: Context) {
     
     /**
-     * Search the web using DuckDuckGo Instant Answer API
-     * Returns list of SearchResult objects
+     * Search the web for a query
      */
-    suspend fun search(query: String, maxResults: Int = 5): Result<List<SearchResult>> = withContext(Dispatchers.IO) {
-        return@withContext try {
-            val results = mutableListOf<SearchResult>()
-            
-            // Search DuckDuckGo
-            val ddgResults = searchDuckDuckGo(query)
-            results.addAll(ddgResults)
-            
-            // If no results, try Wikipedia
-            if (results.isEmpty()) {
-                val wikiResults = searchWikipedia(query)
-                results.addAll(wikiResults)
+    suspend fun search(query: String): SearchResult = withContext(Dispatchers.IO) {
+        try {
+            if (!isInternetAvailable()) {
+                return@withContext SearchResult(
+                    success = false,
+                    query = query,
+                    summary = "No internet connection available",
+                    sources = emptyList()
+                )
             }
             
-            // Limit to maxResults
-            val limitedResults = results.take(maxResults)
+            Log.d(TAG, "Searching web for: $query")
             
-            Log.d(TAG, "Found ${limitedResults.size} results for: $query")
-            Result.success(limitedResults)
-        } catch (e: Exception) {
-            Log.e(TAG, "Search error", e)
-            Result.failure(e)
-        }
-    }
-    
-    /**
-     * Search DuckDuckGo Instant Answer API
-     */
-    private fun searchDuckDuckGo(query: String): List<SearchResult> {
-        try {
+            // Use DuckDuckGo HTML search (no API key required)
             val encodedQuery = URLEncoder.encode(query, "UTF-8")
-            val url = URL("https://api.duckduckgo.com/?q=$encodedQuery&format=json&no_html=1")
+            val searchUrl = "https://html.duckduckgo.com/html/?q=$encodedQuery"
             
-            val connection = url.openConnection() as HttpURLConnection
-            connection.requestMethod = "GET"
-            connection.connectTimeout = 5000
-            connection.readTimeout = 5000
-            connection.setRequestProperty("User-Agent", "DAVID-AI/1.0")
+            val doc = Jsoup.connect(searchUrl)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                .timeout(10000)
+                .get()
             
-            val responseCode = connection.responseCode
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                val response = connection.inputStream.bufferedReader().use { it.readText() }
-                connection.disconnect()
-                
-                return parseDuckDuckGoResults(response, query)
-            } else {
-                connection.disconnect()
-                return emptyList()
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "DuckDuckGo search error", e)
-            return emptyList()
-        }
-    }
-    
-    /**
-     * Parse DuckDuckGo JSON response into SearchResult objects
-     */
-    private fun parseDuckDuckGoResults(jsonResponse: String, query: String): List<SearchResult> {
-        val results = mutableListOf<SearchResult>()
-        
-        try {
-            val json = JSONObject(jsonResponse)
+            // Extract search results
+            val results = mutableListOf<SearchSource>()
+            val resultElements = doc.select(".result")
             
-            // Check for instant answer
-            val answer = json.optString("Answer")
-            if (answer.isNotBlank()) {
-                results.add(
-                    SearchResult(
-                        title = "Instant Answer: $query",
-                        url = json.optString("AbstractURL", "https://duckduckgo.com/?q=${URLEncoder.encode(query, "UTF-8")}"),
-                        snippet = answer
-                    )
-                )
-            }
-            
-            // Check for abstract
-            val abstract = json.optString("Abstract")
-            if (abstract.isNotBlank()) {
-                results.add(
-                    SearchResult(
-                        title = json.optString("Heading", query),
-                        url = json.optString("AbstractURL", "https://duckduckgo.com/?q=${URLEncoder.encode(query, "UTF-8")}"),
-                        snippet = abstract
-                    )
-                )
-            }
-            
-            // Check for definition
-            val definition = json.optString("Definition")
-            if (definition.isNotBlank()) {
-                results.add(
-                    SearchResult(
-                        title = "Definition: $query",
-                        url = json.optString("DefinitionURL", "https://duckduckgo.com/?q=${URLEncoder.encode(query, "UTF-8")}"),
-                        snippet = definition
-                    )
-                )
-            }
-            
-            // Check for related topics
-            val relatedTopics = json.optJSONArray("RelatedTopics")
-            if (relatedTopics != null) {
-                for (i in 0 until minOf(relatedTopics.length(), 3)) {
-                    val topic = relatedTopics.getJSONObject(i)
-                    val text = topic.optString("Text")
-                    val firstURL = topic.optString("FirstURL")
+            resultElements.take(5).forEach { element ->
+                try {
+                    val titleElement = element.select(".result__title a")
+                    val snippetElement = element.select(".result__snippet")
+                    val urlElement = element.select(".result__url")
                     
-                    if (text.isNotBlank() && firstURL.isNotBlank()) {
-                        // Extract title from text (usually first part before dash)
-                        val title = text.split(" - ").firstOrNull() ?: text.take(50)
+                    val title = titleElement.text()
+                    val snippet = snippetElement.text()
+                    val url = urlElement.attr("href")
+                    
+                    if (title.isNotBlank() && snippet.isNotBlank()) {
                         results.add(
-                            SearchResult(
+                            SearchSource(
                                 title = title,
-                                url = firstURL,
-                                snippet = text
+                                snippet = snippet,
+                                url = url
                             )
                         )
                     }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Error parsing result: ${e.message}")
                 }
             }
             
-        } catch (e: Exception) {
-            Log.e(TAG, "Error parsing DuckDuckGo results", e)
-        }
-        
-        return results
-    }
-    
-    /**
-     * Search Wikipedia for query
-     */
-    private fun searchWikipedia(query: String): List<SearchResult> {
-        try {
-            val encodedQuery = URLEncoder.encode(query, "UTF-8")
-            val url = URL("https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=$encodedQuery&format=json&srlimit=3")
-            
-            val connection = url.openConnection() as HttpURLConnection
-            connection.requestMethod = "GET"
-            connection.connectTimeout = 5000
-            connection.readTimeout = 5000
-            connection.setRequestProperty("User-Agent", "DAVID-AI/1.0")
-            
-            val responseCode = connection.responseCode
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                val response = connection.inputStream.bufferedReader().use { it.readText() }
-                connection.disconnect()
-                
-                return parseWikipediaResults(response)
-            } else {
-                connection.disconnect()
-                return emptyList()
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Wikipedia search error", e)
-            return emptyList()
-        }
-    }
-    
-    /**
-     * Parse Wikipedia JSON response
-     */
-    private fun parseWikipediaResults(jsonResponse: String): List<SearchResult> {
-        val results = mutableListOf<SearchResult>()
-        
-        try {
-            val json = JSONObject(jsonResponse)
-            val query = json.getJSONObject("query")
-            val searchResults = query.getJSONArray("search")
-            
-            for (i in 0 until searchResults.length()) {
-                val result = searchResults.getJSONObject(i)
-                val title = result.getString("title")
-                val snippet = result.getString("snippet")
-                    .replace("<span class=\"searchmatch\">", "")
-                    .replace("</span>", "")
-                    .replace("&quot;", "\"")
-                
-                val pageId = result.getInt("pageid")
-                val url = "https://en.wikipedia.org/?curid=$pageId"
-                
-                results.add(
-                    SearchResult(
-                        title = title,
-                        url = url,
-                        snippet = snippet
-                    )
+            if (results.isEmpty()) {
+                return@withContext SearchResult(
+                    success = false,
+                    query = query,
+                    summary = "No results found for '$query'",
+                    sources = emptyList()
                 )
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error parsing Wikipedia results", e)
-        }
-        
-        return results
-    }
-    
-    /**
-     * Fetch and parse a web page
-     * Returns the text content of the page
-     */
-    suspend fun fetchWebPage(urlString: String): Result<String> = withContext(Dispatchers.IO) {
-        return@withContext try {
-            val url = URL(urlString)
-            val connection = url.openConnection() as HttpURLConnection
-            connection.requestMethod = "GET"
-            connection.connectTimeout = 10000
-            connection.readTimeout = 10000
-            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36")
             
-            val responseCode = connection.responseCode
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                val html = connection.inputStream.bufferedReader().use { it.readText() }
-                connection.disconnect()
-                
-                // Basic HTML parsing (remove tags)
-                val text = html
-                    .replace(Regex("<script[^>]*>.*?</script>", RegexOption.DOT_MATCHES_ALL), "")
-                    .replace(Regex("<style[^>]*>.*?</style>", RegexOption.DOT_MATCHES_ALL), "")
-                    .replace(Regex("<[^>]+>"), " ")
-                    .replace(Regex("\\s+"), " ")
-                    .trim()
-                
-                Log.d(TAG, "Fetched page: ${text.take(100)}...")
-                Result.success(text)
-            } else {
-                connection.disconnect()
-                Result.failure(Exception("HTTP error: $responseCode"))
-            }
+            // Create summary from top results
+            val summary = buildSummary(query, results)
+            
+            Log.d(TAG, "Found ${results.size} results for '$query'")
+            
+            SearchResult(
+                success = true,
+                query = query,
+                summary = summary,
+                sources = results
+            )
+            
         } catch (e: Exception) {
-            Log.e(TAG, "Error fetching web page", e)
-            Result.failure(e)
+            Log.e(TAG, "Web search error", e)
+            SearchResult(
+                success = false,
+                query = query,
+                summary = "Search failed: ${e.message}",
+                sources = emptyList()
+            )
         }
     }
     
     /**
-     * Get a summary from search results (for voice response)
+     * Build a summary from search results
      */
-    fun getSummaryFromResults(results: List<SearchResult>): String {
-        if (results.isEmpty()) {
-            return "No results found"
-        }
+    private fun buildSummary(query: String, results: List<SearchSource>): String {
+        if (results.isEmpty()) return "No information found."
         
-        val firstResult = results.first()
-        val snippet = firstResult.snippet
-        
-        // Limit to first 2 sentences for spoken response
-        val sentences = snippet.split(". ")
-        val summary = sentences.take(2).joinToString(". ")
-        
-        return "${firstResult.title}. $summary"
+        val topResult = results.first()
+        return "Based on web search: ${topResult.snippet}"
     }
+    
+    /**
+     * Check if internet is available
+     */
+    private fun isInternetAvailable(): Boolean {
+        return try {
+            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val network = connectivityManager.activeNetwork ?: return false
+            val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+            
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking internet", e)
+            false
+        }
+    }
+    
+    /**
+     * Check if query needs web search
+     */
+    fun needsWebSearch(query: String): Boolean {
+        val lower = query.lowercase()
+        
+        return lower.contains("search for") ||
+                lower.contains("google") ||
+                lower.contains("look up") ||
+                lower.contains("find information") ||
+                lower.contains("latest news") ||
+                lower.contains("current price") ||
+                lower.contains("today's") ||
+                lower.contains("what happened") ||
+                lower.contains("recent") ||
+                lower.contains("new") && lower.contains("2026")
+    }
+    
+    data class SearchResult(
+        val success: Boolean,
+        val query: String,
+        val summary: String,
+        val sources: List<SearchSource>
+    )
+    
+    data class SearchSource(
+        val title: String,
+        val snippet: String,
+        val url: String
+    )
     
     companion object {
         private const val TAG = "WebSearchEngine"

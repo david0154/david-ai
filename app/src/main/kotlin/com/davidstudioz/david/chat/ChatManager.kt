@@ -6,6 +6,7 @@ import com.davidstudioz.david.ai.LLMInferenceEngine
 import com.davidstudioz.david.device.DeviceController
 import com.davidstudioz.david.models.ModelManager
 import com.davidstudioz.david.voice.VoiceCommandProcessor
+import com.davidstudioz.david.web.WebSearchEngine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -29,8 +30,11 @@ class ChatManager(private val context: Context) {
     private val deviceController = DeviceController(context)
     private val voiceCommandProcessor = VoiceCommandProcessor(context)
     
-    // ✅ NEW: Real LLM inference engine
+    // Real LLM inference engine
     private val llmEngine = LLMInferenceEngine(context)
+    
+    // ✅ NEW: Web search engine
+    private val webSearch = WebSearchEngine(context)
     
     init {
         loadLLMModel()
@@ -49,8 +53,6 @@ class ChatManager(private val context: Context) {
             
             if (llmModel != null && llmModel.exists()) {
                 llmModelPath = llmModel
-                
-                // ✅ Load model into TensorFlow Lite interpreter
                 isModelLoaded = llmEngine.loadModel(llmModel)
                 
                 if (isModelLoaded) {
@@ -59,7 +61,7 @@ class ChatManager(private val context: Context) {
                     Log.w(TAG, "⚠️ LLM model file found but failed to load")
                 }
             } else {
-                Log.w(TAG, "⚠️ No LLM model downloaded - using smart fallback responses")
+                Log.w(TAG, "⚠️ No LLM model downloaded - using smart fallback + web search")
                 isModelLoaded = false
             }
         } catch (e: Exception) {
@@ -79,8 +81,11 @@ class ChatManager(private val context: Context) {
             
             val response = if (isCommand(userMessage)) {
                 executeCommand(userMessage)
+            } else if (webSearch.needsWebSearch(userMessage)) {
+                // ✅ Use web search for current information
+                searchWeb(userMessage)
             } else if (isModelReady()) {
-                // ✅ Use real LLM inference
+                // Use real LLM inference
                 generateResponseWithLLM(userMessage)
             } else {
                 // Fallback to smart responses
@@ -102,6 +107,27 @@ class ChatManager(private val context: Context) {
             )
             messages.add(errorMsg)
             errorMsg
+        }
+    }
+    
+    /**
+     * ✅ NEW: Search the web for current information
+     */
+    private suspend fun searchWeb(query: String): String {
+        return try {
+            Log.d(TAG, "Searching web for: $query")
+            val result = webSearch.search(query)
+            
+            if (result.success && result.sources.isNotEmpty()) {
+                // Return summary with source
+                val topSource = result.sources.first()
+                "${result.summary}\n\nSource: ${topSource.title}"
+            } else {
+                "I couldn't find current information online. ${result.summary}"
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Web search error", e)
+            "I couldn't search the web right now. Please check your internet connection."
         }
     }
     
@@ -163,13 +189,12 @@ class ChatManager(private val context: Context) {
     }
     
     /**
-     * ✅ REAL LLM INFERENCE - Uses TensorFlow Lite model
+     * Real LLM inference using TensorFlow Lite
      */
     private suspend fun generateResponseWithLLM(input: String): String = withContext(Dispatchers.IO) {
         return@withContext try {
             Log.d(TAG, "Using LLM model: ${llmModelPath?.name}")
             
-            // ✅ Generate text with LLM
             val prompt = "User: $input\nAssistant:"
             val response = llmEngine.generateText(
                 prompt = prompt,
@@ -177,7 +202,6 @@ class ChatManager(private val context: Context) {
                 temperature = 0.7f
             )
             
-            // If LLM returns empty or invalid, use fallback
             if (response.isBlank() || response.length < 5) {
                 Log.w(TAG, "LLM returned invalid response, using fallback")
                 generateSmartFallback(input)
@@ -191,8 +215,7 @@ class ChatManager(private val context: Context) {
     }
     
     /**
-     * ✅ ENHANCED: 100+ smart responses for common questions
-     * Works without LLM model - provides intelligent fallback
+     * ✅ ENHANCED: Smart fallback responses with Nexuzy Tech branding
      */
     private fun generateSmartFallback(input: String): String {
         val lower = input.lowercase().trim()
@@ -200,7 +223,7 @@ class ChatManager(private val context: Context) {
         // 1. GREETINGS
         if (lower.matches(".*(hello|hi|hey|greetings|sup|yo).*".toRegex())) {
             return listOf(
-                "Hello! I'm D.A.V.I.D, your AI assistant. How can I help you?",
+                "Hello! I'm D.A.V.I.D, your AI assistant by Nexuzy Tech. How can I help you?",
                 "Hi there! What can I do for you today?",
                 "Hey! Ready to assist you. What do you need?"
             ).random()
@@ -216,17 +239,30 @@ class ChatManager(private val context: Context) {
             return "I'm doing great! Thanks for asking. How can I help you today?"
         }
         
+        // ✅ NEXUZY TECH BRANDING
         if (lower.contains("your name") || lower.contains("who are you")) {
-            return "I'm D.A.V.I.D - Digital Assistant with Voice Integration and Device control. I'm your personal AI assistant!"
+            return "I'm D.A.V.I.D - Digital Assistant with Voice Integration and Device control. I was developed by Nexuzy Tech, lead by David. Visit us at nexuzy.tech!"
         }
         
-        if (lower.contains("who made you") || lower.contains("who created you")) {
-            return "I was created by the David AI team to help you control your device and answer questions!"
+        if (lower.contains("who made you") || lower.contains("who created you") || lower.contains("who developed you")) {
+            return "I was created by Nexuzy Tech - a technology company lead by David. We specialize in AI assistants and innovative solutions. Learn more at nexuzy.tech!"
+        }
+        
+        if (lower.contains("company") || lower.contains("nexuzy")) {
+            return "Nexuzy Tech is the company behind D.A.V.I.D AI. We're a tech company lead by David, focused on AI, voice assistants, and innovative solutions. Visit nexuzy.tech for more info!"
+        }
+        
+        if (lower.contains("website") || lower.contains("your site")) {
+            return "You can learn more about Nexuzy Tech and our products at nexuzy.tech!"
+        }
+        
+        if (lower.contains("developer") || lower.contains("dev team")) {
+            return "D.A.V.I.D is developed by Nexuzy Tech team, lead by David. We're passionate about creating intelligent AI assistants!"
         }
         
         // 3. CAPABILITIES
         if (lower.contains("what can you do") || lower.contains("help") || lower.contains("capabilities")) {
-            return "I can:\n• Control device (WiFi, Bluetooth, flashlight, volume)\n• Make calls & send messages\n• Check weather & time\n• Answer questions\n• Set reminders\n• Open apps\n• And much more! Just ask!"
+            return "I can:\n• Control device (WiFi, Bluetooth, flashlight, volume)\n• Make calls & send messages\n• Search the web for current info\n• Check weather & time\n• Answer questions\n• Set reminders\n• Open apps\n• And much more! Just ask!"
         }
         
         // 4. TIME & DATE
@@ -304,7 +340,7 @@ class ChatManager(private val context: Context) {
         
         // 14. QUESTIONS ABOUT AI
         if (lower.contains("what is ai") || lower.contains("artificial intelligence")) {
-            return "AI (Artificial Intelligence) is technology that enables machines to learn, reason, and make decisions like humans."
+            return "AI (Artificial Intelligence) is technology that enables machines to learn, reason, and make decisions like humans. I'm an example of AI, created by Nexuzy Tech!"
         }
         
         // 15. YES/NO RESPONSES
@@ -327,13 +363,13 @@ class ChatManager(private val context: Context) {
         
         // 18. DEFAULT SMART RESPONSES
         return when {
-            input.endsWith("?") -> "That's a great question! I can help with device control, time, weather, and basic info. What do you need?"
+            input.endsWith("?") -> "That's a great question! I can help with device control, web searches, time, weather, and more. What do you need?"
             input.length < 3 -> "I'm listening. What would you like me to do?"
-            lower.contains("how") -> "Let me help you with that. I can control your device, check info, and answer questions."
-            lower.contains("why") -> "That's a thoughtful question. I can help with device tasks and provide information."
+            lower.contains("how") -> "Let me help you with that. I can control your device, search the web, and answer questions."
+            lower.contains("why") -> "That's a thoughtful question. I can search the web for current information if you need!"
             lower.contains("when") -> "I can help you check times, dates, and schedules. What specifically do you need?"
-            lower.contains("where") -> "I can help with location-related queries. What are you looking for?"
-            else -> "I understand you're asking about that. I can help with device control, info lookup, and more. Try asking me to turn on WiFi, check the time, or tell me what you need!"
+            lower.contains("where") -> "I can help with location queries. What are you looking for?"
+            else -> "I understand you're asking about that. Try saying 'search for [topic]' and I'll look it up online, or ask me to control your device!"
         }
     }
     
@@ -402,14 +438,14 @@ class ChatManager(private val context: Context) {
     
     fun getModelStatus(): String {
         return if (isModelReady()) {
-            "✅ LLM Model: Loaded (TensorFlow Lite - Advanced AI)"
+            "✅ LLM Model: Loaded (TensorFlow Lite - Advanced AI)\n✅ Web Search: Available"
         } else {
-            "⚠️ LLM Model: Not loaded (Using smart responses)"
+            "⚠️ LLM Model: Not loaded (Using smart responses + web search)"
         }
     }
     
     /**
-     * Release LLM resources
+     * Release resources
      */
     fun release() {
         llmEngine.release()
