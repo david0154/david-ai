@@ -7,7 +7,7 @@ import com.davidstudioz.david.device.DeviceController
 import com.davidstudioz.david.models.ModelManager
 import com.davidstudioz.david.voice.VoiceCommandProcessor
 import com.davidstudioz.david.web.WebSearchEngine
-import com.davidstudioz.david.weather.WeatherService
+import com.davidstudioz.david.features.WeatherService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -36,11 +36,11 @@ class ChatManager(private val context: Context) {
     // Real LLM inference engine
     private val llmEngine = LLMInferenceEngine(context)
 
-    // ✅ NEW: Weather service for actual weather data
-    private val weatherService = WeatherService(context)
-
-    // Web search engine
+    // ✅ NEW: Web search engine
     private val webSearch = WebSearchEngine(context)
+    
+    // ✅ FIXED: Weather service for actual weather data
+    private val weatherService = WeatherService(context)
 
     init {
         loadLLMModel()
@@ -67,7 +67,7 @@ class ChatManager(private val context: Context) {
                     Log.w(TAG, "⚠️ LLM model file found but failed to load")
                 }
             } else {
-                Log.w(TAG, "⚠️ No LLM model downloaded - using smart fallback + weather + web search")
+                Log.w(TAG, "⚠️ No LLM model downloaded - using smart fallback + web search")
                 isModelLoaded = false
             }
         } catch (e: Exception) {
@@ -85,31 +85,20 @@ class ChatManager(private val context: Context) {
             val userMsg = ChatMessage(text = userMessage, isUser = true)
             messages.add(userMsg)
 
-            val response = if (isCommand(userMessage)) {
-                executeCommand(userMessage)
-            } else if (weatherService.isWeatherQuery(userMessage)) {
-                // ✅ Use weather service for actual weather data
-                getWeather(userMessage)
-            } else if (webSearch.needsWebSearch(userMessage)) {
-                // Use web search for current information
-                searchWeb(userMessage)
-            } else if (isModelReady()) {
-                // Use real LLM inference
-                generateResponseWithLLM(userMessage)
-            } else {
-                // Fallback to smart responses
-                generateSmartFallback(userMessage)
+            val response = when {
+                isCommand(userMessage) -> executeCommand(userMessage)
+                isWeatherQuery(userMessage) -> getWeatherInfo(userMessage)
+                webSearch.needsWebSearch(userMessage) -> searchWeb(userMessage)
+                isModelReady() -> generateResponseWithLLM(userMessage)
+                else -> generateSmartFallback(userMessage)
             }
 
-            // ✅ Filter internal code from response
-            val cleanResponse = filterInternalCode(response)
-
-            val aiMsg = ChatMessage(text = cleanResponse, isUser = false)
+            val aiMsg = ChatMessage(text = response, isUser = false)
             messages.add(aiMsg)
 
             saveChatHistory()
 
-            Log.d(TAG, "✅ Message: '$userMessage' -> '$cleanResponse'")
+            Log.d(TAG, "✅ Message: '$userMessage' -> '$response'")
             aiMsg
         } catch (e: Exception) {
             Log.e(TAG, "Error sending message", e)
@@ -121,88 +110,72 @@ class ChatManager(private val context: Context) {
             errorMsg
         }
     }
-
+    
     /**
-     * ✅ NEW: Get actual weather using WeatherService
+     * ✅ FIXED: Check if query is about weather
      */
-    private suspend fun getWeather(query: String): String {
+    private fun isWeatherQuery(message: String): Boolean {
+        val lower = message.lowercase()
+        return lower.contains("weather") ||
+                lower.contains("temperature") ||
+                lower.contains("forecast") ||
+                lower.contains("climate") ||
+                (lower.contains("how") && (lower.contains("hot") || lower.contains("cold")))
+    }
+    
+    /**
+     * ✅ NEW: Get actual weather data from WeatherService
+     */
+    private suspend fun getWeatherInfo(query: String): String {
         return try {
-            Log.d(TAG, "Getting weather for: $query")
+            // Extract location from query
+            val location = extractLocation(query) ?: "Kolkata" // Default to Kolkata
             
-            val location = weatherService.extractLocation(query)
+            Log.d(TAG, "Fetching weather for: $location")
             val result = weatherService.getCurrentWeather(location)
             
-            if (result.success) {
-                result.message
+            if (result.isSuccess) {
+                val weather = result.getOrNull()!!
+                // Format for voice-friendly response
+                weatherService.formatWeatherForVoice(weather)
             } else {
-                result.message
+                "I couldn't fetch the weather data right now. Please check your internet connection and try again."
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Weather error", e)
-            "I couldn't get the weather right now. Please check your internet connection and try again."
+            Log.e(TAG, "Weather fetch error", e)
+            "I had trouble getting the weather information. Please try again."
         }
     }
-
+    
     /**
-     * ✅ NEW: Filter internal code, debug text, and technical terms from responses
+     * ✅ NEW: Extract location from weather query
      */
-    private fun filterInternalCode(text: String): String {
-        var filtered = text
+    private fun extractLocation(query: String): String? {
+        val lower = query.lowercase()
         
-        // Remove common code patterns
-        val codePatterns = listOf(
-            "```.*?```".toRegex(RegexOption.DOT_MATCHES_ALL), // Code blocks
-            "\\{.*?\\}".toRegex(), // JSON objects
-            "\\[.*?\\]".toRegex(), // Arrays (but keep citations)
-            "<.*?>".toRegex(), // XML/HTML tags
-            "\\$\\{.*?\\}".toRegex(), // Template strings
-            "function\\s+\\w+\\s*\\(".toRegex(), // Function declarations
-            "class\\s+\\w+".toRegex(), // Class declarations
-            "import\\s+.*".toRegex(), // Import statements
-            "package\\s+.*".toRegex(), // Package declarations
-            "@\\w+".toRegex(), // Annotations
-            "//.*".toRegex(), // Single line comments
-            "/\\*.*?\\*/".toRegex(RegexOption.DOT_MATCHES_ALL) // Multi-line comments
+        // Check for "in [location]" or "at [location]" pattern
+        val inPattern = "in ([a-z\\s]+)(?:\\?|\$)".toRegex()
+        val atPattern = "at ([a-z\\s]+)(?:\\?|\$)".toRegex()
+        
+        inPattern.find(lower)?.groupValues?.getOrNull(1)?.trim()?.let { return it }
+        atPattern.find(lower)?.groupValues?.getOrNull(1)?.trim()?.let { return it }
+        
+        // Check for common city names
+        val cities = listOf(
+            "kolkata", "delhi", "mumbai", "bangalore", "chennai",
+            "hyderabad", "pune", "ahmedabad", "jaipur", "lucknow",
+            "london", "new york", "paris", "tokyo", "sydney"
         )
         
-        for (pattern in codePatterns) {
-            filtered = filtered.replace(pattern, "")
+        cities.forEach { city ->
+            if (lower.contains(city)) return city
         }
         
-        // Remove debug/log prefixes
-        val debugPatterns = listOf(
-            "^(DEBUG|INFO|WARN|ERROR|Log\\.d|Log\\.i|Log\\.w|Log\\.e):.*".toRegex(RegexOption.MULTILINE),
-            "^\\[.*?\\]\\s*".toRegex(RegexOption.MULTILINE), // [TAG] prefixes
-            "✅|❌|⚠️|\ud83d\udca1".toRegex() // Status emojis that might leak from logs
-        )
-        
-        for (pattern in debugPatterns) {
-            filtered = filtered.replace(pattern, "")
-        }
-        
-        // Remove technical variable names and syntax
-        filtered = filtered
-            .replace("\\bval\\s+\\w+\\s*=".toRegex(), "")
-            .replace("\\bvar\\s+\\w+\\s*=".toRegex(), "")
-            .replace("\\breturn\\s+".toRegex(), "")
-            .replace("\\bnull\\b".toRegex(), "")
-            .replace("\\bundefined\\b".toRegex(), "")
-        
-        // Clean up multiple spaces and newlines
-        filtered = filtered
-            .replace("\\s+".toRegex(), " ")
-            .trim()
-        
-        // If filtering removed everything, return a safe fallback
-        if (filtered.isBlank() || filtered.length < 10) {
-            return "I'm here to help! What would you like to know?"
-        }
-        
-        return filtered
+        return null // Will use default location
     }
 
     /**
-     * Search the web for current information
+     * ✅ Search the web for current information
      */
     private suspend fun searchWeb(query: String): String {
         return try {
@@ -353,7 +326,7 @@ class ChatManager(private val context: Context) {
 
         // 3. CAPABILITIES
         if (lower.contains("what can you do") || lower.contains("help") || lower.contains("capabilities")) {
-            return "I can:\n• Control device (WiFi, Bluetooth, flashlight, volume)\n• Make calls & send messages\n• Get real-time weather\n• Search the web for current info\n• Check time & date\n• Answer questions\n• Set reminders\n• Open apps\n• And much more! Just ask!"
+            return "I can:\n• Control device (WiFi, Bluetooth, flashlight, volume)\n• Make calls & send messages\n• Get real weather data\n• Check time & date\n• Answer questions\n• Set reminders\n• Open apps\n• And much more! Just ask!"
         }
 
         // 4. TIME & DATE
@@ -449,13 +422,13 @@ class ChatManager(private val context: Context) {
 
         // 17. DEFAULT SMART RESPONSES
         return when {
-            input.endsWith("?") -> "That's a great question! I can help with device control, weather, web searches, time, and more. What do you need?"
+            input.endsWith("?") -> "That's a great question! I can help with device control, weather info, time, and more. What do you need?"
             input.length < 3 -> "I'm listening. What would you like me to do?"
-            lower.contains("how") -> "Let me help you with that. I can control your device, get weather, search the web, and answer questions."
+            lower.contains("how") -> "Let me help you with that. I can control your device, get weather data, and answer questions."
             lower.contains("why") -> "That's a thoughtful question. I can search the web for current information if you need!"
             lower.contains("when") -> "I can help you check times, dates, and schedules. What specifically do you need?"
             lower.contains("where") -> "I can help with location queries. What are you looking for?"
-            else -> "I understand you're asking about that. Try saying 'search for [topic]' for web results, or ask me about weather, time, or device control!"
+            else -> "I understand you're asking about that. Try asking me about weather, time, or device control!"
         }
     }
 
@@ -524,9 +497,9 @@ class ChatManager(private val context: Context) {
 
     fun getModelStatus(): String {
         return if (isModelReady()) {
-            "✅ LLM Model: Loaded (TensorFlow Lite - Advanced AI)\n✅ Weather: Real-time data\n✅ Web Search: Available"
+            "✅ LLM Model: Loaded (TensorFlow Lite - Advanced AI)\n✅ Weather: Real-time API\n✅ Web Search: Available"
         } else {
-            "⚠️ LLM Model: Not loaded (Using smart responses)\n✅ Weather: Real-time data\n✅ Web Search: Available"
+            "⚠️ LLM Model: Not loaded (Using smart responses + weather + web search)"
         }
     }
 
