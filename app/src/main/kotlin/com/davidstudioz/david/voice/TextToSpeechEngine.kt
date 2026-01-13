@@ -6,109 +6,138 @@ import android.util.Log
 import java.util.*
 
 /**
- * TextToSpeechEngine - FIXED FOR CONCISE RESPONSES
- * ✅ Male voice (David) and Female voice (Dayna) support
- * ✅ Concise mode (no extra talking)
- * ✅ Pitch and speed control
- * ✅ Respects user voice settings
+ * TextToSpeechEngine - Enhanced with speed and pitch control
+ * ✅ Supports multiple voices
+ * ✅ Speed and pitch adjustment
+ * ✅ Voice selection (David/Dayana)
  */
 class TextToSpeechEngine(private val context: Context) {
     
     private var tts: TextToSpeech? = null
     private var isInitialized = false
-    private val prefs = context.getSharedPreferences("david_voice", Context.MODE_PRIVATE)
+    private val prefs = context.getSharedPreferences("voice_settings", Context.MODE_PRIVATE)
     
     init {
-        initializeTTS()
-    }
-    
-    private fun initializeTTS() {
         tts = TextToSpeech(context) { status ->
             if (status == TextToSpeech.SUCCESS) {
                 isInitialized = true
-                applyVoiceSettings()
-                Log.d(TAG, "✅ TTS initialized")
+                
+                // Set default language
+                val result = tts?.setLanguage(Locale.US)
+                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    Log.e(TAG, "Language not supported")
+                } else {
+                    Log.d(TAG, "✅ TTS initialized successfully")
+                }
+                
+                // Load saved voice parameters
+                val speed = prefs.getFloat("voice_speed", 1.0f)
+                val pitch = prefs.getFloat("voice_pitch", 1.0f)
+                setSpeechRate(speed)
+                setPitch(pitch)
+                
+                // Set voice based on selection
+                setVoiceFromPreferences()
             } else {
-                Log.e(TAG, "❌ TTS initialization failed")
+                Log.e(TAG, "TTS initialization failed")
+                isInitialized = false
             }
         }
     }
     
     /**
-     * ✅ FIXED: Apply user voice settings (male/female, pitch, speed)
-     */
-    private fun applyVoiceSettings() {
-        if (!isInitialized || tts == null) return
-        
-        try {
-            // Get voice settings
-            val voice = prefs.getString("tts_voice", "male") ?: "male"
-            val basePitch = prefs.getFloat("tts_pitch", 1.0f)
-            val speechRate = prefs.getFloat("tts_rate", 1.0f)
-            
-            // ✅ Apply pitch (male lower, female higher)
-            val adjustedPitch = if (voice == "female") {
-                basePitch * 1.2f  // Higher pitch for female voice
-            } else {
-                basePitch * 0.9f  // Lower pitch for male voice
-            }
-            
-            tts?.setPitch(adjustedPitch)
-            tts?.setSpeechRate(speechRate)
-            tts?.language = Locale.US
-            
-            Log.d(TAG, "✅ Voice settings applied: $voice, pitch: $adjustedPitch, rate: $speechRate")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error applying voice settings", e)
-        }
-    }
-    
-    /**
-     * ✅ FIXED: Speak with concise mode support
+     * Speak text (no SupportedLanguage parameter)
      */
     fun speak(text: String) {
         if (!isInitialized || tts == null) {
-            Log.w(TAG, "TTS not ready")
+            Log.w(TAG, "TTS not initialized")
             return
         }
         
         try {
-            // ✅ Apply concise mode
-            val conciseMode = prefs.getBoolean("concise_mode", true)
-            val finalText = if (conciseMode) {
-                makeConcise(text)
-            } else {
-                text
-            }
-            
-            tts?.speak(finalText, TextToSpeech.QUEUE_FLUSH, null, null)
-            Log.d(TAG, "Speaking: $finalText")
+            tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+            Log.d(TAG, "Speaking: $text")
         } catch (e: Exception) {
             Log.e(TAG, "Error speaking", e)
         }
     }
     
     /**
-     * ✅ NEW: Make response concise (remove extra talking)
+     * Set speech rate (0.5 - 2.0)
      */
-    private fun makeConcise(text: String): String {
-        return text
-            // Remove filler phrases
-            .replace("Let me", "")
-            .replace("I will", "")
-            .replace("I'm going to", "")
-            .replace("One moment", "")
-            .replace("Just a second", "")
-            .replace("Please wait", "")
-            // Remove redundant confirmations
-            .replace("Okay,", "")
-            .replace("Sure,", "")
-            .replace("Alright,", "")
-            // Trim whitespace
-            .trim()
-            .replace(Regex("\\s+"), " ")
+    fun setSpeechRate(rate: Float) {
+        try {
+            // Clamp rate between 0.5 and 2.0
+            val clampedRate = rate.coerceIn(0.5f, 2.0f)
+            tts?.setSpeechRate(clampedRate)
+            Log.d(TAG, "Speech rate set to: $clampedRate")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting speech rate", e)
+        }
     }
     
+    /**
+     * Set pitch (0.5 - 2.0)
+     */
+    fun setPitch(pitch: Float) {
+        try {
+            // Clamp pitch between 0.5 and 2.0
+            val clampedPitch = pitch.coerceIn(0.5f, 2.0f)
+            tts?.setPitch(clampedPitch)
+            Log.d(TAG, "Pitch set to: $clampedPitch")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting pitch", e)
+        }
+    }
+    
+    /**
+     * Set voice based on user preference
+     */
+    private fun setVoiceFromPreferences() {
+        try {
+            val selectedVoice = prefs.getString("selected_voice", "david") ?: "david"
+            
+            // Get available voices
+            val voices = tts?.voices ?: return
+            
+            // Try to find matching voice
+            val voice = when (selectedVoice) {
+                "david" -> {
+                    // Try to find male voice
+                    voices.firstOrNull { 
+                        it.name.contains("male", ignoreCase = true) && 
+                        !it.name.contains("female", ignoreCase = true)
+                    } ?: voices.firstOrNull()
+                }
+                "dayana" -> {
+                    // Try to find female voice
+                    voices.firstOrNull { 
+                        it.name.contains("female", ignoreCase = true)
+                    } ?: voices.firstOrNull()
+                }
+                else -> voices.firstOrNull()
+            }
+            
+            voice?.let {
+                tts?.voice = it
+                Log.d(TAG, "Voice set to: ${it.name}")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting voice", e)
+        }
+    }
+    
+    /**
+     * Change voice (call after user changes selection)
+     */
+    fun changeVoice(voiceId: String) {
+        prefs.edit().putString("selected_voice", voiceId).apply()
+        setVoiceFromPreferences()
+    }
+    
+    /**
+     * Stop speaking
+     */
     fun stop() {
         try {
             tts?.stop()
@@ -117,24 +146,19 @@ class TextToSpeechEngine(private val context: Context) {
         }
     }
     
+    /**
+     * Cleanup (called automatically)
+     */
     fun shutdown() {
         try {
             tts?.stop()
             tts?.shutdown()
+            tts = null
             isInitialized = false
-            Log.d(TAG, "TTS shutdown")
+            Log.d(TAG, "TTS engine shutdown")
         } catch (e: Exception) {
             Log.e(TAG, "Error shutting down TTS", e)
         }
-    }
-    
-    fun isReady(): Boolean = isInitialized
-    
-    /**
-     * ✅ NEW: Reload settings (called when user changes voice settings)
-     */
-    fun reloadSettings() {
-        applyVoiceSettings()
     }
     
     companion object {
