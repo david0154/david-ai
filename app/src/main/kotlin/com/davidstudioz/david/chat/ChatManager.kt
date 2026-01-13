@@ -2,6 +2,7 @@ package com.davidstudioz.david.chat
 
 import android.content.Context
 import android.util.Log
+import com.davidstudioz.david.ai.LLMInferenceEngine
 import com.davidstudioz.david.device.DeviceController
 import com.davidstudioz.david.models.ModelManager
 import com.davidstudioz.david.voice.VoiceCommandProcessor
@@ -28,6 +29,9 @@ class ChatManager(private val context: Context) {
     private val deviceController = DeviceController(context)
     private val voiceCommandProcessor = VoiceCommandProcessor(context)
     
+    // ✅ NEW: Real LLM inference engine
+    private val llmEngine = LLMInferenceEngine(context)
+    
     init {
         loadLLMModel()
     }
@@ -36,13 +40,24 @@ class ChatManager(private val context: Context) {
         try {
             val downloadedModels = modelManager.getDownloadedModels()
             val llmModel = downloadedModels.firstOrNull { file ->
-                file.name.contains("llm", ignoreCase = true) && file.length() > 1024 * 1024
+                (file.name.contains("llm", ignoreCase = true) || 
+                 file.name.contains("gemma", ignoreCase = true) ||
+                 file.name.contains("phi", ignoreCase = true) ||
+                 file.name.endsWith(".tflite")) && 
+                file.length() > 1024 * 1024  // At least 1MB
             }
             
             if (llmModel != null && llmModel.exists()) {
                 llmModelPath = llmModel
-                isModelLoaded = true
-                Log.d(TAG, "✅ LLM model loaded: ${llmModel.name}")
+                
+                // ✅ Load model into TensorFlow Lite interpreter
+                isModelLoaded = llmEngine.loadModel(llmModel)
+                
+                if (isModelLoaded) {
+                    Log.d(TAG, "✅ LLM model loaded with TensorFlow Lite: ${llmModel.name}")
+                } else {
+                    Log.w(TAG, "⚠️ LLM model file found but failed to load")
+                }
             } else {
                 Log.w(TAG, "⚠️ No LLM model downloaded - using smart fallback responses")
                 isModelLoaded = false
@@ -54,7 +69,7 @@ class ChatManager(private val context: Context) {
     }
     
     fun isModelReady(): Boolean {
-        return isModelLoaded && llmModelPath != null && llmModelPath!!.exists()
+        return isModelLoaded && llmEngine.isReady()
     }
     
     suspend fun sendMessage(userMessage: String): ChatMessage = withContext(Dispatchers.IO) {
@@ -65,8 +80,10 @@ class ChatManager(private val context: Context) {
             val response = if (isCommand(userMessage)) {
                 executeCommand(userMessage)
             } else if (isModelReady()) {
+                // ✅ Use real LLM inference
                 generateResponseWithLLM(userMessage)
             } else {
+                // Fallback to smart responses
                 generateSmartFallback(userMessage)
             }
             
@@ -145,13 +162,30 @@ class ChatManager(private val context: Context) {
         }
     }
     
+    /**
+     * ✅ REAL LLM INFERENCE - Uses TensorFlow Lite model
+     */
     private suspend fun generateResponseWithLLM(input: String): String = withContext(Dispatchers.IO) {
         return@withContext try {
             Log.d(TAG, "Using LLM model: ${llmModelPath?.name}")
-            // TODO: Implement actual LLM inference when model is loaded
-            generateSmartFallback(input)
+            
+            // ✅ Generate text with LLM
+            val prompt = "User: $input\nAssistant:"
+            val response = llmEngine.generateText(
+                prompt = prompt,
+                maxLength = 100,
+                temperature = 0.7f
+            )
+            
+            // If LLM returns empty or invalid, use fallback
+            if (response.isBlank() || response.length < 5) {
+                Log.w(TAG, "LLM returned invalid response, using fallback")
+                generateSmartFallback(input)
+            } else {
+                response.trim()
+            }
         } catch (e: Exception) {
-            Log.e(TAG, "LLM error", e)
+            Log.e(TAG, "LLM inference error", e)
             generateSmartFallback(input)
         }
     }
@@ -368,10 +402,17 @@ class ChatManager(private val context: Context) {
     
     fun getModelStatus(): String {
         return if (isModelReady()) {
-            "✅ LLM Model: Loaded (Advanced AI)"
+            "✅ LLM Model: Loaded (TensorFlow Lite - Advanced AI)"
         } else {
             "⚠️ LLM Model: Not loaded (Using smart responses)"
         }
+    }
+    
+    /**
+     * Release LLM resources
+     */
+    fun release() {
+        llmEngine.release()
     }
     
     companion object {

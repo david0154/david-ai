@@ -71,6 +71,7 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+        mlModelBinding = true  // Enable ML Model binding for TensorFlow Lite
     }
 
     packaging {
@@ -79,7 +80,7 @@ android {
             excludes += "/META-INF/gradle/incremental.annotation.processors"
         }
         jniLibs {
-            // Don't strip native libraries (MediaPipe, MLKit)
+            // Don't strip native libraries (MediaPipe, MLKit, TensorFlow)
             useLegacyPackaging = true
         }
     }
@@ -94,7 +95,6 @@ android {
 }
 
 // Compose Compiler Configuration (Modern API)
-// REMOVED: StrongSkipping is now enabled by default in Compose Compiler
 composeCompiler {
     // Include source information for better debugging
     includeSourceInformation.set(true)
@@ -148,7 +148,10 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:1.4.1")
     implementation("androidx.camera:camera-view:1.4.1")
 
-    // ML/AI
+    // ML/AI - TensorFlow Lite for LLM inference
+    implementation("org.tensorflow:tensorflow-lite:2.14.0")
+    implementation("org.tensorflow:tensorflow-lite-gpu:2.14.0")  // GPU acceleration
+    implementation("org.tensorflow:tensorflow-lite-support:0.4.4")  // Support library
     implementation("com.google.mlkit:text-recognition:16.0.1")
     implementation("com.google.mlkit:face-detection:16.1.7")
 
