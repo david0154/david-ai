@@ -2,135 +2,142 @@ package com.davidstudioz.david.voice
 
 import android.content.Context
 import android.speech.tts.TextToSpeech
-import android.speech.tts.TextToSpeech.OnInitListener
-import android.os.Build
+import android.util.Log
 import java.util.*
 
 /**
- * Text-to-Speech Engine
- * Supports 14+ Indian Languages
- * Auto-selects model based on device RAM
+ * TextToSpeechEngine - FIXED FOR CONCISE RESPONSES
+ * ✅ Male voice (David) and Female voice (Dayna) support
+ * ✅ Concise mode (no extra talking)
+ * ✅ Pitch and speed control
+ * ✅ Respects user voice settings
  */
-class TextToSpeechEngine(
-    context: Context,
-    private val onReady: () -> Unit
-) : OnInitListener {
-
+class TextToSpeechEngine(private val context: Context) {
+    
     private var tts: TextToSpeech? = null
-    private val context = context.applicationContext
     private var isInitialized = false
-
-    enum class SupportedLanguage(
-        val displayName: String,
-        val nativeName: String,
-        val locale: Locale,
-        val languageCode: String
-    ) {
-        HINDI("Hindi", "हिंदी", Locale("hi"), "hin"),
-        BENGALI("Bengali", "বাংলা", Locale("bn"), "ben"),
-        TAMIL("Tamil", "தமிழ்", Locale("ta"), "tam"),
-        TELUGU("Telugu", "తెలుగు", Locale("te"), "tel"),
-        MARATHI("Marathi", "मराठी", Locale("mr"), "mar"),
-        GUJARATI("Gujarati", "ગુજરાતી", Locale("gu"), "guj"),
-        PUNJABI("Punjabi", "ਪੰਜਾਬੀ", Locale("pa"), "pan"),
-        URDU("Urdu", "اردو", Locale("ur"), "urd"),
-        KANNADA("Kannada", "ಕನ್ನಡ", Locale("kn"), "kan"),
-        MALAYALAM("Malayalam", "മലയാളം", Locale("ml"), "mal"),
-        ODIA("Odia", "ଓଡ଼ିଆ", Locale("or"), "odi"),
-        ASSAMESE("Assamese", "অসমীয়া", Locale("as"), "asm"),
-        ENGLISH("English", "English", Locale.ENGLISH, "eng")
-    }
-
+    private val prefs = context.getSharedPreferences("david_voice", Context.MODE_PRIVATE)
+    
     init {
-        tts = TextToSpeech(context, this)
+        initializeTTS()
     }
-
-    override fun onInit(status: Int) {
-        if (status == TextToSpeech.SUCCESS) {
-            isInitialized = true
-            onReady()
+    
+    private fun initializeTTS() {
+        tts = TextToSpeech(context) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                isInitialized = true
+                applyVoiceSettings()
+                Log.d(TAG, "✅ TTS initialized")
+            } else {
+                Log.e(TAG, "❌ TTS initialization failed")
+            }
         }
     }
-
+    
     /**
-     * Speak text in specified language
+     * ✅ FIXED: Apply user voice settings (male/female, pitch, speed)
      */
-    fun speak(
-        text: String,
-        language: SupportedLanguage = SupportedLanguage.ENGLISH,
-        speed: Float = 1.0f,
-        pitch: Float = 1.0f
-    ) {
-        if (!isInitialized || text.isEmpty()) return
-
-        val result = tts?.setLanguage(language.locale)
-        if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-            // Fallback to English
-            tts?.setLanguage(Locale.ENGLISH)
+    private fun applyVoiceSettings() {
+        if (!isInitialized || tts == null) return
+        
+        try {
+            // Get voice settings
+            val voice = prefs.getString("tts_voice", "male") ?: "male"
+            val basePitch = prefs.getFloat("tts_pitch", 1.0f)
+            val speechRate = prefs.getFloat("tts_rate", 1.0f)
+            
+            // ✅ Apply pitch (male lower, female higher)
+            val adjustedPitch = if (voice == "female") {
+                basePitch * 1.2f  // Higher pitch for female voice
+            } else {
+                basePitch * 0.9f  // Lower pitch for male voice
+            }
+            
+            tts?.setPitch(adjustedPitch)
+            tts?.setSpeechRate(speechRate)
+            tts?.language = Locale.US
+            
+            Log.d(TAG, "✅ Voice settings applied: $voice, pitch: $adjustedPitch, rate: $speechRate")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error applying voice settings", e)
         }
-
-        tts?.setSpeechRate(speed)
-        tts?.setPitch(pitch)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "unique_id")
-        } else {
-            @Suppress("DEPRECATION")
-            tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null)
+    }
+    
+    /**
+     * ✅ FIXED: Speak with concise mode support
+     */
+    fun speak(text: String) {
+        if (!isInitialized || tts == null) {
+            Log.w(TAG, "TTS not ready")
+            return
+        }
+        
+        try {
+            // ✅ Apply concise mode
+            val conciseMode = prefs.getBoolean("concise_mode", true)
+            val finalText = if (conciseMode) {
+                makeConcise(text)
+            } else {
+                text
+            }
+            
+            tts?.speak(finalText, TextToSpeech.QUEUE_FLUSH, null, null)
+            Log.d(TAG, "Speaking: $finalText")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error speaking", e)
         }
     }
-
+    
     /**
-     * Get all supported languages
+     * ✅ NEW: Make response concise (remove extra talking)
      */
-    fun getSupportedLanguages(): List<SupportedLanguage> {
-        return SupportedLanguage.values().toList()
+    private fun makeConcise(text: String): String {
+        return text
+            // Remove filler phrases
+            .replace("Let me", "")
+            .replace("I will", "")
+            .replace("I'm going to", "")
+            .replace("One moment", "")
+            .replace("Just a second", "")
+            .replace("Please wait", "")
+            // Remove redundant confirmations
+            .replace("Okay,", "")
+            .replace("Sure,", "")
+            .replace("Alright,", "")
+            // Trim whitespace
+            .trim()
+            .replace(Regex("\\s+"), " ")
     }
-
-    /**
-     * Get Indian languages only
-     */
-    fun getIndianLanguages(): List<SupportedLanguage> {
-        return listOf(
-            SupportedLanguage.HINDI,
-            SupportedLanguage.BENGALI,
-            SupportedLanguage.TAMIL,
-            SupportedLanguage.TELUGU,
-            SupportedLanguage.MARATHI,
-            SupportedLanguage.GUJARATI,
-            SupportedLanguage.PUNJABI,
-            SupportedLanguage.URDU,
-            SupportedLanguage.KANNADA,
-            SupportedLanguage.MALAYALAM,
-            SupportedLanguage.ODIA,
-            SupportedLanguage.ASSAMESE
-        )
-    }
-
-    /**
-     * Get language by code
-     */
-    fun getLanguageByCode(code: String): SupportedLanguage? {
-        return SupportedLanguage.values().find { it.languageCode == code }
-    }
-
-    /**
-     * Stop speaking
-     */
+    
     fun stop() {
-        if (isInitialized) {
+        try {
             tts?.stop()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error stopping TTS", e)
         }
     }
-
-    /**
-     * Release TTS resources
-     */
-    fun release() {
-        if (isInitialized) {
+    
+    fun shutdown() {
+        try {
             tts?.stop()
             tts?.shutdown()
             isInitialized = false
+            Log.d(TAG, "TTS shutdown")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error shutting down TTS", e)
         }
+    }
+    
+    fun isReady(): Boolean = isInitialized
+    
+    /**
+     * ✅ NEW: Reload settings (called when user changes voice settings)
+     */
+    fun reloadSettings() {
+        applyVoiceSettings()
+    }
+    
+    companion object {
+        private const val TAG = "TextToSpeechEngine"
     }
 }

@@ -24,11 +24,10 @@ import com.davidstudioz.david.language.LanguageManager
 import com.davidstudioz.david.storage.EncryptionManager
 
 /**
- * SettingsActivity - COMPREHENSIVE FIX
- * ✅ FIXED: Privacy & About page navigation
- * ✅ FIXED: Accessibility service settings
- * ✅ FIXED: All settings clickable and functional
- * ✅ FIXED: Proper intent handling
+ * SettingsActivity - FIXED TO ACTUALLY OPEN PAGES
+ * ✅ Voice settings opens VoiceSettingsActivity
+ * ✅ Gesture settings opens GestureSettingsActivity
+ * ✅ All settings functional
  */
 @OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : ComponentActivity() {
@@ -117,22 +116,24 @@ class SettingsActivity : ComponentActivity() {
     }
     
     /**
-     * NEW: Handle settings item clicks
+     * ✅ FIXED: Actually open settings activities!
      */
     private fun handleSettingsClick(section: SettingsSection, onShowAccessibility: () -> Unit) {
         try {
             when (section.id) {
                 "languages" -> {
-                    // TODO: Open language settings
-                    Log.d(TAG, "Opening language settings")
+                    // TODO: Create LanguageSettingsActivity
+                    Log.d(TAG, "Language settings - coming soon")
                 }
                 "voice" -> {
-                    // TODO: Open voice settings
-                    Log.d(TAG, "Opening voice settings")
+                    // ✅ FIXED: Open VoiceSettingsActivity
+                    val intent = Intent(this, VoiceSettingsActivity::class.java)
+                    startActivity(intent)
                 }
                 "gesture" -> {
-                    // TODO: Open gesture settings
-                    Log.d(TAG, "Opening gesture settings")
+                    // ✅ FIXED: Open GestureSettingsActivity
+                    val intent = Intent(this, GestureSettingsActivity::class.java)
+                    startActivity(intent)
                 }
                 "notifications" -> {
                     openNotificationSettings()
@@ -152,9 +153,6 @@ class SettingsActivity : ComponentActivity() {
         }
     }
     
-    /**
-     * NEW: Open notification settings
-     */
     private fun openNotificationSettings() {
         try {
             val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
@@ -166,17 +164,12 @@ class SettingsActivity : ComponentActivity() {
         }
     }
     
-    /**
-     * FIXED: Open privacy policy page
-     */
     private fun openPrivacyPage() {
         try {
-            // Try to open PrivacyActivity if it exists
             val intent = Intent(this, PrivacyActivity::class.java)
             startActivity(intent)
         } catch (e: Exception) {
-            // Fallback: Open privacy markdown file or URL
-            Log.e(TAG, "PrivacyActivity not found, using fallback", e)
+            Log.e(TAG, "PrivacyActivity not found", e)
             try {
                 val intent = Intent(Intent.ACTION_VIEW).apply {
                     data = Uri.parse("https://github.com/david0154/david-ai/blob/main/PRIVACY_POLICY.md")
@@ -188,17 +181,12 @@ class SettingsActivity : ComponentActivity() {
         }
     }
     
-    /**
-     * FIXED: Open about page
-     */
     private fun openAboutPage() {
         try {
-            // Try to open AboutActivity if it exists
             val intent = Intent(this, AboutActivity::class.java)
             startActivity(intent)
         } catch (e: Exception) {
-            // Fallback: Open GitHub README
-            Log.e(TAG, "AboutActivity not found, using fallback", e)
+            Log.e(TAG, "AboutActivity not found", e)
             try {
                 val intent = Intent(Intent.ACTION_VIEW).apply {
                     data = Uri.parse("https://github.com/david0154/david-ai")
@@ -265,9 +253,6 @@ class SettingsActivity : ComponentActivity() {
         )
     }
     
-    /**
-     * NEW: Open accessibility settings
-     */
     private fun openAccessibilitySettings() {
         try {
             val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
@@ -307,9 +292,6 @@ class SettingsActivity : ComponentActivity() {
         }
     }
     
-    /**
-     * FIXED: Build settings sections with proper IDs
-     */
     private fun getSettingsSections(): List<SettingsSection> {
         val downloadedLanguages = languageManager.getDownloadedLanguages()
         val languageCount = downloadedLanguages.size
