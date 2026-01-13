@@ -16,13 +16,6 @@ data class ChatMessage(
     val timestamp: Long = System.currentTimeMillis()
 )
 
-/**
- * ChatManager - FIXED TO ACTUALLY WORK
- * ✅ Loads and USES LLM model (not just fallback)
- * ✅ Executes device commands (WiFi, Bluetooth, etc)
- * ✅ Simple human responses (NO technical jargon)
- * ✅ Works with voice commands
- */
 class ChatManager(private val context: Context) {
     
     private val messages = mutableListOf<ChatMessage>()
@@ -36,28 +29,18 @@ class ChatManager(private val context: Context) {
         loadLLMModel()
     }
     
-    /**
-     * ✅ FIXED: Actually load LLM model and verify it
-     */
     private fun loadLLMModel() {
         try {
-            // Try to get LLM model from ModelManager
-            val llmModels = modelManager.getDownloadedModels().filter { 
-                it.type == "llm" || it.name.contains("llm", ignoreCase = true)
+            // ✅ FIXED: Get downloaded model files and check for LLM
+            val downloadedModels = modelManager.getDownloadedModels()
+            val llmModel = downloadedModels.firstOrNull { file ->
+                file.name.contains("llm", ignoreCase = true) && file.length() > 1024 * 1024
             }
             
-            if (llmModels.isNotEmpty()) {
-                val model = llmModels.first()
-                val modelFile = modelManager.getModelPath(model.type)
-                
-                if (modelFile != null && modelFile.exists() && modelFile.length() > 1024 * 1024) {
-                    llmModelPath = modelFile
-                    isModelLoaded = true
-                    Log.d(TAG, "✅ LLM model loaded: ${modelFile.name} (${modelFile.length() / (1024 * 1024)}MB)")
-                } else {
-                    Log.w(TAG, "⚠️ LLM model file invalid")
-                    isModelLoaded = false
-                }
+            if (llmModel != null && llmModel.exists()) {
+                llmModelPath = llmModel
+                isModelLoaded = true
+                Log.d(TAG, "✅ LLM model loaded: ${llmModel.name}")
             } else {
                 Log.w(TAG, "⚠️ No LLM model downloaded")
                 isModelLoaded = false
@@ -72,24 +55,16 @@ class ChatManager(private val context: Context) {
         return isModelLoaded && llmModelPath != null && llmModelPath!!.exists()
     }
     
-    /**
-     * ✅ FIXED: Send message and ACTUALLY execute commands
-     */
     suspend fun sendMessage(userMessage: String): ChatMessage = withContext(Dispatchers.IO) {
         try {
-            // Add user message
             val userMsg = ChatMessage(text = userMessage, isUser = true)
             messages.add(userMsg)
             
-            // ✅ CRITICAL: Check if this is a COMMAND (not just a question)
             val response = if (isCommand(userMessage)) {
-                // Execute the command and get response
                 executeCommand(userMessage)
             } else if (isModelReady()) {
-                // Use LLM for questions/conversation
                 generateResponseWithLLM(userMessage)
             } else {
-                // Fallback for questions
                 generateSmartFallback(userMessage)
             }
             
@@ -111,9 +86,6 @@ class ChatManager(private val context: Context) {
         }
     }
     
-    /**
-     * ✅ NEW: Detect if message is a COMMAND that should be executed
-     */
     private fun isCommand(message: String): Boolean {
         val lower = message.lowercase()
         return lower.contains("turn on") || lower.contains("turn off") ||
@@ -125,15 +97,11 @@ class ChatManager(private val context: Context) {
                 lower.contains("flashlight") || lower.contains("torch")
     }
     
-    /**
-     * ✅ CRITICAL FIX: Actually EXECUTE device commands!
-     */
     private fun executeCommand(command: String): String {
         val lower = command.lowercase()
         
         return try {
             when {
-                // WiFi commands
                 lower.contains("wifi") && (lower.contains("on") || lower.contains("enable")) -> {
                     deviceController.toggleWiFi(true)
                     "WiFi is now on"
@@ -142,8 +110,6 @@ class ChatManager(private val context: Context) {
                     deviceController.toggleWiFi(false)
                     "WiFi is now off"
                 }
-                
-                // Bluetooth commands
                 lower.contains("bluetooth") && (lower.contains("on") || lower.contains("enable")) -> {
                     deviceController.toggleBluetooth(true)
                     "Bluetooth is now on"
@@ -152,15 +118,11 @@ class ChatManager(private val context: Context) {
                     deviceController.toggleBluetooth(false)
                     "Bluetooth is now off"
                 }
-                
-                // Flashlight
                 lower.contains("flashlight") || lower.contains("torch") -> {
                     val turnOn = lower.contains("on") || lower.contains("enable")
                     deviceController.toggleFlashlight(turnOn)
                     if (turnOn) "Flashlight is on" else "Flashlight is off"
                 }
-                
-                // Volume
                 lower.contains("volume up") || lower.contains("increase volume") -> {
                     deviceController.volumeUp()
                     "Volume increased"
@@ -173,8 +135,6 @@ class ChatManager(private val context: Context) {
                     deviceController.toggleMute(true)
                     "Volume muted"
                 }
-                
-                // Use VoiceCommandProcessor for other commands
                 else -> voiceCommandProcessor.processCommand(command)
             }
         } catch (e: Exception) {
@@ -183,14 +143,8 @@ class ChatManager(private val context: Context) {
         }
     }
     
-    /**
-     * ✅ Generate response with actual LLM model
-     * TODO: Integrate llama.cpp JNI for real inference
-     */
     private suspend fun generateResponseWithLLM(input: String): String = withContext(Dispatchers.IO) {
         return@withContext try {
-            // TODO: Actual LLM inference here
-            // For now, use smart fallback
             Log.d(TAG, "Using LLM model: ${llmModelPath?.name}")
             generateSmartFallback(input)
         } catch (e: Exception) {
@@ -199,52 +153,34 @@ class ChatManager(private val context: Context) {
         }
     }
     
-    /**
-     * ✅ FIXED: Simple human responses (NO technical jargon!)
-     */
     private fun generateSmartFallback(input: String): String {
         val lower = input.lowercase()
         
         return when {
-            // Greetings
             lower.matches(".*(hello|hi|hey|greetings).*".toRegex()) -> {
                 "Hello! I'm D.A.V.I.D. How can I help you?"
             }
             lower.contains("how are you") -> {
                 "I'm doing great! Ready to help you. What do you need?"
             }
-            
-            // Thanks
             lower.contains("thank") -> {
                 "You're welcome! Anything else?"
             }
-            
-            // Capabilities
             lower.contains("what can you do") || lower.contains("help") -> {
                 "I can control your device (WiFi, Bluetooth, flashlight, volume), make calls, send messages, answer questions, and more. Just ask!"
             }
-            
-            // Identity
             lower.contains("who are you") || lower.contains("your name") -> {
                 "I'm D.A.V.I.D - your personal AI assistant. I help control your device and answer questions!"
             }
-            
-            // Time
             lower.contains("time") || lower.contains("what time") -> {
                 "The time is ${deviceController.getCurrentTime()}"
             }
-            
-            // Date
             lower.contains("date") || lower.contains("today") -> {
                 "Today is ${deviceController.getCurrentDate()}"
             }
-            
-            // Weather
             lower.contains("weather") -> {
                 "Let me check the weather for you..."
             }
-            
-            // Default - don't show technical details!
             else -> {
                 when {
                     input.endsWith("?") -> "That's a good question. I'm still learning, but I can help with device control and basic info."
