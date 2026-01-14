@@ -3,17 +3,17 @@ plugins {
     id("com.android.application") version "8.1.2" apply false
     id("org.jetbrains.kotlin.android") version "1.9.10" apply false
     id("com.google.dagger.hilt.android") version "2.48" apply false
+    id("com.google.devtools.ksp") version "1.9.10-1.0.13" apply false
 }
 
-// ✅ ADDED: Deep clean task to fix build cache issues
+// ✅ FIXED: Deep clean task using layout.buildDirectory instead of buildDir
 tasks.register("deepClean", Delete::class) {
-    delete(rootProject.buildDir)
-    delete("$rootProject.projectDir/.gradle")
-    delete("$rootProject.projectDir/build")
+    delete(layout.buildDirectory.asFile.get())
+    delete("$rootDir/.gradle")
     
     // Clean all subproject build dirs
     subprojects.forEach { subproject ->
-        delete(subproject.buildDir)
+        delete(subproject.layout.buildDirectory.asFile.get())
         delete("${subproject.projectDir}/build")
         delete("${subproject.projectDir}/.gradle")
         

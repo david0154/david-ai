@@ -1,7 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose")
+    // ✅ REMOVED: kotlin.plugin.compose (not needed with Compose BOM 2024.12.01)
+    // Compose compiler is configured via composeCompiler block below
     id("com.google.devtools.ksp")
     id("kotlin-parcelize")
     id("com.google.dagger.hilt.android")
@@ -68,6 +69,10 @@ android {
         mlModelBinding = true
     }
 
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.3"
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -84,10 +89,6 @@ android {
         quiet = true
         disable += setOf("Deprecation", "ObsoleteLintCustomCheck")
     }
-}
-
-composeCompiler {
-    includeSourceInformation.set(true)
 }
 
 dependencies {
