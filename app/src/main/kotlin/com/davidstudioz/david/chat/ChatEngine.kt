@@ -24,11 +24,24 @@ data class ChatMessage(
     val timestamp: Long = System.currentTimeMillis()
 )
 
+/**
+ * ChatManager - Complete chat engine with LLM model loading
+ * ✅ FIXED: Properly loads LLM models from david_models directory
+ * ✅ FIXED: Correct file pattern matching for GGUF/TFLITE models
+ * ✅ FIXED: Better error handling and status reporting
+ * ✅ Real-time weather API integration
+ * ✅ Web search capability
+ * ✅ Device control commands
+ * Connected to: SafeMainActivity, LLMInferenceEngine, ModelManager
+ */
 class ChatManager(private val context: Context) {
 
     private val messages = mutableListOf<ChatMessage>()
     private var llmModelPath: File? = null
     private var isModelLoaded = false
+    
+    // ✅ FIXED: Use correct models directory path
+    private val modelsDir = File(context.filesDir, "david_models")
     private val modelManager = ModelManager(context)
     private val deviceController = DeviceController(context)
     private val voiceCommandProcessor = VoiceCommandProcessor(context)
@@ -36,44 +49,125 @@ class ChatManager(private val context: Context) {
     // Real LLM inference engine
     private val llmEngine = LLMInferenceEngine(context)
 
-    // ✅ NEW: Web search engine
+    // Web search engine
     private val webSearch = WebSearchEngine(context)
     
-    // ✅ FIXED: Weather service for actual weather data
+    // Weather service for actual weather data
     private val weatherService = WeatherService(context)
 
     init {
         loadLLMModel()
     }
 
+    /**
+     * ✅ FIXED: Load LLM model with proper directory scanning and validation
+     */
     private fun loadLLMModel() {
         try {
-            val downloadedModels = modelManager.getDownloadedModels()
+            Log.d(TAG, "Loading LLM model from: ${modelsDir.absolutePath}")
+            
+            // ✅ FIXED: Check if models directory exists
+            if (!modelsDir.exists()) {
+                Log.w(TAG, "⚠️ Models directory doesn't exist: ${modelsDir.absolutePath}")
+                Log.w(TAG, "Models directory will be created by ModelManager when models are downloaded")
+                isModelLoaded = false
+                return
+            }
+            
+            // ✅ FIXED: List all files in models directory
+            val downloadedModels = modelsDir.listFiles() ?: emptyArray()
+            Log.d(TAG, "Found ${downloadedModels.size} files in models directory")
+            
+            if (downloadedModels.isEmpty()) {
+                Log.w(TAG, "⚠️ No models found in directory")
+                isModelLoaded = false
+                return
+            }
+            
+            // ✅ FIXED: Enhanced LLM model detection with multiple patterns
             val llmModel = downloadedModels.firstOrNull { file ->
-                (file.name.contains("llm", ignoreCase = true) ||
-                        file.name.contains("gemma", ignoreCase = true) ||
-                        file.name.contains("phi", ignoreCase = true) ||
-                        file.name.endsWith(".tflite")) &&
-                        file.length() > 1024 * 1024  // At least 1MB
+                val name = file.name.lowercase()
+                val hasValidExtension = file.extension.lowercase() in listOf("gguf", "tflite", "bin", "onnx")
+                val hasValidSize = file.length() > 50 * 1024 * 1024 // At least 50MB
+                
+                // ✅ FIXED: Broader pattern matching for LLM models
+                val isLLMModel = name.contains("llm") || 
+                                name.contains("chat") ||
+                                name.contains("gemma") ||
+                                name.contains("phi") ||
+                                name.contains("llama") ||
+                                name.contains("qwen") ||
+                                name.contains("mistral") ||
+                                name.contains("tinyllama") ||
+                                name.contains("language") ||
+                                (name.contains("model") && hasValidExtension)
+                
+                val result = hasValidExtension && hasValidSize && isLLMModel
+                
+                if (result) {
+                    Log.d(TAG, "✅ Potential LLM model found: ${file.name}")
+                    Log.d(TAG, "   - Extension: ${file.extension}")
+                    Log.d(TAG, "   - Size: ${file.length() / (1024 * 1024)}MB")
+                    Log.d(TAG, "   - Readable: ${file.canRead()}")
+                }
+                
+                result
             }
 
-            if (llmModel != null && llmModel.exists()) {
+            if (llmModel != null && llmModel.exists() && llmModel.canRead()) {
+                Log.d(TAG, "✅ Selected LLM model: ${llmModel.name}")
+                Log.d(TAG, "   - Path: ${llmModel.absolutePath}")
+                Log.d(TAG, "   - Size: ${llmModel.length() / (1024 * 1024)}MB")
+                
                 llmModelPath = llmModel
-                isModelLoaded = llmEngine.loadModel(llmModel)
-
-                if (isModelLoaded) {
-                    Log.d(TAG, "✅ LLM model loaded with TensorFlow Lite: ${llmModel.name}")
-                } else {
-                    Log.w(TAG, "⚠️ LLM model file found but failed to load")
+                
+                // ✅ FIXED: Attempt to load model with LLMInferenceEngine
+                isModelLoaded = try {
+                    val loaded = llmEngine.loadModel(llmModel)
+                    if (loaded) {
+                        Log.d(TAG, "✅ LLM model loaded successfully with inference engine")
+                        true
+                    } else {
+                        Log.w(TAG, "⚠️ LLM inference engine failed to load model")
+                        Log.w(TAG, "Model file exists but inference initialization failed")
+                        // Keep model path for future retry
+                        false
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ Error loading model with inference engine: ${e.message}", e)
+                    false
+                }
+                
+                if (!isModelLoaded) {
+                    Log.w(TAG, "Falling back to smart responses + web search + weather API")
                 }
             } else {
-                Log.w(TAG, "⚠️ No LLM model downloaded - using smart fallback + web search")
+                if (llmModel == null) {
+                    Log.w(TAG, "⚠️ No LLM model found matching criteria")
+                    Log.w(TAG, "Available files: ${downloadedModels.joinToString { "${it.name} (${it.extension}, ${it.length() / 1024}KB)" }}")
+                } else if (!llmModel.exists()) {
+                    Log.e(TAG, "❌ Selected model file doesn't exist: ${llmModel.absolutePath}")
+                } else if (!llmModel.canRead()) {
+                    Log.e(TAG, "❌ Selected model file is not readable: ${llmModel.absolutePath}")
+                }
                 isModelLoaded = false
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error loading LLM model", e)
+            Log.e(TAG, "❌ Critical error loading LLM model", e)
+            Log.e(TAG, "Stack trace:", e)
             isModelLoaded = false
         }
+    }
+    
+    /**
+     * ✅ NEW: Reload model (for when user downloads a new model)
+     */
+    fun reloadModel() {
+        Log.d(TAG, "Reloading LLM model...")
+        llmEngine.release()
+        llmModelPath = null
+        isModelLoaded = false
+        loadLLMModel()
     }
 
     fun isModelReady(): Boolean {
@@ -98,7 +192,7 @@ class ChatManager(private val context: Context) {
 
             saveChatHistory()
 
-            Log.d(TAG, "✅ Message: '$userMessage' -> '$response'")
+            Log.d(TAG, "✅ Message: '$userMessage' -> '${response.take(50)}...'")
             aiMsg
         } catch (e: Exception) {
             Log.e(TAG, "Error sending message", e)
@@ -112,7 +206,7 @@ class ChatManager(private val context: Context) {
     }
     
     /**
-     * ✅ FIXED: Check if query is about weather
+     * Check if query is about weather
      */
     private fun isWeatherQuery(message: String): Boolean {
         val lower = message.lowercase()
@@ -124,7 +218,7 @@ class ChatManager(private val context: Context) {
     }
     
     /**
-     * ✅ NEW: Get actual weather data from WeatherService
+     * Get actual weather data from WeatherService
      */
     private suspend fun getWeatherInfo(query: String): String {
         return try {
@@ -148,14 +242,14 @@ class ChatManager(private val context: Context) {
     }
     
     /**
-     * ✅ NEW: Extract location from weather query
+     * Extract location from weather query
      */
     private fun extractLocation(query: String): String? {
         val lower = query.lowercase()
         
         // Check for "in [location]" or "at [location]" pattern
-        val inPattern = "in ([a-z\\s]+)(?:\\?|\$)".toRegex()
-        val atPattern = "at ([a-z\\s]+)(?:\\?|\$)".toRegex()
+        val inPattern = "in ([a-z\\s]+)(?:\\?|$)".toRegex()
+        val atPattern = "at ([a-z\\s]+)(?:\\?|$)".toRegex()
         
         inPattern.find(lower)?.groupValues?.getOrNull(1)?.trim()?.let { return it }
         atPattern.find(lower)?.groupValues?.getOrNull(1)?.trim()?.let { return it }
@@ -175,7 +269,7 @@ class ChatManager(private val context: Context) {
     }
 
     /**
-     * ✅ Search the web for current information
+     * Search the web for current information
      */
     private suspend fun searchWeb(query: String): String {
         return try {
@@ -495,12 +589,42 @@ class ChatManager(private val context: Context) {
         saveChatHistory()
     }
 
+    /**
+     * ✅ FIXED: Improved model status with detailed information
+     */
     fun getModelStatus(): String {
-        return if (isModelReady()) {
-            "✅ LLM Model: Loaded (TensorFlow Lite - Advanced AI)\n✅ Weather: Real-time API\n✅ Web Search: Available"
-        } else {
-            "⚠️ LLM Model: Not loaded (Using smart responses + weather + web search)"
+        return buildString {
+            if (isModelReady()) {
+                append("✅ LLM Model: ${llmModelPath?.name}\n")
+                append("   Size: ${(llmModelPath?.length() ?: 0) / (1024 * 1024)}MB\n")
+                append("   Status: Loaded and ready (TensorFlow Lite)\n")
+            } else if (llmModelPath != null) {
+                append("⚠️ LLM Model: ${llmModelPath?.name}\n")
+                append("   Status: Found but not loaded\n")
+                append("   Using: Smart responses + Weather + Web Search\n")
+            } else {
+                append("⚠️ LLM Model: Not found\n")
+                append("   Download from: Settings > Models > Chat Models\n")
+                append("   Using: Smart responses + Weather + Web Search\n")
+            }
+            append("\n✅ Weather API: Available")
+            append("\n✅ Web Search: Available")
         }
+    }
+    
+    /**
+     * ✅ NEW: Get detailed model info
+     */
+    fun getModelInfo(): Map<String, String> {
+        return mapOf(
+            "model_loaded" to isModelLoaded.toString(),
+            "model_ready" to isModelReady().toString(),
+            "model_name" to (llmModelPath?.name ?: "none"),
+            "model_path" to (llmModelPath?.absolutePath ?: "none"),
+            "model_size_mb" to "${(llmModelPath?.length() ?: 0) / (1024 * 1024)}",
+            "models_directory" to modelsDir.absolutePath,
+            "models_found" to "${modelsDir.listFiles()?.size ?: 0}"
+        )
     }
 
     /**
