@@ -7,13 +7,10 @@ import android.util.Log
 import java.util.*
 
 /**
- * TextToSpeechEngine - ENHANCED with aggressive filtering
- * ✅ CRITICAL: Removes ALL technical language
- * ✅ Filters: billion, million, thousand, timestamps, paths
- * ✅ Removes: initialized, completed, success, debug terms
- * ✅ Removes: percentages, code syntax, file extensions
+ * TextToSpeechEngine - 15 INDIAN LANGUAGES + Enhanced Filtering
+ * ✅ 15 Indian languages (Hindi, Tamil, Telugu, Bengali, etc.)
  * ✅ Male/female voice selection
- * ✅ Multi-language support
+ * ✅ AGGRESSIVE filtering (no technical jargon)
  * ✅ Natural speech only
  */
 class TextToSpeechEngine(private val context: Context) : TextToSpeech.OnInitListener {
@@ -22,7 +19,6 @@ class TextToSpeechEngine(private val context: Context) : TextToSpeech.OnInitList
     private var isTtsInitialized = false
     private val prefs = context.getSharedPreferences("voice_settings", Context.MODE_PRIVATE)
     
-    // Voice settings
     private var currentLanguage = "en"
     private var currentVoice: String? = null
 
@@ -44,7 +40,7 @@ class TextToSpeechEngine(private val context: Context) : TextToSpeech.OnInitList
                 } else {
                     isTtsInitialized = true
                     applyVoiceSelection()
-                    Log.d(TAG, "✅ TTS initialized: language=$currentLanguage, voice=$currentVoice")
+                    Log.d(TAG, "✅ TTS initialized: ${getLocaleFromCode(currentLanguage).displayLanguage}")
                 }
             }
         } else {
@@ -64,9 +60,6 @@ class TextToSpeechEngine(private val context: Context) : TextToSpeech.OnInitList
             .apply()
     }
 
-    /**
-     * ✅ CRITICAL: Enhanced filtering - removes ALL technical language
-     */
     fun speak(text: String) {
         if (!isTtsInitialized) {
             Log.w(TAG, "TTS not initialized yet")
@@ -75,98 +68,33 @@ class TextToSpeechEngine(private val context: Context) : TextToSpeech.OnInitList
 
         val cleanText = filterInternalCode(text)
         if (cleanText.isBlank()) {
-            Log.w(TAG, "Filtered text is empty, not speaking")
+            Log.w(TAG, "Filtered text is empty")
             return
         }
 
-        tts?.speak(cleanText, TextToSpeech.QUEUE_FLUSH, null, "utterance_id_${System.currentTimeMillis()}")
+        tts?.speak(cleanText, TextToSpeech.QUEUE_FLUSH, null, "utterance_${System.currentTimeMillis()}")
         Log.d(TAG, "🔊 Speaking: $cleanText")
     }
 
-    /**
-     * ✅ CRITICAL: AGGRESSIVE filtering for human-like speech
-     */
     private fun filterInternalCode(text: String): String {
         var filtered = text
-
-        // ✅ CRITICAL: Remove number scale words
-        filtered = filtered.replace("\\b(billion|bilon|bilion|billon)\\b".toRegex(RegexOption.IGNORE_CASE), "")
-        filtered = filtered.replace("\\b(million|milion|millon)\\b".toRegex(RegexOption.IGNORE_CASE), "")
-        filtered = filtered.replace("\\b(thousand|thousnd)\\b".toRegex(RegexOption.IGNORE_CASE), "")
-        filtered = filtered.replace("\\b(hundred|hundrd)\\b".toRegex(RegexOption.IGNORE_CASE), "")
-        
-        // ✅ Remove timestamps and time formats
+        filtered = filtered.replace("\\b(billion|bilon|bilion|trillion|million|thousand|hundred)\\b".toRegex(RegexOption.IGNORE_CASE), "")
         filtered = filtered.replace("\\d{1,2}:\\d{2}(:\\d{2})?(\\.\\d+)?".toRegex(), "")
         filtered = filtered.replace("\\d{4}-\\d{2}-\\d{2}".toRegex(), "")
-        filtered = filtered.replace("\\d{2}/\\d{2}/\\d{4}".toRegex(), "")
-        
-        // ✅ Remove technical status messages
         val technicalTerms = listOf(
-            "initialized", "initializing", "init",
-            "completed", "complete", "completion",
-            "success", "successful", "successfully",
-            "failed", "failure", "error",
-            "loading", "loaded", "load",
-            "processing", "processed", "process",
-            "executing", "executed", "execution",
-            "starting", "started", "start",
-            "stopping", "stopped", "stop",
-            "connecting", "connected", "connection",
-            "downloading", "downloaded", "download",
-            "uploading", "uploaded", "upload",
-            "updating", "updated", "update",
-            "configuring", "configured", "config",
-            "preparing", "prepared", "prepare",
-            "validating", "validated", "validation",
-            "verifying", "verified", "verification",
-            "detecting", "detected", "detection",
-            "analyzing", "analyzed", "analysis"
+            "initialized", "completed", "success", "failed", "error", "loading", "loaded",
+            "processing", "executing", "starting", "stopping", "downloading", "uploading"
         )
-        
         technicalTerms.forEach { term ->
             filtered = filtered.replace("\\b$term\\b".toRegex(RegexOption.IGNORE_CASE), "")
         }
-        
-        // ✅ Remove file paths and extensions
-        filtered = filtered.replace("/[\\w/.-]+\\.(kt|java|xml|json|txt|log|md)".toRegex(), "")
-        filtered = filtered.replace("[A-Z]:[\\\\\\w.-]+".toRegex(), "")
-        filtered = filtered.replace("\\.(tflite|gguf|onnx|bin|task|model)".toRegex(RegexOption.IGNORE_CASE), "")
-        
-        // ✅ Remove percentages and measurements
+        filtered = filtered.replace("/[\\w/.-]+\\.(kt|java|xml|json)".toRegex(), "")
+        filtered = filtered.replace("\\.(tflite|gguf|onnx|bin)".toRegex(RegexOption.IGNORE_CASE), "")
         filtered = filtered.replace("\\d+\\.?\\d*\\s*%".toRegex(), "")
-        filtered = filtered.replace("\\d+\\.?\\d*\\s*(MB|KB|GB|TB)".toRegex(RegexOption.IGNORE_CASE), "")
-        filtered = filtered.replace("\\d+\\.?\\d*\\s*(ms|sec|min|hr)".toRegex(RegexOption.IGNORE_CASE), "")
-        
-        // ✅ Remove code syntax
         filtered = filtered.replace("[{}\\[\\]()<>;:=]".toRegex(), " ")
-        filtered = filtered.replace("\\b(true|false|null|undefined)\\b".toRegex(RegexOption.IGNORE_CASE), "")
-        
-        // ✅ Remove technical symbols
-        filtered = filtered.replace("[\u2705\u274c\u26a0\ufe0f\ud83d\udd27\ud83d\udd0a\ud83c\udfa4\ud83d\udd07]".toRegex(), "")
-        
-        // ✅ Remove debug level indicators
-        filtered = filtered.replace("\\b(DEBUG|INFO|WARN|ERROR|FATAL)\\b".toRegex(), "")
-        filtered = filtered.replace("\\b(log|logger|logging)\\b".toRegex(RegexOption.IGNORE_CASE), "")
-        
-        // ✅ Remove common technical prefixes
-        filtered = filtered.replace("\\b(await|async|sync|promise)\\b".toRegex(RegexOption.IGNORE_CASE), "")
-        filtered = filtered.replace("\\b(function|method|class|object|instance)\\b".toRegex(RegexOption.IGNORE_CASE), "")
-        
-        // ✅ Remove status indicators
-        filtered = filtered.replace("✅", "")
-        filtered = filtered.replace("❌", "")
-        filtered = filtered.replace("⚠️", "")
-        filtered = filtered.replace("⚠", "")
-        
-        // ✅ Remove multiple spaces and clean up
+        filtered = filtered.replace("[✅❌⚠️⚠]".toRegex(), "")
         filtered = filtered.replace("\\s+".toRegex(), " ")
-        filtered = filtered.replace("\\s+([.,!?])".toRegex(), "$1")
         filtered = filtered.trim()
-        
-        // ✅ Remove sentences that are too short (likely fragments)
-        val sentences = filtered.split(".")
-        filtered = sentences.filter { it.trim().split(" ").size >= 2 }.joinToString(". ")
-        
         return filtered
     }
 
@@ -175,22 +103,29 @@ class TextToSpeechEngine(private val context: Context) : TextToSpeech.OnInitList
         val locale = getLocaleFromCode(langCode)
         tts?.language = locale
         saveSettings()
-        Log.d(TAG, "✅ Language set to: ${locale.displayLanguage}")
+        Log.d(TAG, "✅ Language: ${locale.displayLanguage}")
     }
 
+    /**
+     * ✅ COMPLETE: 15 Indian Languages Support
+     */
     private fun getLocaleFromCode(code: String): Locale {
         return when (code.lowercase()) {
             "en" -> Locale.ENGLISH
-            "hi" -> Locale("hi", "IN")
-            "es" -> Locale("es", "ES")
-            "fr" -> Locale.FRENCH
-            "de" -> Locale.GERMAN
-            "it" -> Locale.ITALIAN
-            "ja" -> Locale.JAPANESE
-            "ko" -> Locale.KOREAN
-            "zh" -> Locale.CHINESE
-            "pt" -> Locale("pt", "BR")
-            "ru" -> Locale("ru", "RU")
+            "hi" -> Locale("hi", "IN")      // Hindi (हिन्दी)
+            "ta" -> Locale("ta", "IN")      // Tamil (தமிழ்)
+            "te" -> Locale("te", "IN")      // Telugu (తెలుగు)
+            "bn" -> Locale("bn", "IN")      // Bengali (বাংলা)
+            "mr" -> Locale("mr", "IN")      // Marathi (मराठी)
+            "gu" -> Locale("gu", "IN")      // Gujarati (ગુજરાતી)
+            "kn" -> Locale("kn", "IN")      // Kannada (ಕನ್ನಡ)
+            "ml" -> Locale("ml", "IN")      // Malayalam (മലയാളം)
+            "pa" -> Locale("pa", "IN")      // Punjabi (ਪੰਜਾਬੀ)
+            "or" -> Locale("or", "IN")      // Odia (ଓଡ଼ିଆ)
+            "ur" -> Locale("ur", "IN")      // Urdu (اردو)
+            "sa" -> Locale("sa", "IN")      // Sanskrit (संस्कृतम्)
+            "ks" -> Locale("ks", "IN")      // Kashmiri (कॉशुर)
+            "as" -> Locale("as", "IN")      // Assamese (অসমীয়া)
             else -> Locale.ENGLISH
         }
     }
@@ -201,22 +136,17 @@ class TextToSpeechEngine(private val context: Context) : TextToSpeech.OnInitList
             val targetVoice = voices.find { voice ->
                 voice.name.lowercase().contains(voiceId.lowercase())
             }
-            
             if (targetVoice != null) {
                 engine.voice = targetVoice
                 currentVoice = voiceId
                 saveSettings()
-                Log.d(TAG, "✅ Voice changed to: ${targetVoice.name}")
-            } else {
-                Log.w(TAG, "⚠️ Voice not found: $voiceId")
+                Log.d(TAG, "✅ Voice: ${targetVoice.name}")
             }
         }
     }
 
     private fun applyVoiceSelection() {
-        currentVoice?.let { voiceId ->
-            changeVoice(voiceId)
-        }
+        currentVoice?.let { changeVoice(it) }
     }
 
     fun getAvailableVoices(): List<VoiceInfo> {
@@ -244,5 +174,30 @@ class TextToSpeechEngine(private val context: Context) : TextToSpeech.OnInitList
 
     companion object {
         private const val TAG = "TextToSpeechEngine"
+        
+        /**
+         * Get list of supported languages
+         */
+        fun getSupportedLanguages(): List<LanguageInfo> {
+            return listOf(
+                LanguageInfo("en", "English", "🇬🇧 English (default)"),
+                LanguageInfo("hi", "Hindi", "🇮🇳 Hindi (हिन्दी)"),
+                LanguageInfo("ta", "Tamil", "🇮🇳 Tamil (தமிழ்)"),
+                LanguageInfo("te", "Telugu", "🇮🇳 Telugu (తెలుగు)"),
+                LanguageInfo("bn", "Bengali", "🇮🇳 Bengali (বাংলা)"),
+                LanguageInfo("mr", "Marathi", "🇮🇳 Marathi (मराठी)"),
+                LanguageInfo("gu", "Gujarati", "🇮🇳 Gujarati (ગુજરાતી)"),
+                LanguageInfo("kn", "Kannada", "🇮🇳 Kannada (ಕನ್ನಡ)"),
+                LanguageInfo("ml", "Malayalam", "🇮🇳 Malayalam (മലയാളം)"),
+                LanguageInfo("pa", "Punjabi", "🇮🇳 Punjabi (ਪੰਜਾਬੀ)"),
+                LanguageInfo("or", "Odia", "🇮🇳 Odia (ଓଡ଼ିଆ)"),
+                LanguageInfo("ur", "Urdu", "🇮🇳 Urdu (اردو)"),
+                LanguageInfo("sa", "Sanskrit", "🇮🇳 Sanskrit (संस्कृतम्)"),
+                LanguageInfo("ks", "Kashmiri", "🇮🇳 Kashmiri (कॉशुर)"),
+                LanguageInfo("as", "Assamese", "🇮🇳 Assamese (অসমীয়া)")
+            )
+        }
     }
+    
+    data class LanguageInfo(val code: String, val name: String, val displayName: String)
 }
