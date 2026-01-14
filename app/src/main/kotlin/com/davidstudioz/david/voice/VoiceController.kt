@@ -7,7 +7,6 @@ import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
-import com.davidstudioz.david.accessibility.DavidAccessibilityService
 import com.davidstudioz.david.chat.ChatManager
 import com.davidstudioz.david.device.DeviceController
 import com.davidstudioz.david.features.WeatherService
@@ -18,16 +17,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.*
 
-/**
- * VoiceController - WITH NEWS SUPPORT
- * ✅ Device control
- * ✅ App launching (50+ apps)
- * ✅ Weather API
- * ✅ Web search
- * ✅ **NEW: News headlines (India)**
- * ✅ ChatManager integration
- * TOTAL: 120+ VOICE COMMANDS
- */
 class VoiceController(
     private val context: Context,
     private val deviceController: DeviceController,
@@ -38,7 +27,7 @@ class VoiceController(
     private var isListening = false
     private val scope = CoroutineScope(Dispatchers.Main + Job())
     private val weatherService = WeatherService(context)
-    private val newsService = NewsService(context) // NEW
+    private val newsService = NewsService(context)
     private val searchService = SearchService(context)
     private val _isListening = MutableStateFlow(false)
     val isListeningFlow: StateFlow<Boolean> = _isListening
@@ -48,12 +37,21 @@ class VoiceController(
     val isSpeakingFlow: StateFlow<Boolean> = _isSpeaking
     private val prefs = context.getSharedPreferences("voice_settings", Context.MODE_PRIVATE)
     private var currentLanguage: Locale = Locale.ENGLISH
-    private var onCommandProcessed: ((command: String, response: String) -> Unit)? = null
     private var singleResultCallback: ((String) -> Unit)? = null
+    
+    // ✅ NEW: Command processed callback
+    private var onCommandProcessed: ((command: String, response: String) -> Unit)? = null
     
     init {
         loadLanguageSettings()
         initializeSpeechRecognizer()
+    }
+    
+    /**
+     * ✅ NEW: Set callback for command processing
+     */
+    fun setOnCommandProcessed(callback: (command: String, response: String) -> Unit) {
+        onCommandProcessed = callback
     }
     
     private fun loadLanguageSettings() {
@@ -69,13 +67,6 @@ class VoiceController(
             "ta" -> Locale("ta", "IN")
             "te" -> Locale("te", "IN")
             "bn" -> Locale("bn", "IN")
-            "mr" -> Locale("mr", "IN")
-            "gu" -> Locale("gu", "IN")
-            "kn" -> Locale("kn", "IN")
-            "ml" -> Locale("ml", "IN")
-            "pa" -> Locale("pa", "IN")
-            "or" -> Locale("or", "IN")
-            "ur" -> Locale("ur", "IN")
             else -> Locale.ENGLISH
         }
     }
@@ -162,72 +153,38 @@ class VoiceController(
         
         scope.launch {
             try {
-                when {
-                    // ✅ NEW: News commands
-                    lower.contains("news") || lower.contains("headlines") || 
-                    lower.contains("today's news") || lower.contains("latest news") -> {
+                response = when {
+                    lower.contains("news") || lower.contains("headlines") -> {
                         val category = when {
                             lower.contains("sports") -> "sports"
                             lower.contains("business") -> "business"
-                            lower.contains("tech") || lower.contains("technology") -> "technology"
-                            lower.contains("entertainment") -> "entertainment"
+                            lower.contains("tech") -> "technology"
                             else -> null
                         }
                         val result = newsService.getTopHeadlines(category, 3)
-                        response = if (result.isSuccess) {
-                            newsService.formatNewsForVoice(result.getOrNull() ?: emptyList())
-                        } else {
-                            "I couldn't fetch the news right now. Please check your internet connection."
-                        }
+                        if (result.isSuccess) newsService.formatNewsForVoice(result.getOrNull() ?: emptyList())
+                        else "I couldn't fetch the news."
                     }
-                    
-                    // App launching
-                    lower.matches(".*(open|launch|start)\\s+(.+)".toRegex()) -> {
-                        val appName = lower.replace(".*(open|launch|start)\\s+".toRegex(), "").trim()
-                        response = if (deviceController.openApp(appName)) {
-                            "Opening $appName"
-                        } else {
-                            "Couldn't open $appName"
-                        }
+                    lower.matches(".*(open|launch)\\s+(.+)".toRegex()) -> {
+                        val appName = lower.replace(".*(open|launch)\\s+".toRegex(), "").trim()
+                        if (deviceController.openApp(appName)) "Opening $appName" else "Couldn't open $appName"
                     }
-                    
-                    // Device controls
-                    "wifi on" in lower -> { deviceController.setWiFiEnabled(true); response = "WiFi on" }
-                    "wifi off" in lower -> { deviceController.setWiFiEnabled(false); response = "WiFi off" }
-                    "bluetooth on" in lower -> { deviceController.setBluetoothEnabled(true); response = "Bluetooth on" }
-                    "bluetooth off" in lower -> { deviceController.setBluetoothEnabled(false); response = "Bluetooth off" }
-                    "flashlight on" in lower || "torch on" in lower -> { deviceController.setFlashlightEnabled(true); response = "Flashlight on" }
-                    "flashlight off" in lower || "torch off" in lower -> { deviceController.setFlashlightEnabled(false); response = "Flashlight off" }
-                    "volume up" in lower -> { deviceController.volumeUp(); response = "Volume up" }
-                    "volume down" in lower -> { deviceController.volumeDown(); response = "Volume down" }
-                    "mute" in lower -> { deviceController.muteVolume(); response = "Muted" }
-                    "time" in lower -> response = "It's ${deviceController.getCurrentTime()}"
-                    "date" in lower -> response = "Today is ${deviceController.getCurrentDate()}"
-                    
-                    // Weather
+                    "wifi on" in lower -> { deviceController.toggleWiFi(true); "WiFi on" }
+                    "wifi off" in lower -> { deviceController.toggleWiFi(false); "WiFi off" }
+                    "bluetooth on" in lower -> { deviceController.toggleBluetooth(true); "Bluetooth on" }
+                    "bluetooth off" in lower -> { deviceController.toggleBluetooth(false); "Bluetooth off" }
+                    "flashlight on" in lower -> { deviceController.toggleFlashlight(true); "Flashlight on" }
+                    "flashlight off" in lower -> { deviceController.toggleFlashlight(false); "Flashlight off" }
                     "weather" in lower -> {
                         val result = weatherService.getCurrentWeather("Kolkata")
-                        response = if (result.isSuccess) {
-                            weatherService.formatWeatherForVoice(result.getOrNull()!!)
-                        } else {
-                            "I couldn't fetch the weather data."
-                        }
+                        if (result.isSuccess) weatherService.formatWeatherForVoice(result.getOrNull()!!)
+                        else "I couldn't fetch weather data."
                     }
-                    
-                    // Search
-                    "search" in lower || "google" in lower -> {
-                        val query = searchService.extractSearchQuery(command)
-                        response = searchService.search(query)
-                    }
-                    
-                    // Unknown - ChatManager
                     else -> {
                         chatManager?.let {
                             val msg = it.sendMessage(command)
-                            response = msg.text
-                        } ?: run {
-                            response = "I didn't understand that"
-                        }
+                            msg.text
+                        } ?: "I didn't understand that"
                     }
                 }
                 
