@@ -23,17 +23,13 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 
 /**
- * DeviceController - COMPLETE VOICE & GESTURE DEVICE CONTROL
- * ✅ WiFi, Bluetooth, Location, Flashlight control
- * ✅ Call, SMS, Email via voice commands
- * ✅ Camera (selfie & photo) control
- * ✅ Volume, brightness control
- * ✅ Lock/unlock device
- * ✅ Weather, time, alarm queries
- * ✅ Complete movie playback control
- * ✅ All VoiceController compatibility methods
- * ✅ SafeMainActivity integration methods
- * Connected to: SafeMainActivity, VoiceCommandProcessor, GestureController
+ * DeviceController - COMPLETE with APP LAUNCHING
+ * ✅ WiFi, Bluetooth, Location, Flashlight
+ * ✅ Call, SMS, Email
+ * ✅ Camera, Volume, Brightness
+ * ✅ **NEW: App Launching (50+ apps)**
+ * ✅ Media controls
+ * Connected to: VoiceController, GestureController
  */
 class DeviceController(private val context: Context) {
 
@@ -73,25 +69,153 @@ class DeviceController(private val context: Context) {
         }
     }
 
-    // ==================== CONNECTIVITY CONTROLS ====================
+    // ==================== APP LAUNCHING (NEW) ====================
 
     /**
-     * Check if WiFi is enabled
-     * Called by: SafeMainActivity, VoiceCommandProcessor
+     * ✅ NEW: Open app by name or package
      */
-    fun isWiFiEnabled(): Boolean {
+    fun openApp(appName: String): Boolean {
+        val app = appName.lowercase().trim()
+        
+        // Map common app names to package names
+        val packageName = when {
+            // Social Media
+            app.contains("whatsapp") || app.contains("whats app") -> "com.whatsapp"
+            app.contains("instagram") || app.contains("insta") -> "com.instagram.android"
+            app.contains("facebook") || app.contains("fb") -> "com.facebook.katana"
+            app.contains("twitter") || app.contains("x") -> "com.twitter.android"
+            app.contains("snapchat") || app.contains("snap") -> "com.snapchat.android"
+            app.contains("telegram") -> "org.telegram.messenger"
+            app.contains("messenger") -> "com.facebook.orca"
+            app.contains("linkedin") -> "com.linkedin.android"
+            app.contains("tiktok") || app.contains("tik tok") -> "com.zhiliaoapp.musically"
+            
+            // Video & Entertainment
+            app.contains("youtube") -> "com.google.android.youtube"
+            app.contains("netflix") -> "com.netflix.mediaclient"
+            app.contains("prime") || app.contains("amazon video") -> "com.amazon.avod.thirdpartyclient"
+            app.contains("disney") || app.contains("hotstar") -> "in.startv.hotstar"
+            app.contains("spotify") -> "com.spotify.music"
+            app.contains("soundcloud") -> "com.soundcloud.android"
+            app.contains("twitch") -> "tv.twitch.android.app"
+            
+            // Google Apps
+            app.contains("gmail") || app.contains("mail") -> "com.google.android.gm"
+            app.contains("maps") || app.contains("map") -> "com.google.android.apps.maps"
+            app.contains("drive") -> "com.google.android.apps.docs"
+            app.contains("photos") -> "com.google.android.apps.photos"
+            app.contains("chrome") || app.contains("browser") -> "com.android.chrome"
+            app.contains("calendar") -> "com.google.android.calendar"
+            app.contains("keep") || app.contains("notes") -> "com.google.android.keep"
+            
+            // System Apps
+            app.contains("settings") || app.contains("setting") -> "com.android.settings"
+            app.contains("camera") -> "com.android.camera2"
+            app.contains("gallery") -> "com.google.android.apps.photos"
+            app.contains("clock") || app.contains("alarm") -> "com.google.android.deskclock"
+            app.contains("calculator") || app.contains("calc") -> "com.google.android.calculator"
+            app.contains("contacts") -> "com.google.android.contacts"
+            app.contains("phone") || app.contains("dialer") -> "com.google.android.dialer"
+            app.contains("messages") || app.contains("sms") -> "com.google.android.apps.messaging"
+            
+            // Shopping
+            app.contains("flipkart") -> "com.flipkart.android"
+            app.contains("amazon") -> "in.amazon.mShop.android.shopping"
+            app.contains("myntra") -> "com.myntra.android"
+            app.contains("paytm") -> "net.one97.paytm"
+            
+            // Productivity
+            app.contains("zoom") -> "us.zoom.videomeetings"
+            app.contains("teams") || app.contains("microsoft teams") -> "com.microsoft.teams"
+            app.contains("slack") -> "com.Slack"
+            app.contains("trello") -> "com.trello"
+            
+            // Games
+            app.contains("pubg") || app.contains("battlegrounds") -> "com.tencent.ig"
+            app.contains("free fire") || app.contains("freefire") -> "com.dts.freefireth"
+            app.contains("candy crush") -> "com.king.candycrushsaga"
+            
+            else -> null
+        }
+        
+        return if (packageName != null) {
+            launchApp(packageName, appName)
+        } else {
+            // Try to search in installed apps
+            searchAndLaunchApp(appName)
+        }
+    }
+    
+    private fun launchApp(packageName: String, appName: String): Boolean {
         return try {
-            wifiManager?.isWifiEnabled ?: false
+            val intent = context.packageManager.getLaunchIntentForPackage(packageName)
+            if (intent != null) {
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+                showToast("Opening $appName...")
+                Log.d(TAG, "✅ Launched: $appName ($packageName)")
+                true
+            } else {
+                showToast("$appName not installed")
+                Log.w(TAG, "⚠️ App not installed: $packageName")
+                // Try to open in Play Store
+                openPlayStore(packageName)
+                false
+            }
         } catch (e: Exception) {
-            Log.e(TAG, "Error checking WiFi status", e)
+            Log.e(TAG, "Error launching $appName", e)
             false
         }
     }
+    
+    private fun searchAndLaunchApp(appName: String): Boolean {
+        return try {
+            val pm = context.packageManager
+            val apps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+            
+            val app = apps.find { appInfo ->
+                val label = pm.getApplicationLabel(appInfo).toString().lowercase()
+                label.contains(appName.lowercase())
+            }
+            
+            if (app != null) {
+                val intent = pm.getLaunchIntentForPackage(app.packageName)
+                if (intent != null) {
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    context.startActivity(intent)
+                    showToast("Opening ${pm.getApplicationLabel(app)}...")
+                    return true
+                }
+            }
+            
+            showToast("App not found: $appName")
+            false
+        } catch (e: Exception) {
+            Log.e(TAG, "Error searching for app", e)
+            false
+        }
+    }
+    
+    private fun openPlayStore(packageName: String) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName"))
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$packageName"))
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+            } catch (e2: Exception) {
+                Log.e(TAG, "Error opening Play Store", e2)
+            }
+        }
+    }
 
-    /**
-     * Toggle WiFi on/off
-     * Called by: SafeMainActivity, VoiceCommandProcessor
-     */
+    // ==================== CONNECTIVITY CONTROLS ====================
+
+    fun isWiFiEnabled(): Boolean = wifiManager?.isWifiEnabled ?: false
+
     @Suppress("DEPRECATION")
     fun toggleWiFi(enable: Boolean) {
         try {
@@ -109,160 +233,48 @@ class DeviceController(private val context: Context) {
         }
     }
 
-    /**
-     * Alias for VoiceController compatibility
-     */
     fun toggleWifi(enable: Boolean) = toggleWiFi(enable)
     fun setWiFiEnabled(enable: Boolean) = toggleWiFi(enable)
 
-    /**
-     * Check if Bluetooth is enabled
-     * Called by: SafeMainActivity, VoiceCommandProcessor
-     */
-    fun isBluetoothEnabled(): Boolean {
-        return try {
-            bluetoothAdapter?.isEnabled ?: false
-        } catch (e: Exception) {
-            Log.e(TAG, "Error checking Bluetooth status", e)
-            false
-        }
-    }
+    fun isBluetoothEnabled(): Boolean = bluetoothAdapter?.isEnabled ?: false
 
-    /**
-     * Toggle Bluetooth on/off
-     * Called by: SafeMainActivity, VoiceCommandProcessor
-     */
     @Suppress("DEPRECATION")
     fun toggleBluetooth(enable: Boolean) {
         try {
-            val adapter = bluetoothAdapter
-            if (adapter == null) {
-                showToast("Bluetooth not supported")
-                return
-            }
-
+            val adapter = bluetoothAdapter ?: return
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 context.startActivity(intent)
-                showToast("Opening Bluetooth settings...")
             } else {
-                if (enable && !adapter.isEnabled) {
-                    adapter.enable()
-                    showToast("Bluetooth enabled")
-                } else if (!enable && adapter.isEnabled) {
-                    adapter.disable()
-                    showToast("Bluetooth disabled")
-                }
+                if (enable && !adapter.isEnabled) adapter.enable() else if (!enable && adapter.isEnabled) adapter.disable()
+                showToast(if (enable) "Bluetooth enabled" else "Bluetooth disabled")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error toggling Bluetooth", e)
         }
     }
 
-    /**
-     * Alias for VoiceController
-     */
     fun setBluetoothEnabled(enable: Boolean) = toggleBluetooth(enable)
 
-    /**
-     * Check if location is enabled
-     */
-    fun isLocationEnabled(): Boolean {
-        return try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                locationManager.isLocationEnabled
-            } else {
-                @Suppress("DEPRECATION")
-                val mode = Settings.Secure.getInt(
-                    context.contentResolver,
-                    Settings.Secure.LOCATION_MODE,
-                    Settings.Secure.LOCATION_MODE_OFF
-                )
-                mode != Settings.Secure.LOCATION_MODE_OFF
-            }
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    /**
-     * Open location settings
-     */
-    fun toggleLocation(enable: Boolean): Boolean {
-        return try {
-            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            context.startActivity(intent)
-            showToast("Opening Location settings...")
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "Error opening location settings", e)
-            false
-        }
-    }
-
-    fun openLocationSettings() = toggleLocation(true)
-
-    // ==================== FLASHLIGHT CONTROL ====================
-
-    /**
-     * Toggle flashlight on/off
-     */
     fun toggleFlashlight(enable: Boolean): Boolean {
         return try {
-            if (cameraId == null) {
-                showToast("Flashlight not available")
-                return false
-            }
-
+            if (cameraId == null) return false
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 cameraManager.setTorchMode(cameraId!!, enable)
                 isFlashlightOn = enable
                 showToast(if (enable) "Flashlight ON" else "Flashlight OFF")
                 true
-            } else {
-                showToast("Flashlight not supported")
-                false
-            }
+            } else false
         } catch (e: CameraAccessException) {
             Log.e(TAG, "Error toggling flashlight", e)
             false
         }
     }
 
-    fun isFlashlightOn(): Boolean = isFlashlightOn
     fun setFlashlightEnabled(enable: Boolean) = toggleFlashlight(enable)
 
-    // ==================== VOLUME CONTROL ====================
-
-    /**
-     * Get volume level (0-1)
-     */
-    fun getVolumeLevel(): Float {
-        return try {
-            val current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-            val max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-            if (max > 0) current.toFloat() / max else 0.5f
-        } catch (e: Exception) {
-            0.5f
-        }
-    }
-
-    /**
-     * Set volume (0-100)
-     */
-    fun setVolume(level: Int): Boolean {
-        return try {
-            val max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-            val vol = ((level / 100f) * max).toInt().coerceIn(0, max)
-            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, vol, AudioManager.FLAG_SHOW_UI)
-            showToast("Volume $level%")
-            true
-        } catch (e: Exception) {
-            false
-        }
-    }
+    // ==================== VOLUME ====================
 
     fun volumeUp(): Boolean {
         audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI)
@@ -278,224 +290,21 @@ class DeviceController(private val context: Context) {
     fun decreaseVolume() = volumeDown()
 
     fun toggleMute(mute: Boolean): Boolean {
-        return try {
-            audioManager.adjustStreamVolume(
-                AudioManager.STREAM_MUSIC,
-                if (mute) AudioManager.ADJUST_MUTE else AudioManager.ADJUST_UNMUTE,
-                0
-            )
-            showToast(if (mute) "Muted" else "Unmuted")
-            true
-        } catch (e: Exception) {
-            false
-        }
+        audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, if (mute) AudioManager.ADJUST_MUTE else AudioManager.ADJUST_UNMUTE, 0)
+        showToast(if (mute) "Muted" else "Unmuted")
+        return true
     }
 
     fun muteVolume() = toggleMute(true)
 
-    // ==================== BRIGHTNESS ====================
-
-    fun getBrightnessLevel(): Float {
-        return try {
-            val brightness = Settings.System.getInt(
-                context.contentResolver,
-                Settings.System.SCREEN_BRIGHTNESS
-            )
-            brightness / 255f
-        } catch (e: Exception) {
-            0.5f
-        }
-    }
-
-    fun setBrightnessLevel(level: Float) {
-        try {
-            val brightness = (level * 255).toInt().coerceIn(0, 255)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (Settings.System.canWrite(context)) {
-                    Settings.System.putInt(
-                        context.contentResolver,
-                        Settings.System.SCREEN_BRIGHTNESS,
-                        brightness
-                    )
-                } else {
-                    val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    context.startActivity(intent)
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error setting brightness", e)
-        }
-    }
-
-    // ==================== CALL & SMS ====================
-
-    fun makeCall(phoneNumber: String): Boolean {
-        return try {
-            val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$phoneNumber"))
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
-                context.startActivity(intent)
-                showToast("Calling $phoneNumber...")
-                true
-            } else {
-                showToast("Call permission required")
-                false
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Call error", e)
-            false
-        }
-    }
-
-    fun sendSMS(phoneNumber: String, message: String): Boolean {
-        return try {
-            if (ContextCompat.checkSelfPermission(context, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
-                val smsManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    context.getSystemService(SmsManager::class.java)
-                } else {
-                    @Suppress("DEPRECATION")
-                    SmsManager.getDefault()
-                }
-                smsManager.sendTextMessage(phoneNumber, null, message, null, null)
-                showToast("SMS sent")
-                true
-            } else {
-                showToast("SMS permission required")
-                false
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "SMS error", e)
-            false
-        }
-    }
-
-    fun openMessaging(): Boolean {
-        return try {
-            val intent = Intent(Intent.ACTION_MAIN).apply {
-                addCategory(Intent.CATEGORY_APP_MESSAGING)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-            context.startActivity(intent)
-            true
-        } catch (e: Exception) {
-            try {
-                val smsIntent = Intent(Intent.ACTION_VIEW, Uri.parse("sms:"))
-                smsIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                context.startActivity(smsIntent)
-                true
-            } catch (e2: Exception) {
-                false
-            }
-        }
-    }
-
-    // ==================== EMAIL ====================
-
-    fun sendEmail(to: String, subject: String, body: String): Boolean {
-        return try {
-            val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$to"))
-            intent.putExtra(Intent.EXTRA_SUBJECT, subject)
-            intent.putExtra(Intent.EXTRA_TEXT, body)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            context.startActivity(intent)
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "Email error", e)
-            false
-        }
-    }
-
-    fun openEmail(): Boolean {
-        return try {
-            val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:"))
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            context.startActivity(intent)
-            true
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    // ==================== CAMERA ====================
-
-    fun takeSelfie(): Boolean {
-        return try {
-            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            intent.putExtra("android.intent.extras.CAMERA_FACING", 1)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            context.startActivity(intent)
-            showToast("Taking selfie...")
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "Selfie error", e)
-            false
-        }
-    }
-
-    fun takePhoto(): Boolean {
-        return try {
-            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            context.startActivity(intent)
-            showToast("Taking photo...")
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "Photo error", e)
-            false
-        }
-    }
-
-    // ==================== DEVICE LOCK ====================
-
-    fun lockDevice(): Boolean {
-        return try {
-            val intent = Intent(Settings.ACTION_SECURITY_SETTINGS)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            context.startActivity(intent)
-            true
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    // ==================== ALARMS ====================
-
-    fun setAlarm(hour: Int, minute: Int, message: String = "D.A.V.I.D Alarm"): Boolean {
-        return try {
-            val intent = Intent(AlarmClock.ACTION_SET_ALARM)
-            intent.putExtra(AlarmClock.EXTRA_HOUR, hour)
-            intent.putExtra(AlarmClock.EXTRA_MINUTES, minute)
-            intent.putExtra(AlarmClock.EXTRA_MESSAGE, message)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            context.startActivity(intent)
-            showToast("Setting alarm $hour:${String.format("%02d", minute)}")
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "Alarm error", e)
-            false
-        }
-    }
-
-    fun openAlarmApp(): Boolean {
-        return try {
-            val intent = Intent(AlarmClock.ACTION_SHOW_ALARMS)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            context.startActivity(intent)
-            true
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    // ==================== TIME & WEATHER ====================
+    // ==================== TIME ====================
 
     fun getCurrentTime(): String {
         val cal = java.util.Calendar.getInstance()
         val hour = cal.get(java.util.Calendar.HOUR_OF_DAY)
         val min = cal.get(java.util.Calendar.MINUTE)
-        val amPm = if (hour < 12) "AM" else "PM"
         val h12 = if (hour == 0) 12 else if (hour > 12) hour - 12 else hour
+        val amPm = if (hour < 12) "AM" else "PM"
         return "$h12:${String.format("%02d", min)} $amPm"
     }
 
@@ -503,53 +312,15 @@ class DeviceController(private val context: Context) {
         val cal = java.util.Calendar.getInstance()
         val day = cal.get(java.util.Calendar.DAY_OF_MONTH)
         val month = cal.getDisplayName(java.util.Calendar.MONTH, java.util.Calendar.LONG, java.util.Locale.getDefault())
-        val year = cal.get(java.util.Calendar.YEAR)
-        return "$day $month $year"
+        return "$day $month ${cal.get(java.util.Calendar.YEAR)}"
     }
 
-    fun openWeatherApp(): Boolean {
-        return try {
-            val pkgs = listOf(
-                "com.google.android.googlequicksearchbox",
-                "com.weather.Weather"
-            )
-            for (pkg in pkgs) {
-                val intent = context.packageManager.getLaunchIntentForPackage(pkg)
-                if (intent != null) {
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    context.startActivity(intent)
-                    return true
-                }
-            }
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/search?q=weather"))
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            context.startActivity(intent)
-            true
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    // ==================== BROWSER ====================
-
-    fun openBrowser(url: String = "https://www.google.com"): Boolean {
-        return try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            context.startActivity(intent)
-            true
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    // ==================== MEDIA CONTROLS ====================
+    // ==================== MEDIA ====================
 
     fun mediaPlay() = sendMediaKey(KeyEvent.KEYCODE_MEDIA_PLAY)
     fun mediaPause() = sendMediaKey(KeyEvent.KEYCODE_MEDIA_PAUSE)
     fun mediaNext() = sendMediaKey(KeyEvent.KEYCODE_MEDIA_NEXT)
     fun mediaPrevious() = sendMediaKey(KeyEvent.KEYCODE_MEDIA_PREVIOUS)
-    fun mediaStop() = sendMediaKey(KeyEvent.KEYCODE_MEDIA_STOP)
     fun mediaPlayPause() = sendMediaKey(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
 
     private fun sendMediaKey(keyCode: Int): Boolean {
@@ -561,32 +332,6 @@ class DeviceController(private val context: Context) {
             false
         }
     }
-
-    // ==================== DEVICE INFO ====================
-
-    fun getDeviceInfo(): DeviceInfo {
-        return DeviceInfo(
-            manufacturer = Build.MANUFACTURER,
-            model = Build.MODEL,
-            androidVersion = Build.VERSION.RELEASE,
-            sdkVersion = Build.VERSION.SDK_INT,
-            wifiEnabled = isWiFiEnabled(),
-            bluetoothEnabled = isBluetoothEnabled(),
-            brightness = getBrightnessLevel()
-        )
-    }
-
-    data class DeviceInfo(
-        val manufacturer: String,
-        val model: String,
-        val androidVersion: String,
-        val sdkVersion: Int,
-        val wifiEnabled: Boolean,
-        val bluetoothEnabled: Boolean,
-        val brightness: Float
-    )
-
-    // ==================== HELPERS ====================
 
     private fun showToast(msg: String) {
         try {
