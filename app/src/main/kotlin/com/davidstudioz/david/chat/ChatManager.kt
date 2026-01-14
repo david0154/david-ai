@@ -11,6 +11,8 @@ import com.davidstudioz.david.web.WebSearchEngine
 import com.davidstudioz.david.features.WeatherService
 import com.davidstudioz.david.features.NewsService
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
@@ -103,7 +105,7 @@ class ChatManager(private val context: Context) {
                 llmModelPath = ggufModel
                 
                 // Load GGUF model with LlamaCpp
-                kotlinx.coroutines.GlobalScope.launch(Dispatchers.IO) {
+                GlobalScope.launch(Dispatchers.IO) {
                     val loaded = llamaCppEngine.loadModel(
                         modelFile = ggufModel,
                         nThreads = 4,

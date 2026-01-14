@@ -5,6 +5,8 @@ import android.util.Log
 import com.davidstudioz.david.ai.LlamaCppEngine
 import com.davidstudioz.david.chat.ChatHistoryManager
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
@@ -171,7 +173,7 @@ class LLMEngine(private val context: Context) {
                 modelType = "gguf"
                 
                 // Load model in background
-                kotlinx.coroutines.GlobalScope.launch(Dispatchers.IO) {
+                GlobalScope.launch(Dispatchers.IO) {
                     val loaded = llamaCppEngine.loadModel(
                         modelFile = ggufModel,
                         nThreads = 4,
