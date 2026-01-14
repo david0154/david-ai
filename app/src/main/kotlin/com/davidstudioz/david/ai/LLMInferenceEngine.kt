@@ -2,205 +2,137 @@ package com.davidstudioz.david.ai
 
 import android.content.Context
 import android.util.Log
-import org.tensorflow.lite.Interpreter
-import org.tensorflow.lite.support.common.FileUtil
 import java.io.File
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import java.nio.MappedByteBuffer
-import kotlin.math.exp
+import java.io.RandomAccessFile
 
 /**
- * LLM Inference Engine - TensorFlow Lite model runner
- * ✅ Loads .tflite LLM models
- * ✅ Token-based text generation
- * ✅ Temperature control for creativity
- * ✅ Max length control
- * ✅ GPU acceleration support
+ * LLM Inference Engine - Enhanced with GGUF support detection
+ * ⚠️ IMPORTANT: Android TFLite doesn't natively support GGUF models
+ * ✅ Detects model format and provides clear error messages
+ * ✅ Recommends proper model formats for Android
+ * ✅ Graceful fallback to smart responses
  */
 class LLMInferenceEngine(private val context: Context) {
     
-    private var interpreter: Interpreter? = null
     private var isModelLoaded = false
-    private var vocabularySize = 32000  // Default for most LLMs
-    private var maxSequenceLength = 512
+    private var modelFormat: String = "unknown"
+    private var modelFile: File? = null
     
     /**
-     * Load LLM model from file
+     * Load LLM model - detects format and validates compatibility
      */
-    fun loadModel(modelFile: File): Boolean {
+    fun loadModel(file: File): Boolean {
         return try {
-            Log.d(TAG, "Loading LLM model: ${modelFile.name}")
+            Log.d(TAG, "Attempting to load LLM model: ${file.name}")
+            Log.d(TAG, "File size: ${file.length() / (1024 * 1024)}MB")
             
-            // Create TensorFlow Lite interpreter
-            val options = Interpreter.Options().apply {
-                // Use multiple threads for faster inference
-                setNumThreads(4)
-                
-                // Try to use GPU delegate for acceleration (if available)
-                try {
-                    // Uncomment if GPU delegate is needed:
-                    // addDelegate(GpuDelegate())
-                } catch (e: Exception) {
-                    Log.w(TAG, "GPU delegate not available, using CPU")
+            modelFile = file
+            modelFormat = detectModelFormat(file)
+            
+            Log.d(TAG, "Detected model format: $modelFormat")
+            
+            when (modelFormat) {
+                "GGUF" -> {
+                    Log.w(TAG, "⚠️ GGUF models are NOT directly supported on Android TFLite")
+                    Log.w(TAG, "GGUF models require llama.cpp library or conversion to TFLite")
+                    Log.w(TAG, "Falling back to smart response system + external AI APIs")
+                    isModelLoaded = false
+                    false
+                }
+                "TFLITE" -> {
+                    Log.d(TAG, "✅ TFLite model detected - attempting to load...")
+                    // TODO: Implement TFLite loading when TFLite models are available
+                    Log.w(TAG, "TFLite inference not yet implemented - using smart responses")
+                    isModelLoaded = false
+                    false
+                }
+                "ONNX" -> {
+                    Log.w(TAG, "⚠️ ONNX models require separate runtime library")
+                    Log.w(TAG, "Falling back to smart response system")
+                    isModelLoaded = false
+                    false
+                }
+                else -> {
+                    Log.e(TAG, "❌ Unknown model format: $modelFormat")
+                    isModelLoaded = false
+                    false
                 }
             }
             
-            // Load model buffer
-            val modelBuffer = loadModelFile(modelFile)
-            interpreter = Interpreter(modelBuffer, options)
-            
-            // Get model input/output shapes
-            val inputShape = interpreter?.getInputTensor(0)?.shape()
-            val outputShape = interpreter?.getOutputTensor(0)?.shape()
-            
-            Log.d(TAG, "Model loaded - Input shape: ${inputShape?.contentToString()}, Output shape: ${outputShape?.contentToString()}")
-            
-            isModelLoaded = true
-            Log.d(TAG, "✅ LLM model loaded successfully")
-            true
         } catch (e: Exception) {
-            Log.e(TAG, "Error loading LLM model", e)
+            Log.e(TAG, "Error loading model", e)
             isModelLoaded = false
             false
         }
     }
     
     /**
-     * Load model file into ByteBuffer
+     * Detect model format from file header
      */
-    private fun loadModelFile(file: File): MappedByteBuffer {
-        return FileUtil.loadMappedFile(context, file.absolutePath)
+    private fun detectModelFormat(file: File): String {
+        return try {
+            RandomAccessFile(file, "r").use { raf ->
+                // Read first 4 bytes to detect format
+                val header = ByteArray(4)
+                raf.read(header)
+                
+                when {
+                    // GGUF magic number: "GGUF" in ASCII
+                    header.contentEquals(byteArrayOf(0x47, 0x47, 0x55, 0x46)) -> "GGUF"
+                    // TFLite magic number
+                    header[0] == 0x18.toByte() && header[1] == 0x00.toByte() -> "TFLITE"
+                    // ONNX starts with protobuf header
+                    header[0] == 0x08.toByte() -> "ONNX"
+                    else -> "UNKNOWN"
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error detecting model format", e)
+            "UNKNOWN"
+        }
     }
     
     /**
-     * Generate text response from prompt
+     * Generate text - returns empty for unsupported formats
+     * Caller should fall back to smart responses
      */
     fun generateText(
         prompt: String,
         maxLength: Int = 100,
         temperature: Float = 0.7f
     ): String {
-        if (!isModelLoaded || interpreter == null) {
-            Log.w(TAG, "Model not loaded, cannot generate text")
+        if (!isModelLoaded) {
+            Log.d(TAG, "Model not loaded - caller should use fallback responses")
             return ""
         }
         
-        return try {
-            Log.d(TAG, "Generating text for prompt: $prompt")
-            
-            // Tokenize input prompt
-            val inputTokens = tokenize(prompt)
-            
-            // Prepare input buffer
-            val inputBuffer = ByteBuffer.allocateDirect(inputTokens.size * 4).apply {
-                order(ByteOrder.nativeOrder())
-                inputTokens.forEach { putInt(it) }
-            }
-            
-            // Prepare output buffer
-            val outputBuffer = ByteBuffer.allocateDirect(vocabularySize * 4).apply {
-                order(ByteOrder.nativeOrder())
-            }
-            
-            // Run inference
-            interpreter?.run(inputBuffer, outputBuffer)
-            
-            // Decode output tokens
-            outputBuffer.rewind()
-            val outputTokens = mutableListOf<Int>()
-            
-            for (i in 0 until maxLength) {
-                val token = sampleToken(outputBuffer, temperature)
-                if (token == 0) break  // End token
-                outputTokens.add(token)
-            }
-            
-            // Detokenize to text
-            val generatedText = detokenize(outputTokens)
-            
-            Log.d(TAG, "Generated text: $generatedText")
-            generatedText
-            
-        } catch (e: Exception) {
-            Log.e(TAG, "Error generating text", e)
-            ""
-        }
-    }
-    
-    /**
-     * Tokenize text to integer tokens
-     * Simple word-based tokenization (replace with proper tokenizer for production)
-     */
-    private fun tokenize(text: String): IntArray {
-        // Simple tokenization - split by spaces and convert to hash codes
-        val words = text.lowercase().split("\\s+".toRegex())
-        return words.map { word -> 
-            Math.abs(word.hashCode() % vocabularySize)
-        }.toIntArray()
-    }
-    
-    /**
-     * Detokenize integer tokens back to text
-     */
-    private fun detokenize(tokens: List<Int>): String {
-        // Simple detokenization - this would need a proper vocabulary in production
-        return tokens.joinToString(" ") { "token_$it" }
-    }
-    
-    /**
-     * Sample next token from logits with temperature
-     */
-    private fun sampleToken(logits: ByteBuffer, temperature: Float): Int {
-        logits.rewind()
-        
-        // Get probabilities
-        val probs = FloatArray(vocabularySize)
-        for (i in 0 until vocabularySize) {
-            probs[i] = logits.getFloat()
-        }
-        
-        // Apply temperature
-        for (i in probs.indices) {
-            probs[i] = exp(probs[i] / temperature)
-        }
-        
-        // Normalize
-        val sum = probs.sum()
-        for (i in probs.indices) {
-            probs[i] /= sum
-        }
-        
-        // Sample from distribution
-        val random = Math.random().toFloat()
-        var cumulative = 0f
-        for (i in probs.indices) {
-            cumulative += probs[i]
-            if (random <= cumulative) {
-                return i
-            }
-        }
-        
-        return 0  // Fallback
+        // TODO: Implement actual inference when TFLite models are available
+        return ""
     }
     
     /**
      * Check if model is ready
      */
-    fun isReady(): Boolean = isModelLoaded && interpreter != null
+    fun isReady(): Boolean = isModelLoaded
+    
+    /**
+     * Get model info
+     */
+    fun getModelInfo(): String {
+        return if (modelFile != null) {
+            "Model: ${modelFile?.name}\nFormat: $modelFormat\nStatus: ${if (isModelLoaded) "Loaded" else "Not Compatible"}"
+        } else {
+            "No model loaded"
+        }
+    }
     
     /**
      * Release resources
      */
     fun release() {
-        try {
-            interpreter?.close()
-            interpreter = null
-            isModelLoaded = false
-            Log.d(TAG, "LLM inference engine released")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error releasing inference engine", e)
-        }
+        isModelLoaded = false
+        modelFile = null
+        Log.d(TAG, "LLM inference engine released")
     }
     
     companion object {
