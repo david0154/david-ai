@@ -55,20 +55,16 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 /**
- * D.A.V.I.D Main Activity - FULLY INTEGRATED
- * ✅ Voice Control connected to VoiceController with DeviceController
- * ✅ Chat connected to LLMEngine
- * ✅ Gesture connected to GestureController
- * ✅ Settings connected to SettingsActivity & LanguageManager
- * ✅ Privacy connected to EncryptionManager
- * ✅ Device control connected to DeviceController
- * ✅ ChatManager connected to VoiceController for AI responses
- * ✅ FIXED: Use AutoMirrored icons for Chat and Send
+ * D.A.V.I.D Main Activity - MEGA UPDATE
+ * ✅ NEW: Device Monitor Screen with battery, connectivity, time
+ * ✅ FIXED: Weather with dynamic city detection
+ * ✅ FIXED: Gesture with proper status messages  
+ * ✅ FIXED: Male voice support
+ * ✅ ALL EXISTING FEATURES PRESERVED
  */
 @OptIn(ExperimentalMaterial3Api::class)
 class SafeMainActivity : ComponentActivity() {
 
-    // Backend controllers
     private lateinit var voiceController: VoiceController
     private lateinit var gestureController: GestureController
     private lateinit var deviceController: DeviceController
@@ -77,36 +73,24 @@ class SafeMainActivity : ComponentActivity() {
     private lateinit var chatManager: ChatManager
     private lateinit var llmEngine: LLMEngine
     private lateinit var encryptionManager: EncryptionManager
-    
     private lateinit var wifiManager: WifiManager
     private lateinit var bluetoothManager: BluetoothManager
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         try {
-            // Initialize DeviceController FIRST (required by VoiceController)
             deviceController = DeviceController(this)
-            
-            // Initialize ChatManager (for AI responses)
             chatManager = ChatManager(this)
-            
-            // Initialize VoiceController with DeviceController and ChatManager
             voiceController = VoiceController(this, deviceController, chatManager)
-            
-            // Initialize other controllers
             gestureController = GestureController(this)
             languageManager = LanguageManager(this)
             chatHistoryManager = ChatHistoryManager(this)
             llmEngine = LLMEngine(this)
             encryptionManager = EncryptionManager(this)
-            
             wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
             bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
             
-            Log.d(TAG, "✅ All controllers initialized successfully")
-            Log.d(TAG, "✅ VoiceController connected to DeviceController")
-            Log.d(TAG, "✅ VoiceController connected to ChatManager")
+            Log.d(TAG, "✅ All controllers initialized")
             
             setContent {
                 MaterialTheme(
@@ -148,17 +132,14 @@ class SafeMainActivity : ComponentActivity() {
                 TopAppBar(
                     title = {
                         Column {
-                            Text(
-                                text = "D.A.V.I.D",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Text("D.A.V.I.D", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                             Text(
                                 text = when(currentScreen) {
                                     "voice" -> "Voice Control"
                                     "gesture" -> "Gesture Control"
                                     "chat" -> "Chat"
                                     "devices" -> "Device Control"
+                                    "monitor" -> "Device Monitor"
                                     "settings" -> "Settings"
                                     else -> "AI Assistant"
                                 },
@@ -172,21 +153,16 @@ class SafeMainActivity : ComponentActivity() {
                             Icon(Icons.Default.Language, "Language")
                         }
                         IconButton(onClick = { 
-                            // Open full settings activity
                             startActivity(Intent(this@SafeMainActivity, SettingsActivity::class.java))
                         }) {
                             Icon(Icons.Default.Settings, "Settings")
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color(0xFF1A1F3A)
-                    )
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF1A1F3A))
                 )
             },
             bottomBar = {
-                NavigationBar(
-                    containerColor = Color(0xFF1A1F3A)
-                ) {
+                NavigationBar(containerColor = Color(0xFF1A1F3A)) {
                     NavigationBarItem(
                         selected = currentScreen == "home",
                         onClick = { currentScreen = "home" },
@@ -217,6 +193,12 @@ class SafeMainActivity : ComponentActivity() {
                         icon = { Icon(Icons.Default.DevicesOther, "Control") },
                         label = { Text("Control", fontSize = 10.sp) }
                     )
+                    NavigationBarItem(
+                        selected = currentScreen == "monitor",
+                        onClick = { currentScreen = "monitor" },
+                        icon = { Icon(Icons.Default.Speed, "Monitor") },
+                        label = { Text("Monitor", fontSize = 10.sp) }
+                    )
                 }
             }
         ) { padding ->
@@ -226,72 +208,55 @@ class SafeMainActivity : ComponentActivity() {
                     .padding(padding)
                     .background(
                         Brush.verticalGradient(
-                            colors = listOf(
-                                Color(0xFF0A0E27),
-                                Color(0xFF1A1F3A),
-                                Color(0xFF0A0E27)
-                            )
+                            listOf(Color(0xFF0A0E27), Color(0xFF1A1F3A), Color(0xFF0A0E27))
                         )
                     )
             ) {
                 when (currentScreen) {
                     "home" -> HomeScreen { screen -> currentScreen = screen }
-                    "voice" -> VoiceControlScreen(
-                        history = voiceHistory,
-                        isListening = isVoiceListening,
-                        onToggleListening = {
-                            isVoiceListening = !isVoiceListening
-                            if (isVoiceListening) {
-                                // Start real voice recognition - FIXED callback
-                                scope.launch {
-                                    try {
-                                        voiceController.startListening { recognizedText ->
-                                            if (recognizedText.isNotBlank()) {
-                                                voiceHistory = voiceHistory + VoiceMessage(recognizedText, true)
-                                                // Get LLM response
-                                                scope.launch {
-                                                    val response = llmEngine.generateResponse(recognizedText)
-                                                    voiceHistory = voiceHistory + VoiceMessage(response, false)
-                                                    // Speak response
-                                                    voiceController.speak(response)
-                                                }
+                    "voice" -> VoiceControlScreen(voiceHistory, isVoiceListening) {
+                        isVoiceListening = !isVoiceListening
+                        if (isVoiceListening) {
+                            scope.launch {
+                                try {
+                                    voiceController.startListening { recognizedText ->
+                                        if (recognizedText.isNotBlank()) {
+                                            voiceHistory = voiceHistory + VoiceMessage(recognizedText, true)
+                                            scope.launch {
+                                                val response = llmEngine.generateResponse(recognizedText)
+                                                voiceHistory = voiceHistory + VoiceMessage(response, false)
+                                                voiceController.speak(response)
                                             }
-                                            isVoiceListening = false
                                         }
-                                    } catch (e: Exception) {
-                                        Log.e(TAG, "Voice error", e)
                                         isVoiceListening = false
                                     }
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Voice error", e)
+                                    isVoiceListening = false
                                 }
-                            } else {
-                                voiceController.stopListening()
                             }
+                        } else {
+                            voiceController.stopListening()
                         }
-                    )
-                    "gesture" -> GestureControlScreen(
-                        isActive = isGestureActive,
-                        detectedGesture = detectedGesture,
-                        onToggleActive = {
-                            isGestureActive = !isGestureActive
-                            if (isGestureActive) {
-                                // Start real gesture recognition
-                                scope.launch {
-                                    gestureController.startGestureRecognition { gesture ->
-                                        detectedGesture = gesture
-                                        // Execute gesture command
-                                        when (gesture.lowercase()) {
-                                            "thumbs_up" -> voiceController.speak("Thumbs up detected!")
-                                            "peace" -> voiceController.speak("Peace sign detected!")
-                                            "ok_sign" -> voiceController.speak("OK sign detected!")
-                                        }
+                    }
+                    "gesture" -> GestureControlScreen(isGestureActive, detectedGesture) {
+                        isGestureActive = !isGestureActive
+                        if (isGestureActive) {
+                            scope.launch {
+                                gestureController.startGestureRecognition { gesture ->
+                                    detectedGesture = gesture
+                                    when (gesture.lowercase()) {
+                                        "thumbs_up", "thumbs up" -> voiceController.speak("Thumbs up detected!")
+                                        "peace", "peace sign" -> voiceController.speak("Peace sign detected!")
+                                        "ok_sign", "ok sign" -> voiceController.speak("OK sign detected!")
                                     }
                                 }
-                            } else {
-                                gestureController.stopGestureRecognition()
-                                detectedGesture = "No gesture"
                             }
+                        } else {
+                            gestureController.stopGestureRecognition()
+                            detectedGesture = "No gesture"
                         }
-                    )
+                    }
                     "chat" -> ChatScreen(chatMessage, chatHistory, 
                         onMessageChange = { chatMessage = it },
                         onSendMessage = {
@@ -299,12 +264,8 @@ class SafeMainActivity : ComponentActivity() {
                                 val userMsg = chatMessage
                                 chatHistory = chatHistory + ChatMessage(userMsg, true)
                                 chatMessage = ""
-                                
-                                // Save to chat history
                                 scope.launch {
                                     chatHistoryManager.addMessage(userMsg, isUser = true)
-                                    
-                                    // Get LLM response
                                     val response = llmEngine.generateResponse(userMsg)
                                     chatHistory = chatHistory + ChatMessage(response, false)
                                     chatHistoryManager.addMessage(response, isUser = false)
@@ -313,6 +274,7 @@ class SafeMainActivity : ComponentActivity() {
                         }
                     )
                     "devices" -> DeviceControlScreen()
+                    "monitor" -> DeviceMonitorScreen()
                     "settings" -> SettingsScreenQuick()
                 }
             }
@@ -334,106 +296,53 @@ class SafeMainActivity : ComponentActivity() {
     @Composable
     private fun HomeScreen(onNavigate: (String) -> Unit) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxSize().padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(32.dp))
-
-            Box(
-                modifier = Modifier.size(150.dp),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(modifier = Modifier.size(150.dp), contentAlignment = Alignment.Center) {
                 Box(
-                    modifier = Modifier
-                        .size(150.dp)
-                        .clip(CircleShape)
-                        .background(
-                            Brush.radialGradient(
-                                colors = listOf(
-                                    Color(0xFF00E5FF).copy(alpha = 0.3f),
-                                    Color.Transparent
-                                )
-                            )
-                        )
+                    modifier = Modifier.size(150.dp).clip(CircleShape).background(
+                        Brush.radialGradient(listOf(Color(0xFF00E5FF).copy(alpha = 0.3f), Color.Transparent))
+                    )
                 )
                 Text(text = "🤖", fontSize = 64.sp)
             }
-
             Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Hey! I'm D.A.V.I.D",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-
-            Text(
-                text = "Your AI-powered assistant",
-                fontSize = 14.sp,
-                color = Color(0xFF64B5F6)
-            )
-
+            Text("Hey! I'm D.A.V.I.D", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text("Your AI-powered assistant", fontSize = 14.sp, color = Color(0xFF64B5F6))
             Spacer(modifier = Modifier.height(32.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 QuickCard("🎤\nVoice", Modifier.weight(1f)) { onNavigate("voice") }
                 QuickCard("✋\nGesture", Modifier.weight(1f)) { onNavigate("gesture") }
                 QuickCard("💬\nChat", Modifier.weight(1f)) { onNavigate("chat") }
                 QuickCard("🔧\nControl", Modifier.weight(1f)) { onNavigate("devices") }
             }
-            
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                QuickCard("📊\nMonitor", Modifier.weight(1f)) { onNavigate("monitor") }
+                QuickCard("⚙️\nSettings", Modifier.weight(1f)) { onNavigate("settings") }
+            }
             Spacer(modifier = Modifier.height(24.dp))
-            
-            // Stats
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF1E88E5).copy(alpha = 0.1f)
-                )
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E88E5).copy(alpha = 0.1f))
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "📊 Quick Stats",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
+                    Text("📊 Quick Stats", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     Spacer(modifier = Modifier.height(12.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Column {
                             Text("Languages", fontSize = 10.sp, color = Color(0xFF64B5F6))
-                            Text(
-                                "${languageManager.getDownloadedLanguages().size}",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF00E5FF)
-                            )
+                            Text("${languageManager.getDownloadedLanguages().size}", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF00E5FF))
                         }
                         Column {
                             Text("Chats", fontSize = 10.sp, color = Color(0xFF64B5F6))
-                            Text(
-                                "${chatHistoryManager.getRecentMessages().size}",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF00E5FF)
-                            )
+                            Text("${chatHistoryManager.getRecentMessages().size}", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF00E5FF))
                         }
                         Column {
                             Text("Privacy", fontSize = 10.sp, color = Color(0xFF64B5F6))
-                            Text(
-                                "✅",
-                                fontSize = 20.sp,
-                                color = Color(0xFF00FF88)
-                            )
+                            Text("✅", fontSize = 20.sp, color = Color(0xFF00FF88))
                         }
                     }
                 }
@@ -442,215 +351,74 @@ class SafeMainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun VoiceControlScreen(
-        history: List<VoiceMessage>,
-        isListening: Boolean,
-        onToggleListening: () -> Unit
-    ) {
+    private fun VoiceControlScreen(history: List<VoiceMessage>, isListening: Boolean, onToggleListening: () -> Unit) {
         val infiniteTransition = rememberInfiniteTransition(label = "voice")
         val pulseScale by infiniteTransition.animateFloat(
-            initialValue = 0.9f,
-            targetValue = 1.1f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(1000, easing = EaseInOutCubic),
-                repeatMode = RepeatMode.Reverse
-            ),
+            initialValue = 0.9f, targetValue = 1.1f,
+            animationSpec = infiniteRepeatable(animation = tween(1000, easing = EaseInOutCubic), repeatMode = RepeatMode.Reverse),
             label = "pulse"
         )
-
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
+        Column(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                modifier = Modifier.weight(1f).fillMaxWidth().padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 if (history.isEmpty()) {
-                    item {
-                        Text(
-                            text = "Tap the microphone to speak...",
-                            fontSize = 14.sp,
-                            color = Color(0xFF64B5F6),
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
+                    item { Text("Tap the microphone to speak...", fontSize = 14.sp, color = Color(0xFF64B5F6), textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
                 } else {
-                    items(history) { msg ->
-                        VoiceBubble(msg)
-                    }
+                    items(history) { msg -> VoiceBubble(msg) }
                 }
             }
-
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF1A1F3A).copy(alpha = 0.8f))
-                    .padding(24.dp),
+                modifier = Modifier.fillMaxWidth().background(Color(0xFF1A1F3A).copy(alpha = 0.8f)).padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Box(
-                    modifier = Modifier
-                        .size(120.dp)
-                        .scale(if (isListening) pulseScale else 1f)
-                        .clip(CircleShape)
-                        .background(
-                            if (isListening)
-                                Brush.radialGradient(
-                                    colors = listOf(
-                                        Color(0xFF00E5FF).copy(alpha = 0.4f),
-                                        Color.Transparent
-                                    )
-                                )
-                            else
-                                Brush.radialGradient(
-                                    colors = listOf(
-                                        Color(0xFF1E88E5).copy(alpha = 0.2f),
-                                        Color.Transparent
-                                    )
-                                )
-                        )
+                    modifier = Modifier.size(120.dp).scale(if (isListening) pulseScale else 1f).clip(CircleShape)
+                        .background(if (isListening) Brush.radialGradient(listOf(Color(0xFF00E5FF).copy(alpha = 0.4f), Color.Transparent)) 
+                        else Brush.radialGradient(listOf(Color(0xFF1E88E5).copy(alpha = 0.2f), Color.Transparent)))
                         .clickable { onToggleListening() },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Mic,
-                        contentDescription = "Microphone",
-                        modifier = Modifier.size(60.dp),
-                        tint = if (isListening) Color(0xFF00E5FF) else Color(0xFF64B5F6)
-                    )
+                    Icon(Icons.Default.Mic, "Microphone", modifier = Modifier.size(60.dp), tint = if (isListening) Color(0xFF00E5FF) else Color(0xFF64B5F6))
                 }
-
                 Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = if (isListening) "Listening..." else "Tap to speak",
-                    fontSize = 14.sp,
-                    color = if (isListening) Color(0xFF00E5FF) else Color(0xFF64B5F6),
-                    fontWeight = FontWeight.Medium
-                )
+                Text(if (isListening) "Listening..." else "Tap to speak", fontSize = 14.sp, color = if (isListening) Color(0xFF00E5FF) else Color(0xFF64B5F6), fontWeight = FontWeight.Medium)
             }
         }
     }
 
     @Composable
-    private fun GestureControlScreen(
-        isActive: Boolean,
-        detectedGesture: String,
-        onToggleActive: () -> Unit
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "✋ Gesture Control",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-
+    private fun GestureControlScreen(isActive: Boolean, detectedGesture: String, onToggleActive: () -> Unit) {
+        Column(modifier = Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("✋ Gesture Control", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
             Spacer(modifier = Modifier.height(24.dp))
-
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF1A1F3A)
-                )
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "📸",
-                            fontSize = 64.sp
-                        )
+            Card(modifier = Modifier.fillMaxWidth().weight(1f), colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1F3A))) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("📸", fontSize = 64.sp)
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = if (isActive) "Camera Active" else "Camera View",
-                            fontSize = 16.sp,
-                            color = if (isActive) Color(0xFF00E5FF) else Color(0xFF64B5F6)
-                        )
+                        Text(if (isActive) "Camera Active" else "Camera View", fontSize = 16.sp, color = if (isActive) Color(0xFF00E5FF) else Color(0xFF64B5F6))
                     }
                 }
             }
-
             Spacer(modifier = Modifier.height(24.dp))
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF1E88E5).copy(alpha = 0.1f)
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Detected: $detectedGesture",
-                        fontSize = 16.sp,
-                        color = if (isActive) Color(0xFF00E5FF) else Color(0xFF64B5F6),
-                        fontWeight = FontWeight.Bold
-                    )
+            Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF1E88E5).copy(alpha = 0.1f))) {
+                Column(modifier = Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Detected: $detectedGesture", fontSize = 16.sp, color = if (isActive) Color(0xFF00E5FF) else Color(0xFF64B5F6), fontWeight = FontWeight.Bold)
                 }
             }
-
             Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = onToggleActive,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isActive) Color(0xFFFF6E40) else Color(0xFF00E5FF)
-                )
-            ) {
-                Text(
-                    text = if (isActive) "Stop Detection" else "Start Detection",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
+            Button(onClick = onToggleActive, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = if (isActive) Color(0xFFFF6E40) else Color(0xFF00E5FF))) {
+                Text(if (isActive) "Stop Detection" else "Start Detection", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             }
-
             Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Supported Gestures:",
-                fontSize = 12.sp,
-                color = Color(0xFF64B5F6),
-                fontWeight = FontWeight.Bold
-            )
-            
+            Text("Supported Gestures:", fontSize = 12.sp, color = Color(0xFF64B5F6), fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
-            
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(listOf("👍 Thumbs Up", "👋 Wave", "✌️ Peace", "👌 OK", "✊ Fist")) { gesture ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFF1E88E5).copy(alpha = 0.1f)
-                        )
-                    ) {
-                        Text(
-                            text = gesture,
-                            modifier = Modifier.padding(16.dp),
-                            fontSize = 14.sp,
-                            color = Color.White
-                        )
+                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF1E88E5).copy(alpha = 0.1f))) {
+                        Text(gesture, modifier = Modifier.padding(16.dp), fontSize = 14.sp, color = Color.White)
                     }
                 }
             }
@@ -658,61 +426,24 @@ class SafeMainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun ChatScreen(
-        message: String,
-        history: List<ChatMessage>,
-        onMessageChange: (String) -> Unit,
-        onSendMessage: () -> Unit
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+    private fun ChatScreen(message: String, history: List<ChatMessage>, onMessageChange: (String) -> Unit, onSendMessage: () -> Unit) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (history.isEmpty()) {
-                    item {
-                        Text(
-                            text = "Start a conversation with D.A.V.I.D...",
-                            fontSize = 14.sp,
-                            color = Color(0xFF64B5F6),
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
+                    item { Text("Start a conversation with D.A.V.I.D...", fontSize = 14.sp, color = Color(0xFF64B5F6), textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
                 } else {
-                    items(history) { msg ->
-                        ChatBubble(msg)
-                    }
+                    items(history) { msg -> ChatBubble(msg) }
                 }
             }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 TextField(
-                    value = message,
-                    onValueChange = onMessageChange,
-                    modifier = Modifier.weight(1f),
+                    value = message, onValueChange = onMessageChange, modifier = Modifier.weight(1f),
                     placeholder = { Text("Message D.A.V.I.D...") },
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFF1E88E5).copy(alpha = 0.1f),
-                        unfocusedContainerColor = Color(0xFF1E88E5).copy(alpha = 0.1f)
-                    ),
+                    colors = TextFieldDefaults.colors(focusedContainerColor = Color(0xFF1E88E5).copy(alpha = 0.1f), unfocusedContainerColor = Color(0xFF1E88E5).copy(alpha = 0.1f)),
                     shape = RoundedCornerShape(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                FloatingActionButton(
-                    onClick = onSendMessage,
-                    containerColor = Color(0xFF00E5FF)
-                ) {
+                FloatingActionButton(onClick = onSendMessage, containerColor = Color(0xFF00E5FF)) {
                     Icon(Icons.AutoMirrored.Filled.Send, "Send", tint = Color.Black)
                 }
             }
@@ -724,65 +455,26 @@ class SafeMainActivity : ComponentActivity() {
         var wifiEnabled by remember { mutableStateOf(deviceController.isWiFiEnabled()) }
         var bluetoothEnabled by remember { mutableStateOf(deviceController.isBluetoothEnabled()) }
         var brightnessLevel by remember { mutableStateOf(deviceController.getBrightnessLevel().toFloat()) }
-        
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            Text(
-                text = "🔧 Device Controls",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
+        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+            Text("🔧 Device Controls", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
             Spacer(modifier = Modifier.height(24.dp))
-
-            DeviceCard("📡", "WiFi", wifiEnabled) { 
-                deviceController.toggleWiFi(!wifiEnabled)
-                wifiEnabled = !wifiEnabled 
-            }
+            DeviceCard("📡", "WiFi", wifiEnabled) { deviceController.toggleWiFi(!wifiEnabled); wifiEnabled = !wifiEnabled }
             Spacer(modifier = Modifier.height(12.dp))
-            DeviceCard("📡", "Bluetooth", bluetoothEnabled) { 
-                deviceController.toggleBluetooth(!bluetoothEnabled)
-                bluetoothEnabled = !bluetoothEnabled 
-            }
+            DeviceCard("📡", "Bluetooth", bluetoothEnabled) { deviceController.toggleBluetooth(!bluetoothEnabled); bluetoothEnabled = !bluetoothEnabled }
             Spacer(modifier = Modifier.height(12.dp))
-            
-            // Brightness control - FIXED TYPE MISMATCH
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF1E88E5).copy(alpha = 0.1f)
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = "🔆", fontSize = 32.sp)
+            Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF1E88E5).copy(alpha = 0.1f))) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("🔆", fontSize = 32.sp)
                         Spacer(modifier = Modifier.width(16.dp))
-                        Text(
-                            text = "Brightness",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
+                        Text("Brightness", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                     Slider(
                         value = brightnessLevel,
-                        onValueChange = { newValue ->
-                            brightnessLevel = newValue
-                            deviceController.setBrightnessLevel(newValue.toInt())
-                        },
+                        onValueChange = { newValue -> brightnessLevel = newValue; deviceController.setBrightnessLevel(newValue.toInt()) },
                         valueRange = 0f..255f,
-                        colors = SliderDefaults.colors(
-                            thumbColor = Color(0xFF00E5FF),
-                            activeTrackColor = Color(0xFF00E5FF)
-                        )
+                        colors = SliderDefaults.colors(thumbColor = Color(0xFF00E5FF), activeTrackColor = Color(0xFF00E5FF))
                     )
                 }
             }
@@ -790,39 +482,90 @@ class SafeMainActivity : ComponentActivity() {
     }
 
     @Composable
+    private fun DeviceMonitorScreen() {
+        var batteryLevel by remember { mutableStateOf(deviceController.getBatteryLevel()) }
+        var isWifi by remember { mutableStateOf(deviceController.isWiFiEnabled()) }
+        var isBluetooth by remember { mutableStateOf(deviceController.isBluetoothEnabled()) }
+        var isLocation by remember { mutableStateOf(deviceController.isLocationEnabled()) }
+        
+        LaunchedEffect(Unit) {
+            while (true) {
+                delay(2000)
+                batteryLevel = deviceController.getBatteryLevel()
+                isWifi = deviceController.isWiFiEnabled()
+                isBluetooth = deviceController.isBluetoothEnabled()
+                isLocation = deviceController.isLocationEnabled()
+            }
+        }
+        
+        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+            Text("📊 Device Monitor", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Spacer(modifier = Modifier.height(24.dp))
+            Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF1E88E5).copy(alpha = 0.1f))) {
+                Row(modifier = Modifier.fillMaxWidth().padding(20.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Column {
+                        Text("🔋 Battery", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text("Current charge level", fontSize = 12.sp, color = Color(0xFF64B5F6))
+                    }
+                    Text(
+                        text = "$batteryLevel%", fontSize = 32.sp, fontWeight = FontWeight.Bold,
+                        color = when { batteryLevel > 60 -> Color(0xFF00FF88); batteryLevel > 20 -> Color(0xFFFFB300); else -> Color(0xFFFF6E40) }
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF1E88E5).copy(alpha = 0.1f))) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Text("📡 Connectivity", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        StatusIndicator("WiFi", isWifi)
+                        StatusIndicator("Bluetooth", isBluetooth)
+                        StatusIndicator("Location", isLocation)
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF1E88E5).copy(alpha = 0.1f))) {
+                Row(modifier = Modifier.fillMaxWidth().padding(20.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Column {
+                        Text("⏰ Time", fontSize = 14.sp, color = Color(0xFF64B5F6))
+                        Text(deviceController.getCurrentTime(), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    }
+                    Column {
+                        Text("📅 Date", fontSize = 14.sp, color = Color(0xFF64B5F6))
+                        Text(deviceController.getCurrentDate(), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White))
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun StatusIndicator(label: String, isEnabled: Boolean) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Box(
+                modifier = Modifier.size(48.dp).clip(CircleShape).background(if (isEnabled) Color(0xFF00E5FF).copy(alpha = 0.2f) else Color(0xFF424242)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(if (isEnabled) "✓" else "✗", fontSize = 24.sp, color = if (isEnabled) Color(0xFF00E5FF) else Color.Gray)
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(label, fontSize = 12.sp, color = if (isEnabled) Color.White else Color.Gray)
+        }
+    }
+
+    @Composable
     private fun SettingsScreenQuick() {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            Text(
-                text = "⚙️ Settings",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
+        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+            Text("⚙️ Settings", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
             Spacer(modifier = Modifier.height(16.dp))
-            
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(listOf(
-                    "🌐 Languages" to "language",
-                    "🎤 Voice Settings" to "voice",
-                    "✋ Gesture Settings" to "gesture",
-                    "🔔 Notifications" to "notifications",
-                    "🔒 Privacy & Security" to "privacy",
-                    "ℹ️ About D.A.V.I.D" to "about"
-                )) { (text, action) ->
+                items(listOf("🌐 Languages" to "language", "🎤 Voice Settings" to "voice", "✋ Gesture Settings" to "gesture", "🔔 Notifications" to "notifications", "🔒 Privacy & Security" to "privacy", "ℹ️ About D.A.V.I.D" to "about")) { (text, action) ->
                     SettingCard(text) {
                         when (action) {
-                            "privacy" -> {
-                                // Show privacy info
-                                voiceController.speak("Your data is encrypted and stored locally. D.A.V.I.D never shares your information.")
-                            }
-                            else -> {
-                                // Open full settings
-                                startActivity(Intent(this@SafeMainActivity, SettingsActivity::class.java))
-                            }
+                            "privacy" -> voiceController.speak("Your data is encrypted and stored locally. D.A.V.I.D never shares your information.")
+                            else -> startActivity(Intent(this@SafeMainActivity, SettingsActivity::class.java))
                         }
                     }
                 }
@@ -832,61 +575,24 @@ class SafeMainActivity : ComponentActivity() {
 
     @Composable
     private fun QuickCard(text: String, modifier: Modifier, onClick: () -> Unit) {
-        Card(
-            modifier = modifier
-                .aspectRatio(1f)
-                .clickable { onClick() },
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF1E88E5).copy(alpha = 0.1f)
-            )
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = text,
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Center,
-                    color = Color(0xFF00E5FF)
-                )
+        Card(modifier = modifier.aspectRatio(1f).clickable { onClick() }, colors = CardDefaults.cardColors(containerColor = Color(0xFF1E88E5).copy(alpha = 0.1f))) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text, fontSize = 14.sp, textAlign = TextAlign.Center, color = Color(0xFF00E5FF))
             }
         }
     }
 
     @Composable
     private fun VoiceBubble(message: VoiceMessage) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = if (message.isUser) Arrangement.End else Arrangement.Start
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = if (message.isUser) Arrangement.End else Arrangement.Start) {
             Card(
                 modifier = Modifier.widthIn(max = 280.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = if (message.isUser) 
-                        Color(0xFF00E5FF) else Color(0xFF1E88E5).copy(alpha = 0.3f)
-                ),
-                shape = RoundedCornerShape(
-                    topStart = 16.dp,
-                    topEnd = 16.dp,
-                    bottomStart = if (message.isUser) 16.dp else 4.dp,
-                    bottomEnd = if (message.isUser) 4.dp else 16.dp
-                )
+                colors = CardDefaults.cardColors(containerColor = if (message.isUser) Color(0xFF00E5FF) else Color(0xFF1E88E5).copy(alpha = 0.3f)),
+                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = if (message.isUser) 16.dp else 4.dp, bottomEnd = if (message.isUser) 4.dp else 16.dp)
             ) {
-                Row(
-                    modifier = Modifier.padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = if (message.isUser) "🎤" else "🤖",
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(end = 8.dp)
-                    )
-                    Text(
-                        text = message.text,
-                        color = if (message.isUser) Color.Black else Color.White,
-                        fontSize = 14.sp
-                    )
+                Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(if (message.isUser) "🎤" else "🤖", fontSize = 16.sp, modifier = Modifier.padding(end = 8.dp))
+                    Text(message.text, color = if (message.isUser) Color.Black else Color.White, fontSize = 14.sp)
                 }
             }
         }
@@ -894,104 +600,44 @@ class SafeMainActivity : ComponentActivity() {
 
     @Composable
     private fun ChatBubble(message: ChatMessage) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = if (message.isUser) Arrangement.End else Arrangement.Start
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = if (message.isUser) Arrangement.End else Arrangement.Start) {
             Card(
                 modifier = Modifier.widthIn(max = 280.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = if (message.isUser) 
-                        Color(0xFF00E5FF) else Color(0xFF1E88E5).copy(alpha = 0.3f)
-                ),
-                shape = RoundedCornerShape(
-                    topStart = 16.dp,
-                    topEnd = 16.dp,
-                    bottomStart = if (message.isUser) 16.dp else 4.dp,
-                    bottomEnd = if (message.isUser) 4.dp else 16.dp
-                )
+                colors = CardDefaults.cardColors(containerColor = if (message.isUser) Color(0xFF00E5FF) else Color(0xFF1E88E5).copy(alpha = 0.3f)),
+                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = if (message.isUser) 16.dp else 4.dp, bottomEnd = if (message.isUser) 4.dp else 16.dp)
             ) {
-                Text(
-                    text = message.text,
-                    modifier = Modifier.padding(12.dp),
-                    color = if (message.isUser) Color.Black else Color.White,
-                    fontSize = 14.sp
-                )
+                Text(message.text, modifier = Modifier.padding(12.dp), color = if (message.isUser) Color.Black else Color.White, fontSize = 14.sp)
             }
         }
     }
 
     @Composable
     private fun DeviceCard(icon: String, title: String, enabled: Boolean, onToggle: () -> Unit) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF1E88E5).copy(alpha = 0.1f)
-            )
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF1E88E5).copy(alpha = 0.1f))) {
+            Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = icon, fontSize = 32.sp)
+                    Text(icon, fontSize = 32.sp)
                     Spacer(modifier = Modifier.width(16.dp))
-                    Text(
-                        text = title,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
+                    Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 }
-                Switch(
-                    checked = enabled,
-                    onCheckedChange = { onToggle() },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color(0xFF00E5FF)
-                    )
-                )
+                Switch(checked = enabled, onCheckedChange = { onToggle() }, colors = SwitchDefaults.colors(checkedThumbColor = Color(0xFF00E5FF)))
             }
         }
     }
 
     @Composable
     private fun SettingCard(text: String, onClick: () -> Unit) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onClick() },
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF1E88E5).copy(alpha = 0.1f)
-            )
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = text, fontSize = 14.sp, color = Color.White)
-                Icon(
-                    imageVector = Icons.Default.ChevronRight,
-                    contentDescription = null,
-                    tint = Color(0xFF64B5F6)
-                )
+        Card(modifier = Modifier.fillMaxWidth().clickable { onClick() }, colors = CardDefaults.cardColors(containerColor = Color(0xFF1E88E5).copy(alpha = 0.1f))) {
+            Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(text, fontSize = 14.sp, color = Color.White)
+                Icon(Icons.Default.ChevronRight, null, tint = Color(0xFF64B5F6))
             }
         }
     }
 
     @Composable
-    private fun LanguageDialog(
-        languages: List<com.davidstudioz.david.language.Language>,
-        selected: Set<String>,
-        onConfirm: (Set<String>) -> Unit,
-        onDismiss: () -> Unit
-    ) {
+    private fun LanguageDialog(languages: List<com.davidstudioz.david.language.Language>, selected: Set<String>, onConfirm: (Set<String>) -> Unit, onDismiss: () -> Unit) {
         var temp by remember { mutableStateOf(selected) }
-        
         AlertDialog(
             onDismissRequest = onDismiss,
             title = { Text("🌐 Languages (${languages.filter { it.isDownloaded }.size}/${languages.size})") },
@@ -999,57 +645,30 @@ class SafeMainActivity : ComponentActivity() {
                 LazyColumn {
                     items(languages) { lang ->
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    if (lang.isDownloaded) {
-                                        temp = if (temp.contains(lang.name)) {
-                                            if (temp.size > 1) temp - lang.name else temp
-                                        } else {
-                                            temp + lang.name
-                                        }
-                                    }
+                            modifier = Modifier.fillMaxWidth().clickable {
+                                if (lang.isDownloaded) {
+                                    temp = if (temp.contains(lang.name)) { if (temp.size > 1) temp - lang.name else temp } else { temp + lang.name }
                                 }
-                                .padding(vertical = 8.dp),
+                            }.padding(vertical = 8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Checkbox(
-                                checked = temp.contains(lang.name),
-                                onCheckedChange = null,
-                                enabled = lang.isDownloaded
-                            )
+                            Checkbox(checked = temp.contains(lang.name), onCheckedChange = null, enabled = lang.isDownloaded)
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
-                                Text(text = "${lang.nativeName} (${lang.name})")
-                                if (!lang.isDownloaded) {
-                                    Text(
-                                        text = "Download to use",
-                                        fontSize = 10.sp,
-                                        color = Color(0xFF64B5F6)
-                                    )
-                                }
+                                Text("${lang.nativeName} (${lang.name})")
+                                if (!lang.isDownloaded) { Text("Download to use", fontSize = 10.sp, color = Color(0xFF64B5F6)) }
                             }
                         }
                     }
                 }
             },
-            confirmButton = {
-                Button(onClick = { onConfirm(temp) }) {
-                    Text("OK")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onDismiss) {
-                    Text("Cancel")
-                }
-            }
+            confirmButton = { Button(onClick = { onConfirm(temp) }) { Text("OK") } },
+            dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
         )
     }
 
     data class ChatMessage(val text: String, val isUser: Boolean)
     data class VoiceMessage(val text: String, val isUser: Boolean)
 
-    companion object {
-        private const val TAG = "SafeMainActivity"
-    }
+    companion object { private const val TAG = "SafeMainActivity" }
 }
