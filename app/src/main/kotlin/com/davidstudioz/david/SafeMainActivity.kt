@@ -723,7 +723,7 @@ class SafeMainActivity : ComponentActivity() {
     private fun DeviceControlScreen() {
         var wifiEnabled by remember { mutableStateOf(deviceController.isWiFiEnabled()) }
         var bluetoothEnabled by remember { mutableStateOf(deviceController.isBluetoothEnabled()) }
-        var brightnessLevel by remember { mutableStateOf(deviceController.getBrightnessLevel()) }
+        var brightnessLevel by remember { mutableStateOf(deviceController.getBrightnessLevel().toFloat()) }
         
         Column(
             modifier = Modifier
@@ -749,7 +749,7 @@ class SafeMainActivity : ComponentActivity() {
             }
             Spacer(modifier = Modifier.height(12.dp))
             
-            // Brightness control
+            // Brightness control - FIXED TYPE MISMATCH
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -774,10 +774,11 @@ class SafeMainActivity : ComponentActivity() {
                     Spacer(modifier = Modifier.height(12.dp))
                     Slider(
                         value = brightnessLevel,
-                        onValueChange = { 
-                            brightnessLevel = it
-                            deviceController.setBrightnessLevel(it)
+                        onValueChange = { newValue ->
+                            brightnessLevel = newValue
+                            deviceController.setBrightnessLevel(newValue.toInt())
                         },
+                        valueRange = 0f..255f,
                         colors = SliderDefaults.colors(
                             thumbColor = Color(0xFF00E5FF),
                             activeTrackColor = Color(0xFF00E5FF)
