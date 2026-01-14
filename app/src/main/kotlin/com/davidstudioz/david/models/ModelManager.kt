@@ -145,7 +145,7 @@ class ModelManager(private val context: Context) {
         return models
     }
     
-    private fun getVoiceModel(variant: String): AIModel? {
+    internal fun getVoiceModel(variant: String): AIModel? {
         return when (variant.lowercase()) {
             "tiny" -> AIModel(
                 "D.A.V.I.D Voice Tiny",
@@ -169,7 +169,7 @@ class ModelManager(private val context: Context) {
         }
     }
     
-    private fun getLLMModel(variant: String): AIModel? {
+    internal fun getLLMModel(variant: String): AIModel? {
         return when (variant.lowercase()) {
             "light" -> AIModel(
                 "D.A.V.I.D Chat Light",
@@ -193,7 +193,7 @@ class ModelManager(private val context: Context) {
         }
     }
     
-    private fun getVisionModel(variant: String): AIModel? {
+    internal fun getVisionModel(variant: String): AIModel? {
         return when (variant.lowercase()) {
             "lite" -> AIModel(
                 "D.A.V.I.D Vision Lite",
@@ -228,7 +228,7 @@ class ModelManager(private val context: Context) {
         )
     }
     
-    private fun getMultilingualModel(): AIModel {
+    internal fun getMultilingualModel(): AIModel {
         return AIModel(
             "D.A.V.I.D Multilingual",
             "https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/onnx/model.onnx",
