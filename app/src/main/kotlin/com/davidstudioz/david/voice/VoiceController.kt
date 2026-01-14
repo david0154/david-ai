@@ -10,7 +10,8 @@ import android.util.Log
 import com.davidstudioz.david.accessibility.DavidAccessibilityService
 import com.davidstudioz.david.chat.ChatManager
 import com.davidstudioz.david.device.DeviceController
-import com.davidstudioz.david.services.WeatherService
+import com.davidstudioz.david.features.WeatherService
+import com.davidstudioz.david.features.NewsService
 import com.davidstudioz.david.services.SearchService
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,14 +19,14 @@ import kotlinx.coroutines.flow.StateFlow
 import java.util.*
 
 /**
- * VoiceController - COMPLETE with APP LAUNCHING
- * ✅ TextToSpeechEngine integration
- * ✅ Device control (WiFi, Bluetooth, etc.)
- * ✅ **NEW: App launching (50+ apps)**
+ * VoiceController - WITH NEWS SUPPORT
+ * ✅ Device control
+ * ✅ App launching (50+ apps)
  * ✅ Weather API
  * ✅ Web search
+ * ✅ **NEW: News headlines (India)**
  * ✅ ChatManager integration
- * TOTAL: 100+ VOICE COMMANDS
+ * TOTAL: 120+ VOICE COMMANDS
  */
 class VoiceController(
     private val context: Context,
@@ -37,6 +38,7 @@ class VoiceController(
     private var isListening = false
     private val scope = CoroutineScope(Dispatchers.Main + Job())
     private val weatherService = WeatherService(context)
+    private val newsService = NewsService(context) // NEW
     private val searchService = SearchService(context)
     private val _isListening = MutableStateFlow(false)
     val isListeningFlow: StateFlow<Boolean> = _isListening
@@ -64,9 +66,16 @@ class VoiceController(
         return when (langCode.lowercase()) {
             "en" -> Locale.ENGLISH
             "hi" -> Locale("hi", "IN")
-            "es" -> Locale("es", "ES")
-            "fr" -> Locale.FRENCH
-            "de" -> Locale.GERMAN
+            "ta" -> Locale("ta", "IN")
+            "te" -> Locale("te", "IN")
+            "bn" -> Locale("bn", "IN")
+            "mr" -> Locale("mr", "IN")
+            "gu" -> Locale("gu", "IN")
+            "kn" -> Locale("kn", "IN")
+            "ml" -> Locale("ml", "IN")
+            "pa" -> Locale("pa", "IN")
+            "or" -> Locale("or", "IN")
+            "ur" -> Locale("ur", "IN")
             else -> Locale.ENGLISH
         }
     }
@@ -154,13 +163,31 @@ class VoiceController(
         scope.launch {
             try {
                 when {
-                    // ✅ NEW: App launching
+                    // ✅ NEW: News commands
+                    lower.contains("news") || lower.contains("headlines") || 
+                    lower.contains("today's news") || lower.contains("latest news") -> {
+                        val category = when {
+                            lower.contains("sports") -> "sports"
+                            lower.contains("business") -> "business"
+                            lower.contains("tech") || lower.contains("technology") -> "technology"
+                            lower.contains("entertainment") -> "entertainment"
+                            else -> null
+                        }
+                        val result = newsService.getTopHeadlines(category, 3)
+                        response = if (result.isSuccess) {
+                            newsService.formatNewsForVoice(result.getOrNull() ?: emptyList())
+                        } else {
+                            "I couldn't fetch the news right now. Please check your internet connection."
+                        }
+                    }
+                    
+                    // App launching
                     lower.matches(".*(open|launch|start)\\s+(.+)".toRegex()) -> {
                         val appName = lower.replace(".*(open|launch|start)\\s+".toRegex(), "").trim()
-                        if (deviceController.openApp(appName)) {
-                            response = "Opening $appName"
+                        response = if (deviceController.openApp(appName)) {
+                            "Opening $appName"
                         } else {
-                            response = "Couldn't open $appName"
+                            "Couldn't open $appName"
                         }
                     }
                     
@@ -178,7 +205,14 @@ class VoiceController(
                     "date" in lower -> response = "Today is ${deviceController.getCurrentDate()}"
                     
                     // Weather
-                    "weather" in lower -> response = weatherService.getCurrentWeather()
+                    "weather" in lower -> {
+                        val result = weatherService.getCurrentWeather("Kolkata")
+                        response = if (result.isSuccess) {
+                            weatherService.formatWeatherForVoice(result.getOrNull()!!)
+                        } else {
+                            "I couldn't fetch the weather data."
+                        }
+                    }
                     
                     // Search
                     "search" in lower || "google" in lower -> {
