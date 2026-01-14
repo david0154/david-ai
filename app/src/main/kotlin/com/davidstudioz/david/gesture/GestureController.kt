@@ -27,6 +27,7 @@ import kotlin.random.Random
  * ✅ Pointer overlay system (showPointer, hidePointer, performClick)
  * ✅ Real-time hand position tracking
  * ✅ Model loading from ModelManager downloaded files
+ * ✅ FIXED: Proper model initialization with error handling
  * ✅ Confidence scoring
  * ✅ Multi-gesture support
  * Connected to: SafeMainActivity, DeviceController, VoiceController, CameraX
@@ -78,34 +79,60 @@ class GestureController(private val context: Context) {
             val downloadedModels = modelsDir.listFiles() ?: emptyArray()
             Log.d(TAG, "Found ${downloadedModels.size} files in models directory")
             
-            // ✅ FIXED: Look for gesture models with correct naming
+            if (downloadedModels.isEmpty()) {
+                Log.w(TAG, "No models found in directory")
+                initializeFallback()
+                return
+            }
+            
+            // ✅ FIXED: Look for gesture models with multiple naming patterns
             val handModel = downloadedModels.firstOrNull { file ->
                 val name = file.name.lowercase()
-                (name.contains("hand_landmarker") || 
-                 name.contains("hand") && name.contains("gesture") ||
-                 name.contains("gesture_hand")) &&
-                file.extension in listOf("task", "tflite", "bin") &&
-                file.length() > 1024 * 1024 // At least 1MB
+                val hasValidExtension = file.extension in listOf("task", "tflite", "bin")
+                val hasValidSize = file.length() > 1024 * 1024 // At least 1MB
+                val isHandModel = name.contains("hand_landmarker") || 
+                                 name.contains("handlandmarker") ||
+                                 (name.contains("hand") && name.contains("gesture")) ||
+                                 name.contains("gesture_hand") ||
+                                 (name.contains("gesture") && name.contains("tflit"))
+                
+                hasValidExtension && hasValidSize && isHandModel
             }
             
             val gestureModel = downloadedModels.firstOrNull { file ->
                 val name = file.name.lowercase()
-                (name.contains("gesture_recognizer") ||
-                 name.contains("gesture_recognition") ||
-                 name.contains("gesture") && !name.contains("hand")) &&
-                file.extension in listOf("task", "tflite", "bin") &&
-                file.length() > 1024 * 1024 // At least 1MB
+                val hasValidExtension = file.extension in listOf("task", "tflite", "bin")
+                val hasValidSize = file.length() > 1024 * 1024 // At least 1MB
+                val isGestureModel = name.contains("gesture_recognizer") ||
+                                    name.contains("gesturerecognizer") ||
+                                    name.contains("gesture_recognition") ||
+                                    (name.contains("gesture") && !name.contains("hand"))
+                
+                hasValidExtension && hasValidSize && isGestureModel
             }
+            
+            // ✅ FIXED: Initialize with found models or fallback
+            var modelLoaded = false
             
             if (handModel != null && handModel.exists()) {
                 Log.d(TAG, "✅ Found hand model: ${handModel.name} (${handModel.length() / 1024 / 1024}MB)")
-                initializeWithHandModel(handModel)
-            } else if (gestureModel != null && gestureModel.exists()) {
+                if (initializeWithHandModel(handModel)) {
+                    modelLoaded = true
+                    onGestureCallback("✅ Gesture system ready: Hand tracking loaded")
+                }
+            }
+            
+            if (!modelLoaded && gestureModel != null && gestureModel.exists()) {
                 Log.d(TAG, "✅ Found gesture model: ${gestureModel.name} (${gestureModel.length() / 1024 / 1024}MB)")
-                initializeWithGestureModel(gestureModel)
-            } else {
-                Log.w(TAG, "⚠️ No gesture models found in ${modelsDir.absolutePath}")
-                Log.w(TAG, "Available files: ${downloadedModels.joinToString { it.name }}")
+                if (initializeWithGestureModel(gestureModel)) {
+                    modelLoaded = true
+                    onGestureCallback("✅ Gesture system ready: Gesture recognition loaded")
+                }
+            }
+            
+            if (!modelLoaded) {
+                Log.w(TAG, "⚠️ No valid gesture models found in ${modelsDir.absolutePath}")
+                Log.w(TAG, "Available files: ${downloadedModels.joinToString { "${it.name} (${it.extension})" }}")
                 initializeFallback()
             }
             
@@ -116,13 +143,15 @@ class GestureController(private val context: Context) {
     }
 
     /**
-     * ✅ NEW: Initialize with hand landmarker model
+     * ✅ FIXED: Initialize with hand landmarker model - returns success status
      */
-    private fun initializeWithHandModel(modelFile: File) {
-        try {
+    private fun initializeWithHandModel(modelFile: File): Boolean {
+        return try {
             Log.d(TAG, "Loading hand landmarker model: ${modelFile.name}")
+            Log.d(TAG, "Model path: ${modelFile.absolutePath}")
+            Log.d(TAG, "Model exists: ${modelFile.exists()}, readable: ${modelFile.canRead()}, size: ${modelFile.length()} bytes")
             
-            // Hand Landmarker setup for 21-point tracking
+            // ✅ FIXED: Use file path directly for MediaPipe
             val handOptions = HandLandmarker.HandLandmarkerOptions.builder()
                 .setBaseOptions(
                     BaseOptions.builder()
@@ -138,24 +167,32 @@ class GestureController(private val context: Context) {
 
             handLandmarker = HandLandmarker.createFromOptions(context, handOptions)
             
-            Log.d(TAG, "✅ Hand landmarker initialized successfully")
-            isInitialized = true
-            onGestureDetected?.invoke("✅ Gesture system ready with hand tracking")
+            if (handLandmarker != null) {
+                Log.d(TAG, "✅ Hand landmarker initialized successfully")
+                isInitialized = true
+                return true
+            } else {
+                Log.e(TAG, "❌ Hand landmarker creation returned null")
+                return false
+            }
             
         } catch (e: Exception) {
-            Log.e(TAG, "Error initializing hand landmarker: ${e.message}", e)
-            initializeFallback()
+            Log.e(TAG, "❌ Error initializing hand landmarker: ${e.message}", e)
+            Log.e(TAG, "Stack trace:", e)
+            return false
         }
     }
     
     /**
-     * ✅ NEW: Initialize with gesture recognizer model
+     * ✅ FIXED: Initialize with gesture recognizer model - returns success status
      */
-    private fun initializeWithGestureModel(modelFile: File) {
-        try {
+    private fun initializeWithGestureModel(modelFile: File): Boolean {
+        return try {
             Log.d(TAG, "Loading gesture recognizer model: ${modelFile.name}")
+            Log.d(TAG, "Model path: ${modelFile.absolutePath}")
+            Log.d(TAG, "Model exists: ${modelFile.exists()}, readable: ${modelFile.canRead()}, size: ${modelFile.length()} bytes")
             
-            // Gesture Recognizer setup
+            // ✅ FIXED: Use file path directly for MediaPipe
             val gestureOptions = GestureRecognizer.GestureRecognizerOptions.builder()
                 .setBaseOptions(
                     BaseOptions.builder()
@@ -171,24 +208,30 @@ class GestureController(private val context: Context) {
             
             gestureRecognizer = GestureRecognizer.createFromOptions(context, gestureOptions)
             
-            Log.d(TAG, "✅ Gesture recognizer initialized successfully")
-            isInitialized = true
-            onGestureDetected?.invoke("✅ Gesture system ready with recognition")
+            if (gestureRecognizer != null) {
+                Log.d(TAG, "✅ Gesture recognizer initialized successfully")
+                isInitialized = true
+                return true
+            } else {
+                Log.e(TAG, "❌ Gesture recognizer creation returned null")
+                return false
+            }
             
         } catch (e: Exception) {
-            Log.e(TAG, "Error initializing gesture recognizer: ${e.message}", e)
-            initializeFallback()
+            Log.e(TAG, "❌ Error initializing gesture recognizer: ${e.message}", e)
+            Log.e(TAG, "Stack trace:", e)
+            return false
         }
     }
 
     /**
-     * ✅ RENAMED: Fallback initialization (was initializeDefault)
+     * ✅ FIXED: Fallback initialization with clear instructions
      */
     private fun initializeFallback() {
         try {
             Log.d(TAG, "⚠️ Using fallback gesture mode (download gesture models for full functionality)")
             isInitialized = true
-            onGestureDetected?.invoke("⚠️ Gesture system ready (fallback mode - download models for full features)")
+            onGestureDetected?.invoke("⚠️ Gesture models not found. Please download from Settings > Models > Gesture Models")
         } catch (e: Exception) {
             Log.e(TAG, "Error in fallback initialization", e)
         }
@@ -210,18 +253,20 @@ class GestureController(private val context: Context) {
         
         // ✅ FIXED: Check if models are actually loaded
         if (!isInitialized) {
-            onGestureDetected("❌ Models not loaded - Download gesture models first from settings")
-            Log.w(TAG, "Gesture models not initialized")
+            onGestureDetected("❌ System not initialized - Download gesture models first from Settings")
+            Log.w(TAG, "Gesture system not initialized")
+            isRecognitionActive = false
             return
         }
         
         if (handLandmarker == null && gestureRecognizer == null) {
-            onGestureDetected("❌ No gesture models available - Please download models")
+            onGestureDetected("❌ No gesture models loaded - Go to Settings > Models and download Gesture Models")
             Log.w(TAG, "No MediaPipe models loaded")
+            isRecognitionActive = false
             return
         }
         
-        onGestureDetected("✅ Gesture detection active with MediaPipe models")
+        onGestureDetected("✅ Gesture detection active - Point your hand at the camera")
         
         // Recognition loop (in real implementation, this processes camera frames)
         while (isRecognitionActive) {
@@ -560,14 +605,14 @@ class GestureController(private val context: Context) {
     }
     
     /**
-     * Get model status for UI display
+     * ✅ FIXED: Get model status with detailed information
      */
     fun getModelStatus(): String {
         return when {
-            handLandmarker != null -> "✅ Gesture Model: Hand Landmarker Ready"
-            gestureRecognizer != null -> "✅ Gesture Model: Gesture Recognizer Ready"
-            isInitialized -> "⚠️ Gesture Model: Fallback mode (download models for full features)"
-            else -> "❌ Gesture Model: Not loaded - Download required"
+            handLandmarker != null -> "✅ Gesture Model: Hand Landmarker Ready (21-point tracking)"
+            gestureRecognizer != null -> "✅ Gesture Model: Gesture Recognizer Ready (Classification)"
+            isInitialized -> "⚠️ Gesture Model: Fallback mode\nDownload models from Settings > Models"
+            else -> "❌ Gesture Model: Not loaded\nDownload required from Settings"
         }
     }
     
