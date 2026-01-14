@@ -4,10 +4,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.devtools.ksp")
     id("kotlin-parcelize")
-    // Hilt for dependency injection
     id("com.google.dagger.hilt.android")
-    // Remove Firebase for now - add back when google-services.json is ready
-    // id("com.google.gms.google-services")
 }
 
 android {
@@ -26,16 +23,15 @@ android {
             useSupportLibrary = true
         }
 
-        // Multidex support for large app
         multiDexEnabled = true
         
-        // Room schema export
         ksp {
             arg("room.schemaLocation", "$projectDir/schemas")
         }
         
-        // Suppress native library stripping warnings
         ndk {
+            // ✅ Support for llama.cpp native libraries
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
             debugSymbolLevel = "NONE"
         }
     }
@@ -61,7 +57,6 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
-        // Opt-in to experimental APIs and suppress warnings
         freeCompilerArgs += listOf(
             "-opt-in=kotlin.RequiresOptIn",
             "-Xjvm-default=all"
@@ -71,7 +66,7 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
-        mlModelBinding = true  // Enable ML Model binding for TensorFlow Lite
+        mlModelBinding = true
     }
 
     packaging {
@@ -80,12 +75,12 @@ android {
             excludes += "/META-INF/gradle/incremental.annotation.processors"
         }
         jniLibs {
-            // Don't strip native libraries (MediaPipe, MLKit, TensorFlow)
             useLegacyPackaging = true
+            // ✅ Keep llama.cpp native libraries
+            pickFirsts += setOf("lib/*/libllama.so", "lib/*/libggml.so")
         }
     }
     
-    // Suppress lint warnings
     lint {
         checkReleaseBuilds = false
         abortOnError = false
@@ -94,9 +89,7 @@ android {
     }
 }
 
-// Compose Compiler Configuration (Modern API)
 composeCompiler {
-    // Include source information for better debugging
     includeSourceInformation.set(true)
 }
 
@@ -106,8 +99,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.multidex:multidex:2.0.1")
-    
-    // AppCompat for theme compatibility
     implementation("androidx.appcompat:appcompat:1.7.0")
 
     // Jetpack Compose
@@ -128,7 +119,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
 
-    // WorkManager for background tasks
+    // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.10.0")
 
     // Networking
@@ -148,44 +139,47 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:1.4.1")
     implementation("androidx.camera:camera-view:1.4.1")
 
-    // ML/AI - TensorFlow Lite for LLM inference
+    // ✅ NEW: llama.cpp for Android (GGUF model support)
+    // Using community-maintained Android wrapper for llama.cpp
+    implementation("io.github.kherud:java-llama.cpp:3.1.1-android")
+    
+    // ML/AI - TensorFlow Lite
     implementation("org.tensorflow:tensorflow-lite:2.14.0")
-    implementation("org.tensorflow:tensorflow-lite-gpu:2.14.0")  // GPU acceleration
-    implementation("org.tensorflow:tensorflow-lite-support:0.4.4")  // Support library
+    implementation("org.tensorflow:tensorflow-lite-gpu:2.14.0")
+    implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
     implementation("com.google.mlkit:text-recognition:16.0.1")
     implementation("com.google.mlkit:face-detection:16.1.7")
 
     // Permissions
     implementation("com.google.accompanist:accompanist-permissions:0.36.0")
 
-    // Coil for image loading
+    // Coil
     implementation("io.coil-kt:coil-compose:2.7.0")
 
-    // Lottie for animations
+    // Lottie
     implementation("com.airbnb.android:lottie-compose:6.6.2")
     
-    // Google Tink for encryption (EncryptionManager)
+    // Encryption
     implementation("com.google.crypto.tink:tink-android:1.15.0")
     
-    // Google Sign-In (GoogleSignInScreen, GoogleAuthManager)
-    // Note: Deprecated but functional. Migration to Credential Manager planned.
+    // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:21.3.0")
     
-    // Jsoup for web scraping (WebSearchEngine)
+    // Web scraping
     implementation("org.jsoup:jsoup:1.18.3")
     
-    // Hilt for dependency injection (AppModule, AuthModule)
+    // Hilt
     implementation("com.google.dagger:hilt-android:2.52")
     ksp("com.google.dagger:hilt-compiler:2.52")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     
-    // Room Database (ChatHistoryManager)
+    // Room
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
     
-    // MediaPipe for gesture recognition (GestureController)
+    // MediaPipe
     implementation("com.google.mediapipe:tasks-vision:0.10.18")
 
     // Testing

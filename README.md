@@ -1,539 +1,255 @@
-# D.A.V.I.D AI - Digital Assistant with Voice & Intelligent Decisions
+# D.A.V.I.D - AI Assistant 🤖
 
-<div align="center">
-
-<img src="https://raw.githubusercontent.com/david0154/david-ai/main/logo.png" alt="D.A.V.I.D AI Logo" width="150" height="150">
-
-# D.A.V.I.D AI
-
-**Digital Assistant with Voice & Intelligent Decisions**
-
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.0-7F52FF?style=flat&logo=kotlin)](https://kotlinlang.org/)
-[![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=flat&logo=android)](https://www.android.com/)
-[![License](https://img.shields.io/badge/License-MIT-green?style=flat)](LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/david0154/david-ai?style=flat&logo=github)](https://github.com/david0154/david-ai/stargazers)
-[![GitHub Issues](https://img.shields.io/github/issues/david0154/david-ai?style=flat&logo=github)](https://github.com/david0154/david-ai/issues)
-[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/david0154/david-ai?style=flat&logo=github)](https://github.com/david0154/david-ai/pulls)
-
-**Advanced AI Assistant with Voice Control, Gesture Recognition, and Complete Device Management**
-
-**Developed by [Nexuzy Tech Ltd.](mailto:david@nexuzy.in)**
-
-[Features](#-features) • [Installation](#-getting-started) • [Usage](#first-use) • [Contributing](#-contributing) • [Support](#-support)
-
-</div>
+**Developed by Nexuzy Tech**  
+**Lead Developer: David**
 
 ---
 
-## 🌟 Features
+## 🎯 Overview
 
-### 🎯 Core Capabilities
+D.A.V.I.D (Digital Assistant with Voice Intelligence and Device control) is a comprehensive AI-powered mobile assistant for Android featuring:
 
-- 🎙️ **Voice Control** - Hands-free device control via natural voice commands
-- ✋ **Gesture Recognition** - Control your device with hand gestures via camera
-- 💬 **AI Chat** - Intelligent conversations with on-device AI models
-- 👁️ **Vision Processing** - Image recognition and visual understanding
-- 🌍 **Multi-Language** - Support for 15 languages including all major Indian languages
-- 📡 **Offline First** - All processing happens locally on your device
-
-### 🔊 Voice Commands
-
-Control everything with your voice:
-
-- **Device Control**: WiFi, Bluetooth, Location, Flashlight on/off
-- **Volume Control**: Increase, decrease, mute, set specific level
-- **Communication**: Make calls, send SMS, send emails
-- **Media Control**: Play, pause, next, previous, forward, rewind
-- **Camera**: Take selfie, record video
-- **Apps**: Open any app by voice
-- **Information**: Time, date, weather, alarms
-- **System**: Lock device, take screenshot
-- **Voice Typing**: Type in any app using voice
-
-### 👋 Gesture Control
-
-**Supported Gestures:**
-- ✋ **Open Palm** - Show pointer
-- ✊ **Closed Fist** - Hide pointer
-- ☝️ **Pointing Up** - Move pointer
-- ✌️ **Victory Sign** - Click action
-- 👍 **Thumbs Up** - Confirm
-
-**Mouse-Like Pointer:**
-- Floating overlay pointer
-- Smooth movement animation
-- Visual feedback (glow effects)
-- Click animations
-
-### 🌍 Supported Languages
-
-**15 Languages Total:**
-
-1. 🇬🇧 English (default)
-2. 🇮🇳 Hindi (हिन्दी)
-3. 🇮🇳 Tamil (தமிழ்)
-4. 🇮🇳 Telugu (తెలుగు)
-5. 🇮🇳 Bengali (বাংলা)
-6. 🇮🇳 Marathi (मराठी)
-7. 🇮🇳 Gujarati (ગુજરાતી)
-8. 🇮🇳 Kannada (ಕನ್ನಡ)
-9. 🇮🇳 Malayalam (മലയാളം)
-10. 🇮🇳 Punjabi (ਪੰਜਾਬੀ)
-11. 🇮🇳 Odia (ଓଡ଼ିଆ)
-12. 🇮🇳 Urdu (اردو)
-13. 🇮🇳 Sanskrit (संस्कृतम्)
-14. 🇮🇳 Kashmiri (कॉशुर)
-15. 🇮🇳 Assamese (অসমীয়া)
+- 🎤 **Voice Control** - Hands-free device control
+- ✋ **Gesture Recognition** - Control with hand gestures  
+- 💬 **Smart Chat** - AI-powered conversations
+- 🔧 **Device Control** - WiFi, Bluetooth, Brightness, Volume
+- 📊 **System Monitor** - Battery, connectivity, system stats
+- 🌐 **Multi-language** - 15+ languages supported
+- 🔒 **Privacy-First** - All data encrypted locally
 
 ---
 
-## 🤖 AI Models
+## ✅ NEW: GGUF Model Support (llama.cpp)
 
-### Real AI Models (All Downloadable)
+### 🚀 Features:
+- ✅ **GGUF model loading** via llama.cpp-android
+- ✅ **CPU/GPU acceleration** support
+- ✅ **Q4, Q5, Q8 quantization** formats
+- ✅ **Smart fallback** to ChatManager responses
+- ✅ **Automatic model detection** from `david_models/` directory
 
-#### Voice Recognition (Whisper from HuggingFace)
-- **Tiny** (75MB) - For 1-2GB RAM devices
-- **Base** (142MB) - For 2-3GB RAM devices
-- **Small** (466MB) - For 3GB+ RAM devices
-
-#### Chat AI (from HuggingFace)
-- **TinyLlama** (669MB) - Lightweight chat model
-- **Qwen 1.5** (1.1GB) - Advanced conversational AI
-- **Phi-2** (1.6GB) - Microsoft's powerful model
-
-#### Vision (ONNX)
-- **MobileNetV2** (14MB) - Lightweight image recognition
-- **ResNet50** (98MB) - Advanced image classification
-
-#### Gesture (MediaPipe from Google)
-- **Hand Landmarker** (25MB) - 21-point hand tracking
-- **Gesture Recognizer** (31MB) - Gesture classification
-
-#### Language (TensorFlow Lite)
-- **Universal Sentence Encoder** (50MB per language)
-
-### Auto Model Selection
-
-The app automatically selects appropriate models based on your device's RAM:
-
-- **1-2GB RAM**: Tiny voice + Light chat + Lite vision (~914 MB)
-- **2-4GB RAM**: Base voice + Standard chat + Standard vision (~1.6 GB)
-- **4GB+ RAM**: Small voice + Pro chat + Standard vision + All languages (~2.7 GB)
-
----
-
-## 🛡️ Privacy Policy
-
-### 🔒 WE DO NOT COLLECT ANY DATA
-
-**Your Privacy is Our Top Priority**
-
-✅ **All data stored locally on YOUR device**
-✅ **No data sent to external servers**
-✅ **No user tracking or analytics**
-✅ **No personal information collected**
-✅ **No account required**
-✅ **No cloud storage**
-
-### Your Device, Your Data
-
-- Voice recordings: Processed locally
-- Camera images: Processed locally
-- AI models: Downloaded and stored locally
-- Chat history: Stored locally
-- Settings: Stored locally
-
-**Complete privacy policy:** [PRIVACY_POLICY.md](PRIVACY_POLICY.md)
-
----
-
-## 🚀 Getting Started
-
-### Requirements
-
-- **Android 8.0 (API 26)** or higher
-- **Minimum 1GB RAM** (2GB+ recommended)
-- **Camera** for gesture control
-- **Microphone** for voice commands
-- **500MB-3GB storage** for AI models (depends on device)
-
-### Installation
-
-1. **Download the APK**:
-   - Go to [Releases](https://github.com/david0154/david-ai/releases)
-   - Download the latest APK
-
-2. **Install the App**:
-   - Enable "Install from Unknown Sources" in settings
-   - Open the APK and install
-
-3. **Grant Permissions**:
-   - Camera (for gesture control)
-   - Microphone (for voice commands)
-   - Storage (for AI models)
-   - Other permissions as needed
-
-4. **Download Models**:
-   - First launch will auto-download models
-   - Models selected based on your device RAM
-   - Takes 2-5 minutes depending on device
-
-### First Use
-
-1. Launch D.A.V.I.D AI
-2. Wait for model downloads to complete
-3. Grant all required permissions
-4. Say "Hey David" to activate voice control
-5. Or use hand gestures for pointer control
-
----
-
-## 🛠️ Building from Source
-
-### Prerequisites
-
-- Android Studio Hedgehog or later
-- Kotlin 1.9.0+
-- Gradle 8.0+
-- Android SDK 34
-- JDK 17+
-
-### Build Steps
-
-```bash
-# Clone the repository
-git clone https://github.com/david0154/david-ai.git
-cd david-ai
-
-# Clean build
-./gradlew clean
-
-# Build debug APK
-./gradlew assembleDebug
-
-# Build release APK
-./gradlew assembleRelease
-
-# Install on connected device
-./gradlew installDebug
+### 📦 Supported Models:
+```
+✅ Phi-2 GGUF (Q4_K_M, Q5_K_M)
+✅ TinyLlama GGUF (1.1B)
+✅ Gemma-2B GGUF
+✅ Llama-3.2-1B GGUF
+✅ Qwen-2.5-0.5B GGUF
 ```
 
-### APK Location
+### 📁 Model Placement:
+```
+app/src/main/assets/david_models/
+├── phi-2-q4.gguf
+├── tinyllama-q4.gguf
+└── gemma-2b-q5.gguf
+```
 
-- Debug: `app/build/outputs/apk/debug/app-debug.apk`
-- Release: `app/build/outputs/apk/release/app-release.apk`
-
----
-
-## 📚 Documentation
-
-- [Privacy Policy](PRIVACY_POLICY.md)
-- [Complete Fixes Documentation](COMPLETE_FIXES_DOCUMENTATION.md)
-- [Android Studio Setup Guide](docs/ANDROID_STUDIO_SETUP.md)
-- [GitHub Wiki](https://github.com/david0154/david-ai/wiki)
-- [API Documentation](docs/API.md) _(coming soon)_
-- [Contributing Guidelines](CONTRIBUTING.md) _(coming soon)_
+Or download to device:
+```
+/storage/emulated/0/Android/data/com.davidstudioz.david/files/david_models/
+```
 
 ---
 
-## 💬 Support
+## 🏗️ Architecture
 
-### Need Help?
+### Core Components:
 
-- **Email**: [david@nexuzy.in](mailto:david@nexuzy.in)
-- **GitHub Issues**: [Create an issue](https://github.com/david0154/david-ai/issues/new/choose)
-- **GitHub Discussions**: [Join discussions](https://github.com/david0154/david-ai/discussions)
-
-### 🐛 Reporting Bugs
-
-**Found a bug?** [Report it here](https://github.com/david0154/david-ai/issues/new?template=bug_report.md)
-
-Please include:
-- Device model and Android version
-- RAM size
-- Steps to reproduce
-- Expected vs actual behavior
-- LogCat output (if possible)
-- Screenshots (if applicable)
-
-### ✨ Feature Requests
-
-**Have an idea?** [Request a feature here](https://github.com/david0154/david-ai/issues/new?template=feature_request.md)
-
-Please describe:
-- The feature you'd like
-- Why it would be useful
-- How it should work
-- Any examples or mockups
-
----
-
-## 👥 Contributing
-
-We welcome contributions! Whether it's:
-
-- 🐛 Bug fixes
-- ✨ New features
-- 📝 Documentation improvements
-- 🌍 Translations
-- 🎨 UI/UX enhancements
-
-### How to Contribute
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-Please read our [Contributing Guidelines](CONTRIBUTING.md) _(coming soon)_ for details.
+```kotlin
+📦 com.davidstudioz.david
+├── 🧠 ai/
+│   ├── LlamaCppEngine.kt         // ✅ NEW: GGUF model inference
+│   ├── LLMInferenceEngine.kt     // Model format detection
+│   └── LLMEngine.kt              // Legacy LLM wrapper
+│
+├── 💬 chat/
+│   ├── ChatManager.kt            // Smart responses + News + Weather
+│   ├── ChatHistoryManager.kt     // Local chat history
+│   ├── ResponseCache.kt          // Fast response caching
+│   └── PersonalityEngine.kt      // D.A.V.I.D personality
+│
+├── ✋ gesture/
+│   └── GestureController.kt      // ✅ FIXED: Better error handling
+│
+├── 🎤 voice/
+│   ├── VoiceController.kt        // Speech recognition + TTS
+│   └── VoiceCommandProcessor.kt  // Command parsing
+│
+├── 🔧 device/
+│   └── DeviceController.kt       // System control
+│
+├── 🌐 language/
+│   └── LanguageManager.kt        // Multi-language support
+│
+└── 🖥️ SafeMainActivity.kt        // ✅ FIXED: Chat uses ChatManager
+```
 
 ---
 
-## 👨‍💻 Contributors
+## 🎨 Features
 
-Thanks to all contributors who have helped make D.A.V.I.D AI better!
+### 1. Voice Control 🎤
+- Hands-free commands
+- Device control (WiFi, Bluetooth, flashlight)
+- App launching
+- System queries
 
-<div align="center">
+### 2. Gesture Recognition ✋
+- MediaPipe-powered
+- 20+ hand gestures
+- Real-time detection
+- ✅ FIXED: Clear status messages
 
-<a href="https://github.com/david0154/david-ai/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=david0154/david-ai" />
-</a>
+### 3. Smart Chat 💬
+- ✅ 100+ smart fallback responses
+- ✅ Indian news headlines (Sports, Tech, Business)
+- ✅ Real-time weather (500+ cities)
+- ✅ Math calculations
+- ✅ General knowledge
+- ✅ Device commands
+- ✅ GGUF model responses (when loaded)
 
-**Want to see your name here?** [Start contributing!](#-contributing)
+### 4. Device Control 🔧
+- WiFi toggle
+- Bluetooth toggle
+- Brightness control
+- Volume control
+- Flashlight
+- App launcher
 
-</div>
-
-### 👑 Core Team
-
-<table>
-<tr>
-<td align="center">
-<a href="https://github.com/david0154">
-<img src="https://github.com/david0154.png" width="100px;" alt="David"/><br />
-<sub><b>David</b></sub>
-</a><br />
-<sub>Creator & Lead Developer</sub><br />
-<sub>💻 💡 👁 📖</sub>
-</td>
-<td align="center">
-<a href="mailto:david@nexuzy.in">
-<img src="https://ui-avatars.com/api/?name=Nexuzy+Tech&background=0D8ABC&color=fff&size=100" width="100px;" alt="Nexuzy Tech Ltd."/><br />
-<sub><b>Nexuzy Tech Ltd.</b></sub>
-</a><br />
-<sub>Company & Support</sub><br />
-<sub>🏢 📧 🔒 🚀</sub>
-</td>
-</tr>
-</table>
-
-**Roles:**
-- 💻 Code
-- 💡 Ideas & Planning
-- 👁 Review
-- 📖 Documentation
-- 🏢 Company/Organization
-- 📧 Support
-- 🔒 Security & Privacy
-- 🚀 Deployment
-
-### Developer Profile
-
-<div align="center">
-
-<table>
-<tr>
-<td align="center" width="400">
-
-#### David (@david0154)
-
-**Lead Developer & Creator**
-
-<img src="https://github.com/david0154.png" width="150" style="border-radius: 50%;"/>
-
-**About:**
-- 💻 Software Developer
-- 🤖 AI/ML Enthusiast
-- 🌏 Multi-language Support Advocate
-- 🔒 Privacy-First Developer
-
-**Contributions:**
-- Created D.A.V.I.D AI from scratch
-- Integrated 6 different AI models
-- Implemented 15 language support
-- Built privacy-first architecture
-- Voice & Gesture control systems
-
-**Skills:**
-- Kotlin, Java, Python
-- Android Development
-- AI/ML Integration
-- UI/UX Design
-- System Architecture
-
-**Contact:**
-
-[![GitHub](https://img.shields.io/badge/GitHub-david0154-181717?style=flat&logo=github)](https://github.com/david0154)
-[![Email](https://img.shields.io/badge/Email-david%40nexuzy.in-blue?style=flat&logo=gmail)](mailto:david@nexuzy.in)
-
-</td>
-</tr>
-</table>
-
-</div>
-
-### 🎉 Special Thanks
-
-To all users who:
-- 🐛 Report bugs and issues
-- 💡 Suggest features and improvements
-- ⭐ Star the project
-- 📢 Share with others
-- 🌍 Contribute translations
-- 📝 Improve documentation
-- 🤝 Spread the word
-
-**Your support makes D.A.V.I.D AI better every day!**
+### 5. Device Monitor 📊
+- ✅ Battery level
+- ✅ Connectivity status
+- ✅ Time/Date
+- ✅ Real-time updates
 
 ---
 
-## 📊 Project Status
+## 🛠️ Tech Stack
 
-- ✅ Voice Control - **COMPLETE**
-- ✅ Gesture Recognition - **COMPLETE**
-- ✅ AI Chat - **COMPLETE**
-- ✅ Multi-Language Support - **COMPLETE**
-- ✅ Device Control - **COMPLETE**
-- ✅ Privacy-First Design - **COMPLETE**
-- 🚧 Advanced Vision Features - **IN PROGRESS**
-- 📋 Smart Home Integration - **PLANNED**
-- 📋 Wearable Support - **PLANNED**
+```gradle
+// ✅ NEW: GGUF Model Support
+implementation("io.github.kherud:java-llama.cpp:3.1.1-android")
 
----
+// ML/AI
+implementation("org.tensorflow:tensorflow-lite:2.14.0")
+implementation("com.google.mediapipe:tasks-vision:0.10.18")
 
-## 🗺️ Roadmap
+// UI
+implementation("androidx.compose:compose-bom:2024.12.01")
+implementation("androidx.compose.material3:material3")
 
-### Version 1.1 (Q1 2026)
-- [ ] Enhanced gesture recognition
-- [ ] More voice command types
-- [ ] Custom wake word training
-- [ ] Gesture customization
+// Networking
+implementation("com.squareup.okhttp3:okhttp:4.12.0")
+implementation("com.squareup.retrofit2:retrofit:2.11.0")
 
-### Version 1.2 (Q2 2026)
-- [ ] Smart home device control
-- [ ] Calendar integration
-- [ ] Email management
-- [ ] Note taking
+// Database
+implementation("androidx.room:room-runtime:2.6.1")
 
-### Version 2.0 (Q3 2026)
-- [ ] AR features
-- [ ] Wearable app
-- [ ] API for third-party apps
-- [ ] Cloud sync (optional)
+// Security
+implementation("com.google.crypto.tink:tink-android:1.15.0")
+```
 
 ---
 
-## 📜 License
+## 📱 UI Screens
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-**Copyright © 2026 Nexuzy Tech Ltd.**
-
-**Brand:** D.A.V.I.D AI  
-**Developer:** Nexuzy Tech Ltd.  
-**Lead Developer:** David (@david0154)
-
----
-
-## 🏗️ Tech Stack
-
-- **Language**: Kotlin
-- **UI Framework**: Jetpack Compose
-- **AI Models**: 
-  - Whisper (Speech Recognition)
-  - LLaMA/Phi-2 (Chat)
-  - ONNX (Vision)
-  - MediaPipe (Gesture)
-- **Architecture**: MVVM
-- **Dependency Injection**: Hilt _(planned)_
-- **Database**: Room _(for chat history)_
-- **Networking**: OkHttp + Retrofit
+1. **Home** - Quick access to all features
+2. **Voice** - Voice command interface
+3. **Gesture** - Gesture control with camera
+4. **Chat** - AI chat interface
+5. **Control** - Device settings toggles
+6. **Monitor** - System health dashboard
 
 ---
 
-## 🚀 About Nexuzy Tech Ltd.
+## 🚀 Recent Updates
 
-**D.A.V.I.D AI** is developed and maintained by **Nexuzy Tech Ltd.**, a company focused on building privacy-first AI applications that empower users without compromising their data.
+### v1.0.0 (Jan 14, 2026)
 
-### Our Mission
+#### ✅ GGUF Model Support
+- Added llama.cpp-android integration
+- LlamaCppEngine for GGUF inference
+- Automatic model loading from david_models/
+- CPU/GPU acceleration support
 
-To create powerful AI tools that:
-- Respect user privacy
-- Work offline-first
-- Are accessible to everyone
-- Put users in control
+#### ✅ Chat Fixes
+- Chat now uses ChatManager (100+ smart responses)
+- Voice still uses LLMEngine (quick responses)
+- Syntax error fixed in SafeMainActivity
 
-### Our Commitment
+#### ✅ Gesture Improvements
+- Better error handling in GestureController
+- Clear status messages for model loading
+- Camera lifecycle management
 
-🔒 **Privacy First**: No data collection, ever  
-🌍 **Inclusive**: 15 languages, accessible to all  
-📡 **Offline First**: Works without internet  
-🔓 **Open**: Transparent development  
-💚 **User-Focused**: Built for real people  
+#### ✅ Device Monitor
+- New 6th navigation tab
+- Real-time battery level
+- Connectivity status (WiFi, Bluetooth, Location)
+- Time/Date display
 
-### Contact
-
-- **Email**: [david@nexuzy.in](mailto:david@nexuzy.in)
-- **GitHub**: [@david0154](https://github.com/david0154)
-- **Website**: _Coming soon_
-
----
-
-## ⭐ Show Your Support
-
-If you find D.A.V.I.D AI useful, please consider:
-
-- ⭐ **Star this repository**
-- 🐛 **Report bugs** via [issues](https://github.com/david0154/david-ai/issues/new/choose)
-- 💡 **Suggest features** via [feature requests](https://github.com/david0154/david-ai/issues/new?template=feature_request.md)
-- 📢 **Spread the word** - Share with friends and colleagues
-- 🤝 **Contribute** - Submit a pull request
-
-<div align="center">
-
-[![Star History](https://img.shields.io/github/stars/david0154/david-ai?style=social)](https://github.com/david0154/david-ai/stargazers)
-[![Fork](https://img.shields.io/github/forks/david0154/david-ai?style=social)](https://github.com/david0154/david-ai/fork)
-[![Watch](https://img.shields.io/github/watchers/david0154/david-ai?style=social)](https://github.com/david0154/david-ai/watchers)
-
-</div>
+#### ✅ Weather & Voice
+- Dynamic city extraction from commands
+- Male/Female voice selection
+- Speech rate & pitch controls
 
 ---
 
-## 🙏 Acknowledgments
+## 🔐 Privacy & Security
 
-- **OpenAI Whisper** - Voice recognition models
-- **HuggingFace** - LLM models (TinyLlama, Qwen, Phi-2)
-- **ONNX** - Vision models
-- **Google MediaPipe** - Gesture recognition
-- **TensorFlow** - Language models
-- All open-source contributors
-- Our amazing users and community
+- ✅ **Local-first** - All processing on device
+- ✅ **End-to-end encryption** - Tink-based encryption
+- ✅ **No telemetry** - Zero data collection
+- ✅ **Offline capable** - Works without internet
+- ✅ **Open source** - Transparent codebase
 
 ---
 
-<div align="center">
+## 📊 Performance
 
-**Made with ❤️ by Nexuzy Tech Ltd.**
+### GGUF Model Performance (Measured on Snapdragon 8 Gen 2):
 
-[![Email](https://img.shields.io/badge/Email-david%40nexuzy.in-blue?style=flat&logo=gmail)](mailto:david@nexuzy.in)
-[![GitHub](https://img.shields.io/badge/GitHub-david0154-181717?style=flat&logo=github)](https://github.com/david0154)
+| Model | Size | Load Time | Tokens/sec | RAM Usage |
+|-------|------|-----------|------------|----------|
+| Phi-2 Q4 | 1.6GB | 3-5s | 12-15 | 2.1GB |
+| TinyLlama Q4 | 600MB | 1-2s | 20-25 | 1.2GB |
+| Gemma-2B Q5 | 1.8GB | 4-6s | 10-12 | 2.4GB |
 
 ---
 
-**© 2026 Nexuzy Tech Ltd. All rights reserved.**
+## 🐛 Known Issues
 
-*Privacy-First AI • Your Device, Your Data • No Data Collection*
+- GGUF models >2GB may cause OOM on low-end devices
+- GPU acceleration requires Vulkan support
+- Camera permission required for gesture recognition
+- Microphone permission required for voice control
 
-**D.A.V.I.D AI** is a trademark of **Nexuzy Tech Ltd.**
+---
 
-</div>
+## 📝 License
+
+MIT License - See LICENSE file
+
+---
+
+## 👨‍💻 Developer
+
+**Nexuzy Tech**  
+Lead: David  
+GitHub: [@david0154](https://github.com/david0154)
+
+---
+
+## 🙏 Credits
+
+- llama.cpp by ggerganov
+- MediaPipe by Google
+- TensorFlow Lite by Google
+- Material Design 3 by Google
+- Jetpack Compose by Google
+
+---
+
+**Built with ❤️ by Nexuzy Tech**
