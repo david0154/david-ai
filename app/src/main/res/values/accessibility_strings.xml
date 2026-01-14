@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Accessibility strings for screen readers and assistive technologies -->
-    <string name="app_description">D.A.V.I.D AI Assistant - Your intelligent voice-controlled assistant</string>
-    <string name="voice_button_description">Activate voice recognition</string>
-    <string name="gesture_recognition_description">Toggle gesture recognition</string>
-    <string name="settings_description">Open application settings</string>
-</resources>
