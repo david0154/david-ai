@@ -72,7 +72,8 @@ class VoiceCommandProcessor(private val context: Context) {
                 "Flashlight is now off"
             }
             cmd.contains("torch") -> {
-                val isOn = deviceController.isFlashlightOn()
+                // ✅ FIXED: Use property, not function call
+                val isOn = deviceController.isFlashlightOn
                 deviceController.toggleFlashlight(!isOn)
                 if (!isOn) "Flashlight is now on" else "Flashlight is now off"
             }
@@ -127,7 +128,7 @@ class VoiceCommandProcessor(private val context: Context) {
                 "Taking a selfie"
             }
             cmd.contains("take photo") || cmd.contains("take picture") -> {
-                deviceController.takeSelfie()
+                deviceController.takePhoto()
                 "Opening camera"
             }
 
@@ -160,28 +161,27 @@ class VoiceCommandProcessor(private val context: Context) {
 
             // Media Control
             cmd.contains("play") && !cmd.contains("pause") -> {
+                deviceController.mediaPlay()
                 "Playing media"
             }
             cmd.contains("pause") || cmd.contains("stop") -> {
+                deviceController.mediaPause()
                 "Pausing media"
             }
             cmd.contains("next") && (cmd.contains("song") || cmd.contains("track") || cmd.contains("video")) -> {
+                deviceController.mediaNext()
                 "Skipping to next"
             }
             cmd.contains("previous") && (cmd.contains("song") || cmd.contains("track") || cmd.contains("video")) -> {
+                deviceController.mediaPrevious()
                 "Going to previous"
-            }
-            cmd.contains("forward") -> {
-                "Fast forwarding"
-            }
-            cmd.contains("rewind") || cmd.contains("backward") -> {
-                "Rewinding"
             }
 
             // App Control
             cmd.contains("open") -> {
                 val appName = cmd.replace("open", "").trim()
                 if (appName.isNotEmpty()) {
+                    deviceController.openApp(appName)
                     "Opening $appName"
                 } else {
                     "Which app would you like to open?"
@@ -209,14 +209,6 @@ class VoiceCommandProcessor(private val context: Context) {
                         "or ask about time and weather."
             }
         }
-    }
-
-    /**
-     * Extract phone number from command
-     */
-    private fun extractPhoneNumber(command: String): String? {
-        val pattern = Regex("\\d{10,}")
-        return pattern.find(command)?.value
     }
 
     /**
