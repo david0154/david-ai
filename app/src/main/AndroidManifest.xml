@@ -2,86 +2,25 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- ====== CORE PERMISSIONS (ESSENTIAL) ====== -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-
-    <!-- ====== LOCATION PERMISSIONS ====== -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
-    <!-- ====== DEVICE CONTROL PERMISSIONS ====== -->
-    <uses-permission android:name="android.permission.CALL_PHONE" />
-    <uses-permission android:name="android.permission.SEND_SMS" />
-    <uses-permission android:name="android.permission.READ_SMS" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-
-    <!-- ====== CONNECTIVITY CONTROL ====== -->
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-
-    <!-- ====== MEDIA & STORAGE (Android 13+ / Below 13) ====== -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
 
-    <!-- ====== CONTACTS & COMMUNICATION ====== -->
-    <uses-permission android:name="android.permission.READ_CONTACTS" />
-    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
-    <uses-permission android:name="android.permission.READ_CALL_LOG" />
-    <uses-permission android:name="android.permission.WRITE_CALL_LOG" />
-
-    <!-- ====== NOTIFICATIONS (Android 13+) ====== -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-
-    <!-- ====== SECURITY & SYSTEM ====== -->
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-
-    <!-- ====== BOOT RECEIVER (AUTO-START) ====== -->
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-
-    <!-- ====== ACCESSIBILITY SERVICE ====== -->
-    <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE"
-        tools:ignore="ProtectedPermissions" />
-
-    <!-- ====== FOREGROUND SERVICES ====== -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
-
-    <!-- ====== FEATURES ====== -->
+    <!-- Camera feature -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
-    <uses-feature android:name="android.hardware.microphone" android:required="true" />
-    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
-    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
-    <uses-feature android:name="android.hardware.type.watch" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 
-    <!-- ✅ ONLY NEW ADDITION: Suppress TensorFlow Lite namespace warnings -->
-    <uses-sdk tools:overrideLibrary="
-        org.tensorflow.lite,
-        org.tensorflow.lite.gpu,
-        org.tensorflow.lite.api,
-        org.tensorflow.lite.support,
-        org.tensorflow.lite.support.api" />
-
-    <!-- ====== APPLICATION ====== -->
     <application
-        android:name="com.davidstudioz.david.DavidAIApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -89,166 +28,44 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.DavidAI"
-        android:usesCleartextTraffic="false"
-        android:requestLegacyExternalStorage="true"
+        android:theme="@style/Theme.DAVID"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
-
-        <!-- Wear OS Metadata -->
-        <meta-data
-            android:name="com.google.android.wearable.standalone"
-            android:value="true" />
-
-        <!-- ====== ACTIVITIES ====== -->
-
-        <!-- Splash Activity - LAUNCHER -->
+        
+        <!-- Main Activity -->
         <activity
-            android:name="com.davidstudioz.david.ui.SplashActivity"
+            android:name=".MainActivity"
             android:exported="true"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.DavidAI">
+            android:theme="@style/Theme.DAVID">
+        </activity>
+
+        <!-- Splash Activity -->
+        <activity
+            android:name=".ui.SplashActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.DAVID.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="com.google.android.wearable.category.WEARABLE_LAUNCHER" />
-            </intent-filter>
         </activity>
-
-        <!-- Login Activity -->
-        <activity
-            android:name="com.davidstudioz.david.ui.LoginActivity"
-            android:exported="false"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.DavidAI" />
-
-        <!-- Model Download Activity -->
-        <activity
-            android:name="com.davidstudioz.david.ui.ModelDownloadActivity"
-            android:exported="false"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.DavidAI" />
-
-        <!-- Main Activity -->
-        <activity
-            android:name="com.davidstudioz.david.MainActivity"
-            android:exported="false"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.DavidAI" />
-
-        <!-- Safe Main Activity (Fallback) -->
-        <activity
-            android:name="com.davidstudioz.david.SafeMainActivity"
-            android:exported="false"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.DavidAI" />
 
         <!-- Settings Activity -->
         <activity
-            android:name="com.davidstudioz.david.ui.SettingsActivity"
+            android:name=".ui.SettingsActivity"
             android:exported="false"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.DavidAI" />
+            android:theme="@style/Theme.DAVID" />
 
-        <!-- ✅ Voice Settings Activity -->
-        <activity
-            android:name="com.davidstudioz.david.ui.VoiceSettingsActivity"
-            android:exported="false"
-            android:parentActivityName=".ui.SettingsActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.DavidAI" />
-
-        <!-- ✅ Gesture Settings Activity -->
-        <activity
-            android:name="com.davidstudioz.david.ui.GestureSettingsActivity"
-            android:exported="false"
-            android:parentActivityName=".ui.SettingsActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.DavidAI" />
-
-        <!-- Privacy Activity -->
-        <activity
-            android:name="com.davidstudioz.david.ui.PrivacyActivity"
-            android:exported="false"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.DavidAI" />
-
-        <!-- About Activity -->
-        <activity
-            android:name="com.davidstudioz.david.ui.AboutActivity"
-            android:exported="false"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.DavidAI" />
-
-        <!-- ====== SERVICES ====== -->
-
-        <!-- Hot Word Detection Service - Always-On Voice -->
-        <service
-            android:name="com.davidstudioz.david.voice.HotWordDetectionService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="microphone"
-            android:stopWithTask="false" />
-
-        <!-- Gesture Recognition Service - Background Hand Tracking -->
-        <service
-            android:name="com.davidstudioz.david.gesture.GestureRecognitionService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="camera"
-            android:stopWithTask="false" />
-
-        <!-- Model Download Service - Survives Device Lock -->
-        <service
-            android:name="com.davidstudioz.david.services.ModelDownloadService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="dataSync"
-            android:stopWithTask="false" />
-
-        <!-- Accessibility Service - Scroll/Swipe/Navigation Control -->
-        <service
-            android:name="com.davidstudioz.david.accessibility.DavidAccessibilityService"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
-            android:exported="true"
-            android:enabled="true">
-            <intent-filter>
-                <action android:name="android.accessibilityservice.AccessibilityService" />
-            </intent-filter>
-            <meta-data
-                android:name="android.accessibilityservice"
-                android:resource="@xml/accessibility_service_config" />
-        </service>
-
-        <!-- ====== BROADCAST RECEIVERS ====== -->
-
-        <!-- Boot Receiver - Auto-Start Services on Boot -->
-        <receiver
-            android:name="com.davidstudioz.david.services.BootReceiver"
-            android:enabled="true"
-            android:exported="true"
-            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </receiver>
-
-        <!-- ====== PROVIDERS ====== -->
-
-        <!-- WorkManager Initialization -->
-        <provider
-            android:name="androidx.startup.InitializationProvider"
-            android:authorities="${applicationId}.androidx-startup"
-            android:exported="false"
-            tools:node="merge">
-            <meta-data
-                android:name="androidx.work.WorkManagerInitializer"
-                android:value="androidx.startup" />
-        </provider>
+        <!-- Other Activities -->
+        <activity android:name=".ui.VoiceSettingsActivity" android:exported="false" />
+        <activity android:name=".ui.GestureSettingsActivity" android:exported="false" />
+        <activity android:name=".ui.AboutActivity" android:exported="false" />
+        <activity android:name=".ui.PrivacyActivity" android:exported="false" />
+        <activity android:name=".ui.LoginActivity" android:exported="false" />
+        <activity android:name=".ui.ModelDownloadActivity" android:exported="false" />
 
     </application>
 
