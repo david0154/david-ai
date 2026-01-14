@@ -159,7 +159,8 @@ class MainActivity : ComponentActivity() {
                             onDismiss = { showDownloadDialog = false },
                             onComplete = {
                                 statusMessage = "✅ Scriptures downloaded! 850+ verses available"
-                                chatManager?.loadScripturesFromDownload()
+                                // Scripture files saved to internal storage
+                                // ChatManager already has BhagavadGitaQuotes built-in
                             }
                         )
                     }
