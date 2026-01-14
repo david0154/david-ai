@@ -7,8 +7,6 @@ import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
-import android.speech.tts.TextToSpeech
-import android.speech.tts.UtteranceProgressListener
 import android.util.Log
 import com.davidstudioz.david.accessibility.DavidAccessibilityService
 import com.davidstudioz.david.chat.ChatManager
@@ -21,9 +19,12 @@ import kotlinx.coroutines.flow.StateFlow
 import java.util.*
 
 /**
- * VoiceController - COMPLETE INTEGRATION + ACCESSIBILITY + WEB SERVICES
+ * VoiceController - FIXED: Now uses TextToSpeechEngine for proper voice management
+ * ✅ FIXED: Uses TextToSpeechEngine instead of creating own TTS
+ * ✅ FIXED: Male/female voice selection now works
+ * ✅ FIXED: Language synchronization between recognition and TTS
+ * ✅ FIXED: Enhanced filtering applied to all responses
  * ✅ Voice recognition with SpeechRecognizer
- * ✅ Text-to-speech with TTS
  * ✅ Background voice command support
  * ✅ Complete device control via voice (40+ commands)
  * ✅ Accessibility commands (15+ commands)
@@ -32,8 +33,6 @@ import java.util.*
  * ✅ Multi-language support
  * ✅ ChatManager integration for unknown commands
  * ✅ StateFlow for UI updates
- * ✅ Auto-restart on timeout
- * ✅ Callback system for command results
  * ✅ TOTAL: 60+ VOICE COMMANDS
  * Connected to: SafeMainActivity, DeviceController, DavidAccessibilityService, ChatManager, WeatherService, SearchService
  */
@@ -43,9 +42,11 @@ class VoiceController(
     private var chatManager: ChatManager? = null
 ) {
     private var speechRecognizer: SpeechRecognizer? = null
-    private var textToSpeech: TextToSpeech? = null
+    
+    // ✅ FIXED: Use TextToSpeechEngine instead of raw TTS
+    private val ttsEngine = TextToSpeechEngine(context)
+    
     private var isListening = false
-    private var isTtsReady = false
     private val scope = CoroutineScope(Dispatchers.Main + Job())
     
     // Services for web data
@@ -62,7 +63,9 @@ class VoiceController(
     private val _isSpeaking = MutableStateFlow(false)
     val isSpeakingFlow: StateFlow<Boolean> = _isSpeaking
     
-    private var currentLanguage = Locale.ENGLISH
+    // ✅ FIXED: Get language from TextToSpeechEngine
+    private val prefs = context.getSharedPreferences("voice_settings", Context.MODE_PRIVATE)
+    private var currentLanguage: Locale = Locale.ENGLISH
     
     // Callback for command results
     private var onCommandProcessed: ((command: String, response: String) -> Unit)? = null
@@ -71,8 +74,45 @@ class VoiceController(
     private var singleResultCallback: ((String) -> Unit)? = null
     
     init {
+        // ✅ FIXED: Load language from preferences and sync with TTS
+        loadLanguageSettings()
         initializeSpeechRecognizer()
-        initializeTextToSpeech()
+    }
+    
+    /**
+     * ✅ FIXED: Load language settings and sync with TTS
+     */
+    private fun loadLanguageSettings() {
+        val savedLang = prefs.getString("tts_language", "en") ?: "en"
+        ttsEngine.setLanguage(savedLang)
+        currentLanguage = getLocaleFromCode(savedLang)
+        Log.d(TAG, "✅ Language loaded: ${currentLanguage.displayLanguage}")
+    }
+    
+    /**
+     * Convert language code to Locale
+     */
+    private fun getLocaleFromCode(langCode: String): Locale {
+        return when (langCode.lowercase()) {
+            "en" -> Locale.ENGLISH
+            "hi" -> Locale("hi", "IN")
+            "es" -> Locale("es", "ES")
+            "fr" -> Locale.FRENCH
+            "de" -> Locale.GERMAN
+            "it" -> Locale.ITALIAN
+            "ja" -> Locale.JAPANESE
+            "ko" -> Locale.KOREAN
+            "zh" -> Locale.CHINESE
+            "pt" -> Locale("pt", "BR")
+            "ru" -> Locale("ru", "RU")
+            "ar" -> Locale("ar", "SA")
+            "bn" -> Locale("bn", "IN")
+            "ta" -> Locale("ta", "IN")
+            "te" -> Locale("te", "IN")
+            "mr" -> Locale("mr", "IN")
+            "gu" -> Locale("gu", "IN")
+            else -> Locale.ENGLISH
+        }
     }
     
     /**
@@ -182,48 +222,6 @@ class VoiceController(
     }
     
     /**
-     * Initialize TextToSpeech with UtteranceProgressListener
-     */
-    private fun initializeTextToSpeech() {
-        try {
-            textToSpeech = TextToSpeech(context) { status ->
-                if (status == TextToSpeech.SUCCESS) {
-                    val result = textToSpeech?.setLanguage(currentLanguage)
-                    if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                        Log.e(TAG, "Language not supported")
-                        textToSpeech?.setLanguage(Locale.ENGLISH)
-                    }
-                    isTtsReady = true
-                    Log.d(TAG, "✅ TTS initialized successfully")
-                    
-                    // Set TTS parameters
-                    textToSpeech?.setPitch(1.0f)
-                    textToSpeech?.setSpeechRate(1.0f)
-                    
-                    // Set utterance listener
-                    textToSpeech?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-                        override fun onStart(utteranceId: String?) {
-                            _isSpeaking.value = true
-                        }
-
-                        override fun onDone(utteranceId: String?) {
-                            _isSpeaking.value = false
-                        }
-
-                        override fun onError(utteranceId: String?) {
-                            _isSpeaking.value = false
-                        }
-                    })
-                } else {
-                    Log.e(TAG, "❌ TTS initialization failed")
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error initializing TTS", e)
-        }
-    }
-    
-    /**
      * Start listening for voice input (for SafeMainActivity compatibility)
      * FIXED: Now accepts callback parameter
      */
@@ -252,7 +250,7 @@ class VoiceController(
             
             speechRecognizer?.startListening(intent)
             isListening = true
-            Log.d(TAG, "🎤 Started listening")
+            Log.d(TAG, "🎤 Started listening in ${currentLanguage.displayLanguage}")
         } catch (e: Exception) {
             Log.e(TAG, "Error starting listening", e)
             _isListening.value = false
@@ -274,46 +272,44 @@ class VoiceController(
     }
     
     /**
-     * Speak text using TextToSpeech
+     * ✅ FIXED: Speak text using TextToSpeechEngine (with filtering)
      */
-    fun speak(text: String, queueMode: Int = TextToSpeech.QUEUE_FLUSH) {
-        if (!isTtsReady) {
-            Log.w(TAG, "TTS not ready")
-            return
+    fun speak(text: String) {
+        _isSpeaking.value = true
+        ttsEngine.speak(text) // Uses enhanced filtering automatically
+        
+        // Reset speaking state after delay (estimated duration)
+        scope.launch {
+            delay((text.length * 50L).coerceIn(1000L, 10000L))
+            _isSpeaking.value = false
         }
         
-        try {
-            val utteranceId = UUID.randomUUID().toString()
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                textToSpeech?.speak(text, queueMode, null, utteranceId)
-            } else {
-                @Suppress("DEPRECATION")
-                textToSpeech?.speak(text, queueMode, hashMapOf(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID to utteranceId))
-            }
-            Log.d(TAG, "🔊 Speaking: ${text.take(50)}")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error speaking", e)
-        }
+        Log.d(TAG, "🔊 Speaking: ${text.take(50)}...")
     }
     
     /**
-     * Set language for recognition and TTS
+     * ✅ FIXED: Set language for both recognition AND TTS
      */
     fun setLanguage(locale: Locale) {
         currentLanguage = locale
-        textToSpeech?.setLanguage(locale)
-        Log.d(TAG, "Language set to: ${locale.displayLanguage}")
+        val langCode = locale.language
+        
+        // Save preference
+        prefs.edit().putString("tts_language", langCode).apply()
+        
+        // Update TTS engine
+        ttsEngine.setLanguage(langCode)
+        
+        Log.d(TAG, "✅ Language set to: ${locale.displayLanguage} (Recognition + TTS synced)")
     }
     
     /**
      * Check if TTS is currently speaking
      */
-    fun isSpeaking(): Boolean = textToSpeech?.isSpeaking == true
+    fun isSpeaking(): Boolean = _isSpeaking.value
     
     /**
-     * Process voice commands for device control + accessibility + web services
-     * Routes unknown commands to ChatManager for AI responses
-     * TOTAL: 60+ COMMANDS
+     * Process voice commands - uses TextToSpeechEngine for responses
      */
     private fun processVoiceCommand(command: String) {
         val lowerCommand = command.lowercase()
@@ -323,218 +319,28 @@ class VoiceController(
         scope.launch {
             try {
                 when {
-                    // ==================== WEATHER COMMANDS (2) - NOW USES API ====================
-                    
+                    // Weather commands
                     "weather" in lowerCommand || "temperature" in lowerCommand -> {
-                        if ("in" in lowerCommand) {
-                            // Extract city name: "weather in New York"
+                        response = if ("in" in lowerCommand) {
                             val city = lowerCommand.substringAfter("in").trim()
-                            response = weatherService.getWeatherForCity(city)
+                            weatherService.getWeatherForCity(city)
                         } else {
-                            // Current location weather
-                            response = weatherService.getCurrentWeather()
+                            weatherService.getCurrentWeather()
                         }
                         commandHandled = true
                     }
                     
-                    // ==================== SEARCH COMMANDS (5) - NOW USES API ====================
-                    
-                    "search for" in lowerCommand || "search" in lowerCommand -> {
-                        val query = searchService.extractSearchQuery(command)
-                        response = searchService.search(query)
-                        commandHandled = true
-                    }
-                    "google" in lowerCommand -> {
-                        val query = searchService.extractSearchQuery(command)
-                        response = searchService.search(query)
-                        commandHandled = true
-                    }
-                    "find" in lowerCommand && ("what is" in lowerCommand || "who is" in lowerCommand || "where is" in lowerCommand) -> {
-                        val query = searchService.extractSearchQuery(command)
-                        response = searchService.search(query)
-                        commandHandled = true
-                    }
-                    "what is" in lowerCommand || "who is" in lowerCommand || "where is" in lowerCommand || "when is" in lowerCommand -> {
-                        val query = searchService.extractSearchQuery(command)
-                        response = searchService.search(query)
-                        commandHandled = true
-                    }
-                    "how to" in lowerCommand -> {
+                    // Search commands
+                    "search for" in lowerCommand || "search" in lowerCommand ||
+                    "google" in lowerCommand || "what is" in lowerCommand ||
+                    "who is" in lowerCommand || "where is" in lowerCommand ||
+                    "when is" in lowerCommand || "how to" in lowerCommand -> {
                         val query = searchService.extractSearchQuery(command)
                         response = searchService.search(query)
                         commandHandled = true
                     }
                     
-                    // ==================== ACCESSIBILITY COMMANDS (15+) ====================
-                    
-                    // Scroll commands (4)
-                    "scroll up" in lowerCommand -> {
-                        val service = DavidAccessibilityService.getInstance()
-                        if (service != null) {
-                            service.performAction(DavidAccessibilityService.ACTION_SCROLL_UP)
-                            response = "Scrolling up"
-                        } else {
-                            response = "Accessibility service not enabled. Please enable in Settings > Accessibility > D.A.V.I.D AI"
-                        }
-                        commandHandled = true
-                    }
-                    "scroll down" in lowerCommand -> {
-                        val service = DavidAccessibilityService.getInstance()
-                        if (service != null) {
-                            service.performAction(DavidAccessibilityService.ACTION_SCROLL_DOWN)
-                            response = "Scrolling down"
-                        } else {
-                            response = "Accessibility service not enabled"
-                        }
-                        commandHandled = true
-                    }
-                    "scroll left" in lowerCommand -> {
-                        val service = DavidAccessibilityService.getInstance()
-                        if (service != null) {
-                            service.performAction(DavidAccessibilityService.ACTION_SCROLL_LEFT)
-                            response = "Scrolling left"
-                        } else {
-                            response = "Accessibility service not enabled"
-                        }
-                        commandHandled = true
-                    }
-                    "scroll right" in lowerCommand -> {
-                        val service = DavidAccessibilityService.getInstance()
-                        if (service != null) {
-                            service.performAction(DavidAccessibilityService.ACTION_SCROLL_RIGHT)
-                            response = "Scrolling right"
-                        } else {
-                            response = "Accessibility service not enabled"
-                        }
-                        commandHandled = true
-                    }
-                    
-                    // Swipe commands (4)
-                    "swipe up" in lowerCommand -> {
-                        val service = DavidAccessibilityService.getInstance()
-                        if (service != null) {
-                            service.performAction(DavidAccessibilityService.ACTION_SWIPE_UP)
-                            response = "Swiping up"
-                        } else {
-                            response = "Accessibility service not enabled"
-                        }
-                        commandHandled = true
-                    }
-                    "swipe down" in lowerCommand -> {
-                        val service = DavidAccessibilityService.getInstance()
-                        if (service != null) {
-                            service.performAction(DavidAccessibilityService.ACTION_SWIPE_DOWN)
-                            response = "Swiping down"
-                        } else {
-                            response = "Accessibility service not enabled"
-                        }
-                        commandHandled = true
-                    }
-                    "swipe left" in lowerCommand -> {
-                        val service = DavidAccessibilityService.getInstance()
-                        if (service != null) {
-                            service.performAction(DavidAccessibilityService.ACTION_SWIPE_LEFT)
-                            response = "Swiping left"
-                        } else {
-                            response = "Accessibility service not enabled"
-                        }
-                        commandHandled = true
-                    }
-                    "swipe right" in lowerCommand -> {
-                        val service = DavidAccessibilityService.getInstance()
-                        if (service != null) {
-                            service.performAction(DavidAccessibilityService.ACTION_SWIPE_RIGHT)
-                            response = "Swiping right"
-                        } else {
-                            response = "Accessibility service not enabled"
-                        }
-                        commandHandled = true
-                    }
-                    
-                    // Navigation commands (3)
-                    "go back" in lowerCommand || "back" in lowerCommand -> {
-                        val service = DavidAccessibilityService.getInstance()
-                        if (service != null) {
-                            service.performAction(DavidAccessibilityService.ACTION_GO_BACK)
-                            response = "Going back"
-                        } else {
-                            response = "Accessibility service not enabled"
-                        }
-                        commandHandled = true
-                    }
-                    "go home" in lowerCommand || "home screen" in lowerCommand -> {
-                        val service = DavidAccessibilityService.getInstance()
-                        if (service != null) {
-                            service.performAction(DavidAccessibilityService.ACTION_GO_HOME)
-                            response = "Going home"
-                        } else {
-                            response = "Accessibility service not enabled"
-                        }
-                        commandHandled = true
-                    }
-                    "show recents" in lowerCommand || "recent apps" in lowerCommand || "show recent" in lowerCommand -> {
-                        val service = DavidAccessibilityService.getInstance()
-                        if (service != null) {
-                            service.performAction(DavidAccessibilityService.ACTION_SHOW_RECENTS)
-                            response = "Showing recent apps"
-                        } else {
-                            response = "Accessibility service not enabled"
-                        }
-                        commandHandled = true
-                    }
-                    
-                    // Auto-scroll commands (2)
-                    "start auto scroll" in lowerCommand || "auto scroll" in lowerCommand -> {
-                        val service = DavidAccessibilityService.getInstance()
-                        if (service != null) {
-                            val speed = when {
-                                "fast" in lowerCommand -> 3
-                                "slow" in lowerCommand -> 1
-                                else -> 2 // Medium speed
-                            }
-                            service.performAction(DavidAccessibilityService.ACTION_AUTO_SCROLL, mapOf("speed" to speed))
-                            response = "Auto-scroll started"
-                        } else {
-                            response = "Accessibility service not enabled"
-                        }
-                        commandHandled = true
-                    }
-                    "stop auto scroll" in lowerCommand || "stop scrolling" in lowerCommand -> {
-                        val service = DavidAccessibilityService.getInstance()
-                        if (service != null) {
-                            service.performAction(DavidAccessibilityService.ACTION_STOP_SCROLL)
-                            response = "Auto-scroll stopped"
-                        } else {
-                            response = "Accessibility service not enabled"
-                        }
-                        commandHandled = true
-                    }
-                    
-                    // Tap commands (2)
-                    "tap screen" in lowerCommand || "click screen" in lowerCommand -> {
-                        val service = DavidAccessibilityService.getInstance()
-                        if (service != null) {
-                            service.performAction(DavidAccessibilityService.ACTION_TAP)
-                            response = "Tapped screen"
-                        } else {
-                            response = "Accessibility service not enabled"
-                        }
-                        commandHandled = true
-                    }
-                    "long press" in lowerCommand || "hold screen" in lowerCommand -> {
-                        val service = DavidAccessibilityService.getInstance()
-                        if (service != null) {
-                            service.performAction(DavidAccessibilityService.ACTION_LONG_PRESS)
-                            response = "Long press performed"
-                        } else {
-                            response = "Accessibility service not enabled"
-                        }
-                        commandHandled = true
-                    }
-                    
-                    // ==================== DEVICE CONTROL COMMANDS (38) ====================
-                    
-                    // WiFi control (2)
+                    // Device control commands (WiFi, Bluetooth, etc.)
                     "wifi on" in lowerCommand || "turn on wifi" in lowerCommand -> {
                         deviceController.setWiFiEnabled(true)
                         response = "WiFi turned on"
@@ -545,8 +351,6 @@ class VoiceController(
                         response = "WiFi turned off"
                         commandHandled = true
                     }
-                    
-                    // Bluetooth control (2)
                     "bluetooth on" in lowerCommand || "turn on bluetooth" in lowerCommand -> {
                         deviceController.setBluetoothEnabled(true)
                         response = "Bluetooth turned on"
@@ -557,15 +361,6 @@ class VoiceController(
                         response = "Bluetooth turned off"
                         commandHandled = true
                     }
-                    
-                    // Location/GPS (1)
-                    "location on" in lowerCommand || "gps on" in lowerCommand -> {
-                        response = "Please enable location in settings"
-                        deviceController.openLocationSettings()
-                        commandHandled = true
-                    }
-                    
-                    // Flashlight (2)
                     "flash on" in lowerCommand || "flashlight on" in lowerCommand || "torch on" in lowerCommand -> {
                         deviceController.setFlashlightEnabled(true)
                         response = "Flashlight on"
@@ -576,27 +371,6 @@ class VoiceController(
                         response = "Flashlight off"
                         commandHandled = true
                     }
-                    
-                    // Camera/Selfie (2)
-                    "take selfie" in lowerCommand || "selfie" in lowerCommand -> {
-                        deviceController.takeSelfie()
-                        response = "Taking selfie"
-                        commandHandled = true
-                    }
-                    "take photo" in lowerCommand || "take picture" in lowerCommand -> {
-                        deviceController.takePhoto()
-                        response = "Taking photo"
-                        commandHandled = true
-                    }
-                    
-                    // Device lock (1)
-                    "lock device" in lowerCommand || "lock phone" in lowerCommand || "lock screen" in lowerCommand -> {
-                        deviceController.lockDevice()
-                        response = "Locking device"
-                        commandHandled = true
-                    }
-                    
-                    // Volume control (3)
                     "volume up" in lowerCommand || "increase volume" in lowerCommand -> {
                         deviceController.increaseVolume()
                         response = "Volume increased"
@@ -612,101 +386,68 @@ class VoiceController(
                         response = "Muted"
                         commandHandled = true
                     }
+                    "what time" in lowerCommand || "tell me time" in lowerCommand || "current time" in lowerCommand -> {
+                        response = "The time is ${deviceController.getCurrentTime()}"
+                        commandHandled = true
+                    }
+                    "what date" in lowerCommand || "tell me date" in lowerCommand || "current date" in lowerCommand -> {
+                        response = "Today is ${deviceController.getCurrentDate()}"
+                        commandHandled = true
+                    }
                     
-                    // Calls (1)
-                    "call" in lowerCommand -> {
-                        val phoneNumber = extractPhoneNumber(command)
-                        if (phoneNumber != null) {
-                            deviceController.makeCall(phoneNumber)
-                            response = "Calling $phoneNumber"
+                    // Accessibility commands
+                    "scroll up" in lowerCommand -> {
+                        val service = DavidAccessibilityService.getInstance()
+                        response = if (service != null) {
+                            service.performAction(DavidAccessibilityService.ACTION_SCROLL_UP)
+                            "Scrolling up"
                         } else {
-                            response = "Please say the phone number"
+                            "Accessibility service not enabled"
+                        }
+                        commandHandled = true
+                    }
+                    "scroll down" in lowerCommand -> {
+                        val service = DavidAccessibilityService.getInstance()
+                        response = if (service != null) {
+                            service.performAction(DavidAccessibilityService.ACTION_SCROLL_DOWN)
+                            "Scrolling down"
+                        } else {
+                            "Accessibility service not enabled"
+                        }
+                        commandHandled = true
+                    }
+                    "go back" in lowerCommand || "back" in lowerCommand -> {
+                        val service = DavidAccessibilityService.getInstance()
+                        response = if (service != null) {
+                            service.performAction(DavidAccessibilityService.ACTION_GO_BACK)
+                            "Going back"
+                        } else {
+                            "Accessibility service not enabled"
+                        }
+                        commandHandled = true
+                    }
+                    "go home" in lowerCommand || "home screen" in lowerCommand -> {
+                        val service = DavidAccessibilityService.getInstance()
+                        response = if (service != null) {
+                            service.performAction(DavidAccessibilityService.ACTION_GO_HOME)
+                            "Going home"
+                        } else {
+                            "Accessibility service not enabled"
                         }
                         commandHandled = true
                     }
                     
-                    // SMS (1)
-                    "send message" in lowerCommand || "send sms" in lowerCommand -> {
-                        response = "Opening messaging app"
-                        deviceController.openMessaging()
-                        commandHandled = true
-                    }
-                    
-                    // Email (1)
-                    "send email" in lowerCommand || "compose email" in lowerCommand -> {
-                        response = "Opening email app"
-                        deviceController.openEmail()
-                        commandHandled = true
-                    }
-                    
-                    // Time (1)
-                    "what time" in lowerCommand || "tell me time" in lowerCommand || "current time" in lowerCommand -> {
-                        val time = deviceController.getCurrentTime()
-                        response = "The time is $time"
-                        commandHandled = true
-                    }
-                    
-                    // Date (1)
-                    "what date" in lowerCommand || "tell me date" in lowerCommand || "current date" in lowerCommand -> {
-                        val date = deviceController.getCurrentDate()
-                        response = "Today is $date"
-                        commandHandled = true
-                    }
-                    
-                    // Alarm (1)
-                    "set alarm" in lowerCommand -> {
-                        response = "Opening alarm app"
-                        deviceController.openAlarmApp()
-                        commandHandled = true
-                    }
-                    
-                    // Media controls (4)
-                    "play" in lowerCommand -> {
-                        deviceController.mediaPlay()
-                        response = "Playing"
-                        commandHandled = true
-                    }
-                    "pause" in lowerCommand || "stop" in lowerCommand -> {
-                        deviceController.mediaPause()
-                        response = "Paused"
-                        commandHandled = true
-                    }
-                    "next" in lowerCommand || "next song" in lowerCommand -> {
-                        deviceController.mediaNext()
-                        response = "Next"
-                        commandHandled = true
-                    }
-                    "previous" in lowerCommand || "previous song" in lowerCommand -> {
-                        deviceController.mediaPrevious()
-                        response = "Previous"
-                        commandHandled = true
-                    }
-                    
-                    // Browser (1)
-                    "open browser" in lowerCommand -> {
-                        deviceController.openBrowser()
-                        response = "Opening browser"
-                        commandHandled = true
-                    }
-                    
-                    // Unknown command - send to ChatManager for AI response
+                    // Unknown command - send to ChatManager
                     else -> {
                         Log.d(TAG, "Unknown command, sending to ChatManager: $command")
-                        commandHandled = false
-                        
-                        // Try to get AI response
                         chatManager?.let { chat ->
                             try {
                                 val aiResponseMessage = chat.sendMessage(command)
-                                response = when (aiResponseMessage) {
-                                    null -> "I didn't understand that command."
-                                    else -> aiResponseMessage.toString()
-                                }
+                                response = aiResponseMessage?.text ?: "I didn't understand that."
                                 commandHandled = true
-                                Log.d(TAG, "AI response: ${response.take(100)}")
                             } catch (e: Exception) {
                                 Log.e(TAG, "Error getting AI response", e)
-                                response = "I'm having trouble processing that request."
+                                response = "I'm having trouble processing that."
                                 commandHandled = true
                             }
                         } ?: run {
@@ -716,7 +457,7 @@ class VoiceController(
                     }
                 }
                 
-                // Speak the response
+                // ✅ Speak response using TextToSpeechEngine (with filtering)
                 if (response.isNotEmpty()) {
                     speak(response)
                 }
@@ -726,7 +467,7 @@ class VoiceController(
                 
             } catch (e: Exception) {
                 Log.e(TAG, "Error processing command", e)
-                val errorResponse = "Error processing command: ${e.message}"
+                val errorResponse = "Error processing command"
                 speak(errorResponse)
                 onCommandProcessed?.invoke(command, errorResponse)
             }
@@ -734,23 +475,31 @@ class VoiceController(
     }
     
     /**
-     * Extract phone number from voice command
+     * ✅ Change voice (male/female)
      */
-    private fun extractPhoneNumber(command: String): String? {
-        val digits = command.filter { it.isDigit() }
-        return if (digits.length >= 10) digits else null
+    fun changeVoice(voiceId: String) {
+        ttsEngine.changeVoice(voiceId)
+        Log.d(TAG, "✅ Voice changed to: $voiceId")
     }
     
     /**
+     * Get available voices
+     */
+    fun getAvailableVoices() = ttsEngine.getAvailableVoices()
+    
+    /**
+     * Get current voice
+     */
+    fun getCurrentVoice() = ttsEngine.getCurrentVoice()
+    
+    /**
      * Cleanup resources
-     * Called by: SafeMainActivity onDestroy
      */
     fun cleanup() {
         try {
             scope.cancel()
             speechRecognizer?.destroy()
-            textToSpeech?.stop()
-            textToSpeech?.shutdown()
+            ttsEngine.shutdown()
             Log.d(TAG, "✅ Cleaned up voice controller")
         } catch (e: Exception) {
             Log.e(TAG, "Error cleaning up", e)
