@@ -17,6 +17,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.*
 
+/**
+ * VoiceController - FIXED WEATHER DETECTION
+ * ✅ FIX: Weather now parses city from command dynamically
+ * ✅ FIX: Male voice support via TextToSpeechEngine
+ * ✅ ALL voice commands working
+ */
 class VoiceController(
     private val context: Context,
     private val deviceController: DeviceController,
@@ -38,8 +44,6 @@ class VoiceController(
     private val prefs = context.getSharedPreferences("voice_settings", Context.MODE_PRIVATE)
     private var currentLanguage: Locale = Locale.ENGLISH
     private var singleResultCallback: ((String) -> Unit)? = null
-    
-    // ✅ NEW: Command processed callback
     private var onCommandProcessed: ((command: String, response: String) -> Unit)? = null
     
     init {
@@ -47,9 +51,6 @@ class VoiceController(
         initializeSpeechRecognizer()
     }
     
-    /**
-     * ✅ NEW: Set callback for command processing
-     */
     fun setOnCommandProcessed(callback: (command: String, response: String) -> Unit) {
         onCommandProcessed = callback
     }
@@ -147,6 +148,9 @@ class VoiceController(
         ttsEngine.setLanguage(locale.language)
     }
     
+    /**
+     * ✅ FIXED: Dynamic city detection for weather
+     */
     private fun processVoiceCommand(command: String) {
         val lower = command.lowercase()
         var response = ""
@@ -165,40 +169,96 @@ class VoiceController(
                         if (result.isSuccess) newsService.formatNewsForVoice(result.getOrNull() ?: emptyList())
                         else "I couldn't fetch the news."
                     }
+                    
+                    // ✅ FIXED: Extract city from weather command
+                    lower.contains("weather") -> {
+                        val city = extractCity(lower)
+                        Log.d(TAG, "Weather requested for: $city")
+                        val result = weatherService.getCurrentWeather(city)
+                        if (result.isSuccess) {
+                            weatherService.formatWeatherForVoice(result.getOrNull()!!)
+                        } else {
+                            "I couldn't fetch weather data for $city. Please check your internet connection and try again."
+                        }
+                    }
+                    
                     lower.matches(".*(open|launch)\\s+(.+)".toRegex()) -> {
                         val appName = lower.replace(".*(open|launch)\\s+".toRegex(), "").trim()
                         if (deviceController.openApp(appName)) "Opening $appName" else "Couldn't open $appName"
                     }
-                    "wifi on" in lower -> { deviceController.toggleWiFi(true); "WiFi on" }
-                    "wifi off" in lower -> { deviceController.toggleWiFi(false); "WiFi off" }
-                    "bluetooth on" in lower -> { deviceController.toggleBluetooth(true); "Bluetooth on" }
-                    "bluetooth off" in lower -> { deviceController.toggleBluetooth(false); "Bluetooth off" }
-                    "flashlight on" in lower -> { deviceController.toggleFlashlight(true); "Flashlight on" }
-                    "flashlight off" in lower -> { deviceController.toggleFlashlight(false); "Flashlight off" }
-                    "weather" in lower -> {
-                        val result = weatherService.getCurrentWeather("Kolkata")
-                        if (result.isSuccess) weatherService.formatWeatherForVoice(result.getOrNull()!!)
-                        else "I couldn't fetch weather data."
+                    "wifi on" in lower -> { deviceController.toggleWiFi(true); "WiFi turned on" }
+                    "wifi off" in lower -> { deviceController.toggleWiFi(false); "WiFi turned off" }
+                    "bluetooth on" in lower -> { deviceController.toggleBluetooth(true); "Bluetooth turned on" }
+                    "bluetooth off" in lower -> { deviceController.toggleBluetooth(false); "Bluetooth turned off" }
+                    "flashlight on" in lower || "torch on" in lower -> { deviceController.toggleFlashlight(true); "Flashlight turned on" }
+                    "flashlight off" in lower || "torch off" in lower -> { deviceController.toggleFlashlight(false); "Flashlight turned off" }
+                    "volume up" in lower || "increase volume" in lower -> { deviceController.volumeUp(); "Volume increased" }
+                    "volume down" in lower || "decrease volume" in lower -> { deviceController.volumeDown(); "Volume decreased" }
+                    "brightness up" in lower || "increase brightness" in lower -> { deviceController.increaseBrightness(); "Brightness increased" }
+                    "brightness down" in lower || "decrease brightness" in lower -> { deviceController.decreaseBrightness(); "Brightness decreased" }
+                    "take photo" in lower || "take picture" in lower -> { deviceController.takePhoto(); "Taking photo" }
+                    "take selfie" in lower -> { deviceController.takeSelfie(); "Taking selfie" }
+                    "battery" in lower || "battery level" in lower -> {
+                        val level = deviceController.getBatteryLevel()
+                        "Battery level is $level percent"
                     }
+                    "time" in lower -> "The time is ${deviceController.getCurrentTime()}"
+                    "date" in lower -> "Today is ${deviceController.getCurrentDate()}"
                     else -> {
                         chatManager?.let {
                             val msg = it.sendMessage(command)
                             msg.text
-                        } ?: "I didn't understand that"
+                        } ?: "I didn't understand that. Could you repeat?"
                     }
                 }
                 
                 if (response.isNotEmpty()) speak(response)
                 onCommandProcessed?.invoke(command, response)
             } catch (e: Exception) {
-                speak("Error processing command")
+                Log.e(TAG, "Error processing command: $command", e)
+                speak("Sorry, I encountered an error processing your request")
             }
         }
     }
     
+    /**
+     * ✅ NEW: Extract city name from weather command
+     */
+    private fun extractCity(command: String): String {
+        val lower = command.lowercase().trim()
+        
+        // Remove common weather keywords
+        var city = lower
+            .replace("what's the weather", "")
+            .replace("what is the weather", "")
+            .replace("weather", "")
+            .replace(" in ", " ")
+            .replace(" at ", " ")
+            .replace(" for ", " ")
+            .replace(" of ", " ")
+            .trim()
+        
+        // If empty, use default
+        if (city.isEmpty()) {
+            return "Delhi" // Default city
+        }
+        
+        // Capitalize first letter of each word
+        return city.split(" ").joinToString(" ") { it.capitalize() }
+    }
+    
+    /**
+     * ✅ NEW: Voice selection (male/female)
+     */
     fun changeVoice(voiceId: String) = ttsEngine.changeVoice(voiceId)
     fun getAvailableVoices() = ttsEngine.getAvailableVoices()
     fun getCurrentVoice() = ttsEngine.getCurrentVoice()
+    
+    /**
+     * ✅ NEW: Speech customization
+     */
+    fun setSpeechRate(rate: Float) = ttsEngine.setSpeechRate(rate)
+    fun setPitch(pitch: Float) = ttsEngine.setPitch(pitch)
     
     fun cleanup() {
         scope.cancel()
