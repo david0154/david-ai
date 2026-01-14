@@ -60,6 +60,8 @@ class DavidAIApp : Application(), Configuration.Provider {
                         Thread: ${thread.name}
                         Exception: ${throwable::class.simpleName}
                         Message: ${throwable.message}
+                        Android Version: ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})
+                        Device: ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}
                         Stack: ${throwable.stackTraceToString()}
                     """.trimIndent()
                     Log.e(TAG, errorMsg)
