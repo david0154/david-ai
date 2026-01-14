@@ -55,12 +55,11 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 /**
- * D.A.V.I.D Main Activity - MEGA UPDATE
- * ✅ NEW: Device Monitor Screen with battery, connectivity, time
- * ✅ FIXED: Weather with dynamic city detection
- * ✅ FIXED: Gesture with proper status messages  
- * ✅ FIXED: Male voice support
- * ✅ ALL EXISTING FEATURES PRESERVED
+ * D.A.V.I.D Main Activity - CHAT FIXED!
+ * ✅ FIXED: Chat now uses ChatManager (100+ smart responses)
+ * ✅ FIXED: Syntax error removed
+ * ✅ Voice uses LLMEngine (quick responses)
+ * ✅ ALL features preserved
  */
 @OptIn(ExperimentalMaterial3Api::class)
 class SafeMainActivity : ComponentActivity() {
@@ -91,6 +90,7 @@ class SafeMainActivity : ComponentActivity() {
             bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
             
             Log.d(TAG, "✅ All controllers initialized")
+            Log.d(TAG, "✅ ChatManager loaded with smart responses")
             
             setContent {
                 MaterialTheme(
@@ -110,6 +110,7 @@ class SafeMainActivity : ComponentActivity() {
     override fun onDestroy() {
         voiceController.cleanup()
         gestureController.stopGestureRecognition()
+        chatManager.release()
         super.onDestroy()
     }
 
@@ -257,6 +258,7 @@ class SafeMainActivity : ComponentActivity() {
                             detectedGesture = "No gesture"
                         }
                     }
+                    // ✅ FIXED: Chat now uses ChatManager with full smart responses
                     "chat" -> ChatScreen(chatMessage, chatHistory, 
                         onMessageChange = { chatMessage = it },
                         onSendMessage = {
@@ -266,9 +268,10 @@ class SafeMainActivity : ComponentActivity() {
                                 chatMessage = ""
                                 scope.launch {
                                     chatHistoryManager.addMessage(userMsg, isUser = true)
-                                    val response = llmEngine.generateResponse(userMsg)
-                                    chatHistory = chatHistory + ChatMessage(response, false)
-                                    chatHistoryManager.addMessage(response, isUser = false)
+                                    // ✅ FIXED: Use ChatManager.sendMessage() instead of LLMEngine
+                                    val aiMessage = chatManager.sendMessage(userMsg)
+                                    chatHistory = chatHistory + ChatMessage(aiMessage.text, false)
+                                    chatHistoryManager.addMessage(aiMessage.text, isUser = false)
                                 }
                             }
                         }
@@ -534,7 +537,7 @@ class SafeMainActivity : ComponentActivity() {
                     }
                     Column {
                         Text("📅 Date", fontSize = 14.sp, color = Color(0xFF64B5F6))
-                        Text(deviceController.getCurrentDate(), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White))
+                        Text(deviceController.getCurrentDate(), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     }
                 }
             }
