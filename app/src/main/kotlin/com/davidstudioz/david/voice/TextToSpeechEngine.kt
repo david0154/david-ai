@@ -107,7 +107,7 @@ class TextToSpeechEngine(private val context: Context) {
             // Fallback to any English voice
             val result = targetVoice ?: voices.firstOrNull { it.locale.language == "en" }
             
-            Log.d(TAG, "✅ ${gender.capitalize()} voice: ${result?.name ?: "Not found"}")
+            Log.d(TAG, "✅ ${gender.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }} voice: ${result?.name ?: "Not found"}")
             return result
             
         } catch (e: Exception) {
