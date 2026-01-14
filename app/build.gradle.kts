@@ -1,8 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    // ✅ REMOVED: kotlin.plugin.compose (not needed with Compose BOM 2024.12.01)
-    // Compose compiler is configured via composeCompiler block below
+    id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.devtools.ksp")
     id("kotlin-parcelize")
     id("com.google.dagger.hilt.android")
@@ -25,11 +24,11 @@ android {
         }
 
         multiDexEnabled = true
-        
+
         ksp {
             arg("room.schemaLocation", "$projectDir/schemas")
         }
-        
+
         ndk {
             abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
             debugSymbolLevel = "NONE"
@@ -69,10 +68,6 @@ android {
         mlModelBinding = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.3"
-    }
-
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -82,13 +77,17 @@ android {
             useLegacyPackaging = true
         }
     }
-    
+
     lint {
         checkReleaseBuilds = false
         abortOnError = false
         quiet = true
         disable += setOf("Deprecation", "ObsoleteLintCustomCheck")
     }
+}
+
+composeCompiler {
+    includeSourceInformation.set(true)
 }
 
 dependencies {
@@ -136,16 +135,16 @@ dependencies {
     implementation("androidx.camera:camera-camera2:1.4.1")
     implementation("androidx.camera:camera-lifecycle:1.4.1")
     implementation("androidx.camera:camera-view:1.4.1")
-    
+
     // ✅ ML/AI - Multiple Frameworks
     // TensorFlow Lite
     implementation("org.tensorflow:tensorflow-lite:2.14.0")
     implementation("org.tensorflow:tensorflow-lite-gpu:2.14.0")
     implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
-    
+
     // ONNX Runtime for Android
     implementation("com.microsoft.onnxruntime:onnxruntime-android:1.17.0")
-    
+
     // ML Kit
     implementation("com.google.mlkit:text-recognition:16.0.1")
     implementation("com.google.mlkit:face-detection:16.1.7")
@@ -158,27 +157,27 @@ dependencies {
 
     // Lottie
     implementation("com.airbnb.android:lottie-compose:6.6.2")
-    
+
     // Encryption
     implementation("com.google.crypto.tink:tink-android:1.15.0")
-    
+
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:21.3.0")
-    
+
     // Web scraping
     implementation("org.jsoup:jsoup:1.18.3")
-    
+
     // Hilt
     implementation("com.google.dagger:hilt-android:2.52")
     ksp("com.google.dagger:hilt-compiler:2.52")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-    
+
     // Room
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
-    
+
     // MediaPipe
     implementation("com.google.mediapipe:tasks-vision:0.10.18")
 
