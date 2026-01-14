@@ -172,7 +172,7 @@ class TextToSpeechEngine(private val context: Context) {
             
             // File paths
             "/[/\\w]+/".toRegex(),
-            "[A-Z]:\\\\\\\.+".toRegex(), // Windows paths
+            "[A-Z]:\\\\[\\w\\\\]+".toRegex(), // Windows paths - FIXED escape sequence
         )
         
         // Check if text matches code patterns
