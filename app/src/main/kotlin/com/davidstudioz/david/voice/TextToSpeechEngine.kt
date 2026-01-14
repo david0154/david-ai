@@ -14,6 +14,7 @@ import java.util.*
  * ✅ Filters internal code and debug messages
  * ✅ Prevents speaking technical strings
  * ✅ FIXED: Only discovers and uses selected voice (male OR female, not both)
+ * ✅ FIXED: Enhanced filtering to prevent speaking debug/internal code
  */
 class TextToSpeechEngine(private val context: Context) {
     
@@ -117,7 +118,7 @@ class TextToSpeechEngine(private val context: Context) {
     }
     
     /**
-     * ✅ FIXED: Speak text with filtering
+     * ✅ FIXED: Speak text with enhanced filtering
      */
     fun speak(text: String) {
         if (!isInitialized || tts == null) {
@@ -142,10 +143,31 @@ class TextToSpeechEngine(private val context: Context) {
     }
     
     /**
-     * ✅ NEW: Filter internal code and technical strings
+     * ✅ ENHANCED: Filter internal code and technical strings with stricter rules
      */
     private fun filterInternalCode(text: String): String {
         var filtered = text.trim()
+        
+        // Return empty if text is too short (likely debug output)
+        if (filtered.length < 2) {
+            return ""
+        }
+        
+        // ✅ NEW: Check for common debug prefixes and patterns first
+        val debugPrefixes = listOf(
+            "bilon", "debug", "error", "warn", "info", "log:", "tag:",
+            "exception", "stacktrace", "null", "undefined",
+            "system", "internal", "code:", "status:",
+            "initialized", "loading", "processing"
+        )
+        
+        val lowerFiltered = filtered.lowercase()
+        for (prefix in debugPrefixes) {
+            if (lowerFiltered.startsWith(prefix) || lowerFiltered.contains(" $prefix")) {
+                Log.d(TAG, "Filtered debug prefix: $prefix in '$filtered'")
+                return ""
+            }
+        }
         
         // Remove if it looks like code or technical output
         val codePatterns = listOf(
@@ -154,7 +176,7 @@ class TextToSpeechEngine(private val context: Context) {
             "\\w+::\\w+".toRegex(), // Method references (Class::method)
             "\\w+\\(\\)".toRegex(), // Function calls with empty params
             "\\{.*\\}".toRegex(), // JSON/code blocks
-            "\\[.*\\]".toRegex(), // Arrays/lists
+            "\\[.*\\]".toRegex(), // Arrays/lists (but allow single brackets)
             "<.*>".toRegex(), // XML/HTML tags
             
             // Debug/log patterns
@@ -164,15 +186,21 @@ class TextToSpeechEngine(private val context: Context) {
             "^ERROR".toRegex(RegexOption.IGNORE_CASE),
             "^INFO".toRegex(RegexOption.IGNORE_CASE),
             "^WARN".toRegex(RegexOption.IGNORE_CASE),
+            "^LOG".toRegex(RegexOption.IGNORE_CASE),
             
             // Stack trace patterns
             "at \\w+\\.\\w+".toRegex(),
             "Exception".toRegex(),
             "\\w+Error".toRegex(),
+            "Throwable".toRegex(),
             
             // File paths
             "/[/\\w]+/".toRegex(),
-            "[A-Z]:\\\\[\\w\\\\]+".toRegex(), // Windows paths - FIXED escape sequence
+            "[A-Z]:\\\\[\\w\\\\]+".toRegex(), // Windows paths
+            
+            // ✅ NEW: Hex, memory addresses, IDs
+            "0x[0-9a-fA-F]+".toRegex(), // Hex addresses
+            "[0-9a-f]{8}-[0-9a-f]{4}".toRegex(), // UUID patterns
         )
         
         // Check if text matches code patterns
@@ -183,23 +211,46 @@ class TextToSpeechEngine(private val context: Context) {
             }
         }
         
-        // Filter out common technical keywords
-        val technicalKeywords = listOf(
-            "null", "undefined", "NaN", "Infinity",
+        // ✅ NEW: Filter words that are purely technical/internal
+        val technicalWords = setOf(
+            "null", "undefined", "nan", "infinity",
             "true", "false", "boolean",
-            "int", "float", "double", "string",
-            "void", "return", "class", "interface",
-            "public", "private", "protected",
-            "static", "final", "const",
-            "var", "let", "val", "fun",
-            "import", "export", "require",
-            "findViewById", "onCreate", "onDestroy"
+            "int", "float", "double", "string", "char", "byte",
+            "void", "return", "class", "interface", "enum",
+            "public", "private", "protected", "internal",
+            "static", "final", "const", "val", "var",
+            "fun", "function", "method",
+            "import", "export", "require", "include",
+            "package", "namespace",
+            "findviewbyid", "oncreate", "ondestroy", "onresume",
+            "kotlin", "java", "android",
+            "bilon", // Specifically filter this
+            "initialized", "loading", "processing"
         )
         
-        // Only filter if text is ONLY technical keywords
-        val words = filtered.split("\\s+".toRegex())
-        if (words.size <= 3 && words.all { it.lowercase() in technicalKeywords }) {
-            Log.d(TAG, "Filtered technical keywords: $filtered")
+        // Count technical words
+        val words = filtered.split("\\s+".toRegex()).filter { it.isNotBlank() }
+        val technicalCount = words.count { it.lowercase() in technicalWords }
+        
+        // If more than 50% of words are technical, don't speak
+        if (words.isNotEmpty() && technicalCount.toFloat() / words.size > 0.5f) {
+            Log.d(TAG, "Filtered technical content: $technicalCount/${words.size} technical words in '$filtered'")
+            return ""
+        }
+        
+        // If text is only 1-3 words and ANY are technical, filter it
+        if (words.size <= 3 && words.any { it.lowercase() in technicalWords }) {
+            Log.d(TAG, "Filtered short technical phrase: '$filtered'")
+            return ""
+        }
+        
+        // ✅ NEW: Filter if text looks like a variable name or identifier
+        if (filtered.matches("[a-z]+[A-Z][a-zA-Z]*".toRegex())) { // camelCase
+            Log.d(TAG, "Filtered camelCase identifier: '$filtered'")
+            return ""
+        }
+        if (filtered.matches("[A-Z_][A-Z0-9_]+".toRegex())) { // UPPER_SNAKE_CASE
+            Log.d(TAG, "Filtered constant: '$filtered'")
             return ""
         }
         
@@ -211,6 +262,12 @@ class TextToSpeechEngine(private val context: Context) {
         
         // Clean up multiple spaces
         filtered = filtered.replace("\\s+".toRegex(), " ").trim()
+        
+        // ✅ NEW: Final check - if result is too short after filtering, don't speak
+        if (filtered.length < 3) {
+            Log.d(TAG, "Filtered - too short after cleanup: '$filtered'")
+            return ""
+        }
         
         return filtered
     }
