@@ -74,23 +74,23 @@ class VoiceDownloadManager(private val context: Context) {
     /**
      * Get list of recommended voice engines
      */
-    fun getRecommendedVoiceEngines(): List<VoiceEngine> {
+    fun getRecommendedVoiceEngines(): List<VoiceEngineInfo> {
         return listOf(
-            VoiceEngine(
+            VoiceEngineInfo(
                 name = "Google Text-to-Speech",
                 packageName = "com.google.android.tts",
                 description = "High quality male and female voices for multiple languages",
                 hasMaleVoice = true,
                 languages = listOf("English", "Hindi", "Tamil", "Telugu", "Bengali", "Marathi", "Gujarati", "Kannada", "Malayalam")
             ),
-            VoiceEngine(
+            VoiceEngineInfo(
                 name = "Samsung Text-to-Speech",
                 packageName = "com.samsung.SMT",
                 description = "Premium voices for Samsung devices",
                 hasMaleVoice = true,
                 languages = listOf("English", "Hindi", "Tamil", "Telugu")
             ),
-            VoiceEngine(
+            VoiceEngineInfo(
                 name = "eSpeak TTS",
                 packageName = "com.reecedunn.espeak",
                 description = "Open-source TTS with male voice support",
@@ -219,9 +219,10 @@ class VoiceDownloadManager(private val context: Context) {
 }
 
 /**
- * Voice Engine data class
+ * Voice Engine Info data class
+ * ✅ Renamed from VoiceEngine to avoid conflict with VoiceEngine.kt
  */
-data class VoiceEngine(
+data class VoiceEngineInfo(
     val name: String,
     val packageName: String,
     val description: String,
