@@ -30,7 +30,6 @@ android {
         }
         
         ndk {
-            // ✅ Support for llama.cpp native libraries
             abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
             debugSymbolLevel = "NONE"
         }
@@ -76,8 +75,6 @@ android {
         }
         jniLibs {
             useLegacyPackaging = true
-            // ✅ Keep llama.cpp native libraries
-            pickFirsts += setOf("lib/*/libllama.so", "lib/*/libggml.so")
         }
     }
     
@@ -138,10 +135,6 @@ dependencies {
     implementation("androidx.camera:camera-camera2:1.4.1")
     implementation("androidx.camera:camera-lifecycle:1.4.1")
     implementation("androidx.camera:camera-view:1.4.1")
-
-    // ✅ NEW: llama.cpp for Android (GGUF model support)
-    // Using community-maintained Android wrapper for llama.cpp
-    implementation("io.github.kherud:java-llama.cpp:3.1.1-android")
     
     // ML/AI - TensorFlow Lite
     implementation("org.tensorflow:tensorflow-lite:2.14.0")
