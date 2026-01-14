@@ -3,117 +3,152 @@ package com.davidstudioz.david.chat
 import kotlin.random.Random
 
 /**
- * PersonalityEngine - Makes D.A.V.I.D feel human
- * ✅ Adds personality traits
- * ✅ Varies responses naturally
- * ✅ Adds conversational fillers
- * ✅ Shows empathy and humor
+ * PersonalityEngine - Adds personality and natural variation to responses
+ * ✅ Multiple personality modes (friendly, professional, enthusiastic)
+ * ✅ Response variations to avoid repetitiveness
+ * ✅ Emoji support for warmth
+ * ✅ Nexuzy Tech branding preserved
  */
 class PersonalityEngine {
     
-    private val acknowledgments = listOf(
-        "I see", "Got it", "I understand", "Okay", "Alright",
-        "Sure", "Absolutely", "Of course", "Right", "Makes sense"
-    )
+    // Current personality mode
+    private var currentMode = PersonalityMode.FRIENDLY
     
-    private val transitions = listOf(
-        "Let me help with that", "Here's what I found",
-        "I can assist you with this", "Let me explain",
-        "Allow me to help", "I've got this", "No problem"
-    )
-    
-    private val positiveReactions = listOf(
-        "Great question!", "Interesting!", "Good point!",
-        "That's a smart question!", "Excellent!"
-    )
-    
-    private val uncertaintyPhrases = listOf(
-        "I'm not entirely sure, but", "From what I know",
-        "As far as I understand", "I believe", "It seems like"
-    )
-    
-    /**
-     * Add personality to response
-     */
-    fun personalize(response: String, confidence: Float = 0.8f): String {
-        val parts = mutableListOf<String>()
-        
-        // Add occasional acknowledgment (30% chance)
-        if (Random.nextFloat() < 0.3f) {
-            parts.add(acknowledgments.random())
-        }
-        
-        // Add transition for longer responses
-        if (response.length > 50 && Random.nextFloat() < 0.4f) {
-            parts.add(transitions.random())
-        }
-        
-        // Add uncertainty for low confidence
-        if (confidence < 0.6f && Random.nextFloat() < 0.5f) {
-            parts.add(uncertaintyPhrases.random())
-        }
-        
-        // Add main response
-        parts.add(response)
-        
-        return parts.joinToString(". ").trim()
+    // Personality modes
+    enum class PersonalityMode {
+        FRIENDLY,      // Warm, casual, emoji-rich
+        PROFESSIONAL,  // Clear, concise, helpful
+        ENTHUSIASTIC   // Excited, energetic, motivating
     }
     
     /**
-     * Vary similar responses
+     * Add personality to a response
      */
-    fun vary(baseResponse: String, variation: Int): String {
-        return when (variation % 5) {
-            0 -> baseResponse
-            1 -> "Sure! $baseResponse"
-            2 -> "Of course. $baseResponse"
-            3 -> "No problem. $baseResponse"
-            4 -> "Happy to help! $baseResponse"
+    fun personalize(response: String): String {
+        // Don't modify already personalized responses
+        if (isAlreadyPersonalized(response)) {
+            return response
+        }
+        
+        return when (currentMode) {
+            PersonalityMode.FRIENDLY -> addFriendlyTouch(response)
+            PersonalityMode.PROFESSIONAL -> addProfessionalTouch(response)
+            PersonalityMode.ENTHUSIASTIC -> addEnthusiasticTouch(response)
+        }
+    }
+    
+    /**
+     * Check if response is already personalized
+     */
+    private fun isAlreadyPersonalized(response: String): Boolean {
+        // Check for emojis, exclamations, or greeting patterns
+        val emojiPattern = "[😀-🙏💀-🙏]".toRegex()
+        val hasEmoji = emojiPattern.containsMatchIn(response)
+        val hasGreeting = response.contains("Hello!", ignoreCase = true) ||
+                         response.contains("Hi there!", ignoreCase = true)
+        val hasExclamation = response.count { it == '!' } >= 2
+        
+        return hasEmoji || hasGreeting || hasExclamation
+    }
+    
+    /**
+     * Add friendly personality
+     */
+    private fun addFriendlyTouch(response: String): String {
+        var result = response
+        
+        // Add occasional emojis (20% chance)
+        if (Random.nextFloat() < 0.2) {
+            val friendlyEmojis = listOf("😊", "👍", "✨", "🎯", "💡")
+            result = "${friendlyEmojis.random()} $result"
+        }
+        
+        // Add friendly closings (10% chance)
+        if (Random.nextFloat() < 0.1 && !result.endsWith("!")) {
+            val closings = listOf(
+                "Hope this helps!",
+                "Let me know if you need anything else!",
+                "Feel free to ask more questions!"
+            )
+            result = "$result ${closings.random()}"
+        }
+        
+        return result
+    }
+    
+    /**
+     * Add professional personality
+     */
+    private fun addProfessionalTouch(response: String): String {
+        // Professional mode keeps responses clean and direct
+        return response
+    }
+    
+    /**
+     * Add enthusiastic personality
+     */
+    private fun addEnthusiasticTouch(response: String): String {
+        var result = response
+        
+        // Add enthusiasm (30% chance)
+        if (Random.nextFloat() < 0.3) {
+            val enthusiasticPrefixes = listOf(
+                "Great question!",
+                "Awesome!",
+                "Fantastic!",
+                "Excellent!"
+            )
+            result = "${enthusiasticPrefixes.random()} $result"
+        }
+        
+        // Add energetic emojis (25% chance)
+        if (Random.nextFloat() < 0.25) {
+            val energeticEmojis = listOf("🚀", "⚡", "🔥", "💪", "🎉")
+            result = "$result ${energeticEmojis.random()}"
+        }
+        
+        return result
+    }
+    
+    /**
+     * Set personality mode
+     */
+    fun setMode(mode: PersonalityMode) {
+        currentMode = mode
+    }
+    
+    /**
+     * Get current mode
+     */
+    fun getMode(): PersonalityMode = currentMode
+    
+    /**
+     * Generate context-aware response variations
+     */
+    fun varyResponse(baseResponse: String, context: String): String {
+        // Add contextual variations based on conversation flow
+        return when {
+            context.contains("repeat", ignoreCase = true) -> {
+                "Let me rephrase: $baseResponse"
+            }
+            context.contains("explain", ignoreCase = true) -> {
+                "To clarify: $baseResponse"
+            }
+            context.contains("more", ignoreCase = true) -> {
+                "Additionally: $baseResponse"
+            }
             else -> baseResponse
         }
     }
     
     /**
-     * Add empathy to response
+     * Add Nexuzy Tech branding to specific responses
      */
-    fun addEmpathy(response: String, userEmotion: String): String {
-        val empathyPrefix = when (userEmotion.lowercase()) {
-            "frustrated", "angry" -> "I understand this can be frustrating. "
-            "confused" -> "No worries, let me clarify. "
-            "happy", "excited" -> "That's wonderful! "
-            "sad", "disappointed" -> "I'm sorry to hear that. "
-            else -> ""
+    fun addBranding(response: String, includeLink: Boolean = false): String {
+        return if (includeLink) {
+            "$response\n\n🌐 Powered by Nexuzy Tech - Visit nexuzy.tech"
+        } else {
+            "$response\n\n✨ By Nexuzy Tech"
         }
-        
-        return empathyPrefix + response
     }
-    
-    /**
-     * Make response more conversational
-     */
-    fun makeConversational(response: String): String {
-        var conversational = response
-        
-        // Add conversational punctuation
-        if (!conversational.endsWith(".") && !conversational.endsWith("!") && !conversational.endsWith("?")) {
-            conversational += "."
-        }
-        
-        // Break long sentences
-        if (conversational.length > 150) {
-            conversational = conversational.replace(". ", ".\n").replace(", and ", ".\n")
-        }
-        
-        return conversational
-    }
-    
-    /**
-     * Get random positive reaction
-     */
-    fun getPositiveReaction(): String = positiveReactions.random()
-    
-    /**
-     * Get random acknowledgment
-     */
-    fun getAcknowledgment(): String = acknowledgments.random()
 }

@@ -1,49 +1,40 @@
 package com.davidstudioz.david.chat
 
-import android.util.Log
+import android.util.LruCache
 
 /**
- * ResponseCache - Prevents repetitive responses
- * ✅ Caches recent responses
- * ✅ Provides varied responses for similar questions
- * ✅ Expires old cache entries
- * ✅ Tracks conversation context
+ * ResponseCache - Caches chat responses for faster replies
+ * ✅ LRU cache (least recently used eviction)
+ * ✅ 24-hour expiry for cached responses
+ * ✅ Memory efficient (100 responses max)
  */
 class ResponseCache {
     
-    private val cache = mutableMapOf<String, CachedResponse>()
-    private val conversationHistory = mutableListOf<String>()
-    private val maxHistorySize = 5
-    private val cacheExpiryMs = 5 * 60 * 1000L // 5 minutes
-    
-    data class CachedResponse(
+    private data class CachedResponse(
         val response: String,
-        val timestamp: Long,
-        val useCount: Int = 0
+        val timestamp: Long
     )
     
+    // LRU cache with max 100 entries
+    private val cache = LruCache<String, CachedResponse>(100)
+    
+    // Cache expiry time (24 hours)
+    private val cacheExpiryMs = 24 * 60 * 60 * 1000L
+    
     /**
-     * Get cached response or null if not found/expired
+     * Get cached response if available and not expired
      */
-    fun get(question: String): String? {
-        val normalized = normalizeQuestion(question)
-        val cached = cache[normalized]
+    fun get(query: String): String? {
+        val normalizedQuery = normalizeQuery(query)
+        val cached = cache.get(normalizedQuery)
         
         if (cached != null) {
             val age = System.currentTimeMillis() - cached.timestamp
             if (age < cacheExpiryMs) {
-                // Update use count
-                cache[normalized] = cached.copy(useCount = cached.useCount + 1)
-                Log.d(TAG, "Cache hit for: $question (used ${cached.useCount} times)")
-                return if (cached.useCount > 2) {
-                    // Vary response if used too many times
-                    null
-                } else {
-                    cached.response
-                }
+                return cached.response
             } else {
-                // Expired - remove
-                cache.remove(normalized)
+                // Expired, remove from cache
+                cache.remove(normalizedQuery)
             }
         }
         
@@ -53,60 +44,46 @@ class ResponseCache {
     /**
      * Store response in cache
      */
-    fun put(question: String, response: String) {
-        val normalized = normalizeQuestion(question)
-        cache[normalized] = CachedResponse(
-            response = response,
-            timestamp = System.currentTimeMillis(),
-            useCount = 0
+    fun put(query: String, response: String) {
+        val normalizedQuery = normalizeQuery(query)
+        cache.put(
+            normalizedQuery,
+            CachedResponse(
+                response = response,
+                timestamp = System.currentTimeMillis()
+            )
         )
-        
-        // Add to conversation history
-        conversationHistory.add("Q: $question\nA: $response")
-        if (conversationHistory.size > maxHistorySize) {
-            conversationHistory.removeAt(0)
-        }
-        
-        Log.d(TAG, "Cached response for: $question")
     }
     
     /**
-     * Check if question was recently asked
-     */
-    fun wasRecentlyAsked(question: String): Boolean {
-        val normalized = normalizeQuestion(question)
-        return cache.containsKey(normalized)
-    }
-    
-    /**
-     * Get conversation context
-     */
-    fun getContext(): String {
-        return conversationHistory.takeLast(3).joinToString("\n\n")
-    }
-    
-    /**
-     * Clear cache
+     * Clear all cached responses
      */
     fun clear() {
-        cache.clear()
-        conversationHistory.clear()
-        Log.d(TAG, "Cache cleared")
+        cache.evictAll()
     }
     
     /**
-     * Normalize question for matching
+     * Normalize query for consistent caching
      */
-    private fun normalizeQuestion(question: String): String {
-        return question.lowercase()
-            .replace("[^a-z0-9\\s]".toRegex(), "")
+    private fun normalizeQuery(query: String): String {
+        return query.lowercase()
             .trim()
-            .split("\\s+".toRegex())
-            .sorted()
-            .joinToString(" ")
+            .replace("\\s+".toRegex(), " ")
+            .take(200) // Limit key length
     }
     
-    companion object {
-        private const val TAG = "ResponseCache"
+    /**
+     * Get cache statistics
+     */
+    fun getStats(): Map<String, Any> {
+        return mapOf(
+            "size" to cache.size(),
+            "maxSize" to cache.maxSize(),
+            "hitCount" to cache.hitCount(),
+            "missCount" to cache.missCount(),
+            "hitRate" to if (cache.hitCount() + cache.missCount() > 0) {
+                cache.hitCount().toFloat() / (cache.hitCount() + cache.missCount())
+            } else 0f
+        )
     }
 }
