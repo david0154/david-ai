@@ -13,6 +13,7 @@ import java.util.*
  * ✅ Voice selection (David-Male / Dayana-Female)
  * ✅ Filters internal code and debug messages
  * ✅ Prevents speaking technical strings
+ * ✅ FIXED: Only discovers and uses selected voice (male OR female, not both)
  */
 class TextToSpeechEngine(private val context: Context) {
     
@@ -23,6 +24,7 @@ class TextToSpeechEngine(private val context: Context) {
     // Available voice options
     private var maleVoice: Voice? = null
     private var femaleVoice: Voice? = null
+    private var currentVoiceGender: String = "male" // Track current gender
     
     init {
         tts = TextToSpeech(context) { status ->
@@ -37,16 +39,13 @@ class TextToSpeechEngine(private val context: Context) {
                     Log.d(TAG, "✅ TTS initialized successfully")
                 }
                 
-                // ✅ FIXED: Discover male and female voices
-                discoverVoices()
-                
                 // Load saved voice parameters
                 val speed = prefs.getFloat("voice_speed", 1.0f)
                 val pitch = prefs.getFloat("voice_pitch", 1.0f)
                 setSpeechRate(speed)
                 setPitch(pitch)
                 
-                // Set voice based on selection
+                // ✅ FIXED: Set voice based on user selection (only discover what's needed)
                 setVoiceFromPreferences()
             } else {
                 Log.e(TAG, "TTS initialization failed")
@@ -56,77 +55,64 @@ class TextToSpeechEngine(private val context: Context) {
     }
     
     /**
-     * ✅ NEW: Discover available male and female voices
+     * ✅ FIXED: Discover only the requested voice gender
      */
-    private fun discoverVoices() {
+    private fun discoverVoice(gender: String): Voice? {
         try {
-            val voices = tts?.voices ?: return
-            Log.d(TAG, "Discovering voices... Found ${voices.size} voices")
+            val voices = tts?.voices ?: return null
+            Log.d(TAG, "Discovering $gender voice... Found ${voices.size} total voices")
             
-            // Find male voices
-            maleVoice = voices.firstOrNull { voice ->
-                val name = voice.name.lowercase()
-                val locale = voice.locale.toString().lowercase()
-                
-                // Look for male indicators
-                (name.contains("male") && !name.contains("female")) ||
-                name.contains("#male") ||
-                name.contains("-male") ||
-                name.contains("man") ||
-                name.contains("guy") ||
-                // Common male voice names
-                name.contains("alex") ||
-                name.contains("daniel") ||
-                name.contains("david") ||
-                name.contains("thomas") ||
-                name.contains("james") ||
-                (locale.contains("en") && name.contains("#m"))
-            }
-            
-            // Find female voices
-            femaleVoice = voices.firstOrNull { voice ->
-                val name = voice.name.lowercase()
-                val locale = voice.locale.toString().lowercase()
-                
-                // Look for female indicators
-                name.contains("female") ||
-                name.contains("#female") ||
-                name.contains("-female") ||
-                name.contains("woman") ||
-                name.contains("girl") ||
-                // Common female voice names
-                name.contains("samantha") ||
-                name.contains("victoria") ||
-                name.contains("emily") ||
-                name.contains("sarah") ||
-                name.contains("kate") ||
-                (locale.contains("en") && name.contains("#f"))
-            }
-            
-            // ✅ FALLBACK: If no explicit male/female found, use pitch to differentiate
-            if (maleVoice == null || femaleVoice == null) {
-                val defaultVoices = voices.filter { it.locale.language == "en" }
-                
-                if (maleVoice == null) {
-                    // Use lower-pitched voice for male
-                    maleVoice = defaultVoices.firstOrNull { !it.name.lowercase().contains("female") }
-                }
-                
-                if (femaleVoice == null) {
-                    // Use higher-pitched voice for female
-                    femaleVoice = defaultVoices.lastOrNull { !it.name.lowercase().contains("male") }
-                }
+            val targetVoice = if (gender == "male") {
+                // Find male voices
+                voices.firstOrNull { voice ->
+                    val name = voice.name.lowercase()
+                    val locale = voice.locale.toString().lowercase()
+                    
+                    // Look for male indicators
+                    (name.contains("male") && !name.contains("female")) ||
+                    name.contains("#male") ||
+                    name.contains("-male") ||
+                    name.contains("man") ||
+                    name.contains("guy") ||
+                    // Common male voice names
+                    name.contains("alex") ||
+                    name.contains("daniel") ||
+                    name.contains("david") ||
+                    name.contains("thomas") ||
+                    name.contains("james") ||
+                    (locale.contains("en") && name.contains("#m"))
+                } ?: voices.firstOrNull { it.locale.language == "en" && !it.name.lowercase().contains("female") }
+            } else {
+                // Find female voices
+                voices.firstOrNull { voice ->
+                    val name = voice.name.lowercase()
+                    val locale = voice.locale.toString().lowercase()
+                    
+                    // Look for female indicators
+                    name.contains("female") ||
+                    name.contains("#female") ||
+                    name.contains("-female") ||
+                    name.contains("woman") ||
+                    name.contains("girl") ||
+                    // Common female voice names
+                    name.contains("samantha") ||
+                    name.contains("victoria") ||
+                    name.contains("emily") ||
+                    name.contains("sarah") ||
+                    name.contains("kate") ||
+                    (locale.contains("en") && name.contains("#f"))
+                } ?: voices.lastOrNull { it.locale.language == "en" && !it.name.lowercase().contains("male") }
             }
             
             // Fallback to any English voice
-            if (maleVoice == null) maleVoice = voices.firstOrNull { it.locale.language == "en" }
-            if (femaleVoice == null) femaleVoice = voices.lastOrNull { it.locale.language == "en" }
+            val result = targetVoice ?: voices.firstOrNull { it.locale.language == "en" }
             
-            Log.d(TAG, "✅ Male voice: ${maleVoice?.name ?: "Not found"}")
-            Log.d(TAG, "✅ Female voice: ${femaleVoice?.name ?: "Not found"}")
+            Log.d(TAG, "✅ ${gender.capitalize()} voice: ${result?.name ?: "Not found"}")
+            return result
             
         } catch (e: Exception) {
-            Log.e(TAG, "Error discovering voices", e)
+            Log.e(TAG, "Error discovering $gender voice", e)
+            return null
         }
     }
     
@@ -186,7 +172,7 @@ class TextToSpeechEngine(private val context: Context) {
             
             // File paths
             "/[/\\w]+/".toRegex(),
-            "[A-Z]:\\\\\\\\.+".toRegex(), // Windows paths
+            "[A-Z]:\\\\\\\.+".toRegex(), // Windows paths
         )
         
         // Check if text matches code patterns
@@ -260,39 +246,34 @@ class TextToSpeechEngine(private val context: Context) {
     }
     
     /**
-     * ✅ FIXED: Set voice based on user preference with male/female support
+     * ✅ FIXED: Set voice based on user preference - only discover selected gender
      */
     private fun setVoiceFromPreferences() {
         try {
             val selectedVoice = prefs.getString("selected_voice", "david") ?: "david"
             
+            // ✅ FIXED: Only discover the voice that's actually selected
             val voice = when (selectedVoice.lowercase()) {
                 "david", "male" -> {
-                    // Use male voice
-                    if (maleVoice != null) {
-                        Log.d(TAG, "Setting male voice: ${maleVoice?.name}")
-                        maleVoice
-                    } else {
-                        Log.w(TAG, "Male voice not available, using default")
-                        tts?.voice
+                    currentVoiceGender = "male"
+                    if (maleVoice == null) {
+                        maleVoice = discoverVoice("male")
                     }
+                    maleVoice
                 }
                 "dayana", "female" -> {
-                    // Use female voice
-                    if (femaleVoice != null) {
-                        Log.d(TAG, "Setting female voice: ${femaleVoice?.name}")
-                        femaleVoice
-                    } else {
-                        Log.w(TAG, "Female voice not available, using default")
-                        tts?.voice
+                    currentVoiceGender = "female"
+                    if (femaleVoice == null) {
+                        femaleVoice = discoverVoice("female")
                     }
+                    femaleVoice
                 }
                 else -> tts?.voice
             }
             
             voice?.let {
                 tts?.voice = it
-                Log.d(TAG, "Voice set to: ${it.name}")
+                Log.d(TAG, "✅ Voice set to: ${it.name} (${currentVoiceGender})")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error setting voice", e)
@@ -300,11 +281,25 @@ class TextToSpeechEngine(private val context: Context) {
     }
     
     /**
-     * Change voice (call after user changes selection)
+     * ✅ FIXED: Change voice - clear unused voice cache
      */
     fun changeVoice(voiceId: String) {
         prefs.edit().putString("selected_voice", voiceId).apply()
+        
+        // Clear the opposite gender voice to save memory
+        when (voiceId.lowercase()) {
+            "david", "male" -> {
+                femaleVoice = null
+                currentVoiceGender = "male"
+            }
+            "dayana", "female" -> {
+                maleVoice = null
+                currentVoiceGender = "female"
+            }
+        }
+        
         setVoiceFromPreferences()
+        Log.d(TAG, "✅ Voice changed to: $voiceId")
     }
     
     /**
@@ -313,26 +308,18 @@ class TextToSpeechEngine(private val context: Context) {
     fun getAvailableVoices(): List<VoiceOption> {
         val voices = mutableListOf<VoiceOption>()
         
-        if (maleVoice != null) {
+        // Discover both voices for UI display only (don't set them)
+        val tempMale = if (maleVoice != null) maleVoice else discoverVoice("male")
+        val tempFemale = if (femaleVoice != null) femaleVoice else discoverVoice("female")
+        
+        if (tempMale != null) {
             voices.add(VoiceOption(
                 id = "david",
                 name = "David (Male)",
                 gender = "male",
                 isAvailable = true
             ))
-        }
-        
-        if (femaleVoice != null) {
-            voices.add(VoiceOption(
-                id = "dayana",
-                name = "Dayana (Female)",
-                gender = "female",
-                isAvailable = true
-            ))
-        }
-        
-        // Always show both options, even if not available
-        if (maleVoice == null) {
+        } else {
             voices.add(VoiceOption(
                 id = "david",
                 name = "David (Male) - Not Available",
@@ -341,7 +328,14 @@ class TextToSpeechEngine(private val context: Context) {
             ))
         }
         
-        if (femaleVoice == null) {
+        if (tempFemale != null) {
+            voices.add(VoiceOption(
+                id = "dayana",
+                name = "Dayana (Female)",
+                gender = "female",
+                isAvailable = true
+            ))
+        } else {
             voices.add(VoiceOption(
                 id = "dayana",
                 name = "Dayana (Female) - Not Available",
