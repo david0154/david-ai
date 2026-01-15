@@ -225,6 +225,23 @@ class UniversalModelLoader(private val context: Context) {
         isReady = false
         Log.d(TAG, "Released all model resources")
     }
+
+    /**
+     * Load model from assets
+     */
+    fun loadModelFromAssets(assetPath: String): Boolean {
+        try {
+            val assetManager = context.assets
+            val inputStream = assetManager.open(assetPath)
+            val file = File(context.cacheDir, assetPath.split("/").last())
+            val outputStream = file.outputStream()
+            inputStream.copyTo(outputStream)
+            return loadModel(file)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading model from assets", e)
+            return false
+        }
+    }
     
     data class ModelInfo(
         val file: File,

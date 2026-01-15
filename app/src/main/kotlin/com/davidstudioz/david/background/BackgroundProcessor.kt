@@ -95,39 +95,3 @@ class BackgroundProcessor @Inject constructor(
     }
 }
 
-// Worker classes
-class HistoryCleanupWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
-    override suspend fun doWork(): Result = try {
-        // Perform cleanup
-        Result.success()
-    } catch (e: Exception) {
-        Result.retry()
-    }
-}
-
-class ModelDownloadWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
-    override suspend fun doWork(): Result = try {
-        // Download model
-        Result.success()
-    } catch (e: Exception) {
-        Result.retry()
-    }
-}
-
-class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
-    override suspend fun doWork(): Result = try {
-        // Perform sync
-        Result.success()
-    } catch (e: Exception) {
-        Result.retry()
-    }
-}
-
-class HealthTrackingWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
-    override suspend fun doWork(): Result = try {
-        // Track health metrics
-        Result.success()
-    } catch (e: Exception) {
-        Result.retry()
-    }
-}
