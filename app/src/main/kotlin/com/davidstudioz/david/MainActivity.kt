@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
+import com.davidstudioz.david.ai.ImageProcessor
 import com.davidstudioz.david.chat.ChatManager
 import com.davidstudioz.david.chat.ScriptureDownloadManager
 import com.davidstudioz.david.device.DeviceAccessManager
@@ -89,6 +90,7 @@ class MainActivity : ComponentActivity() {
     
     // NEW: Scripture download manager
     private var scriptureDownloadManager: ScriptureDownloadManager? = null
+    private var imageProcessor: ImageProcessor? = null
 
     // UI State
     private var isListening by mutableStateOf(false)
@@ -106,6 +108,17 @@ class MainActivity : ComponentActivity() {
     // NEW: Chat & Download UI state
     private var showChatScreen by mutableStateOf(false)
     private var showDownloadDialog by mutableStateOf(false)
+    private val imagePickerLauncher =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let {
+                lifecycleScope.launch {
+                    val result = imageProcessor?.processImage(it)
+                    if (result != null) {
+                        chatManager?.sendMessage(result)
+                    }
+                }
+            }
+        }
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -201,6 +214,7 @@ class MainActivity : ComponentActivity() {
 
     private fun initCoreComponents() {
         Log.d(TAG, "Initializing core components...")
+        imageProcessor = ImageProcessor(this)
         resourceManager = DeviceResourceManager(this)
         resourceStatus = resourceManager?.getResourceStatus()
 
@@ -487,7 +501,8 @@ class MainActivity : ComponentActivity() {
             onClearChat = {
                 chatManager?.clearHistory()
                 chatHistory = emptyList()
-            }
+            },
+            onImageUpload = { imagePickerLauncher.launch("image/*") }
         )
     }
 
