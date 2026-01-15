@@ -193,35 +193,24 @@ class VoiceManager(private val context: Context) {
      * Set language
      */
     fun setLanguage(languageCode: String): Boolean {
-        return try {
-            currentLanguage = languageCode
-            val locale = when (languageCode) {
-                "hi" -> Locale("hi", "IN")
-                "ta" -> Locale("ta", "IN")
-                "te" -> Locale("te", "IN")
-                "bn" -> Locale("bn", "IN")
-                "mr" -> Locale("mr", "IN")
-                "gu" -> Locale("gu", "IN")
-                "kn" -> Locale("kn", "IN")
-                "ml" -> Locale("ml", "IN")
-                "pa" -> Locale("pa", "IN")
-                else -> Locale.US
+        currentLanguage = languageCode
+        val locale = Locale(languageCode)
+        var ttsSuccess = false
+        if (isTTSReady) {
+            try {
+                val result = tts?.setLanguage(locale)
+                if (result != TextToSpeech.LANG_MISSING_DATA && result != TextToSpeech.LANG_NOT_SUPPORTED) {
+                    ttsSuccess = true
+                    Log.d(TAG, "TTS language set to: $languageCode")
+                } else {
+                    Log.e(TAG, "TTS language not supported: $languageCode")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error setting TTS language", e)
             }
-            
-            val result = tts?.setLanguage(locale)
-            val success = result != TextToSpeech.LANG_MISSING_DATA && result != TextToSpeech.LANG_NOT_SUPPORTED
-            
-            if (success) {
-                Log.d(TAG, "Language set to: $languageCode")
-            } else {
-                Log.e(TAG, "Language not supported: $languageCode")
-            }
-            
-            success
-        } catch (e: Exception) {
-            Log.e(TAG, "Error setting language", e)
-            false
         }
+
+        return ttsSuccess
     }
     
     fun isListening(): Boolean = isListening

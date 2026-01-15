@@ -9,8 +9,9 @@ import com.davidstudioz.david.voice.VoiceCommandProcessor
 import com.davidstudioz.david.web.WebSearchEngine
 import com.davidstudioz.david.features.WeatherService
 import com.davidstudioz.david.features.NewsService
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -32,8 +33,9 @@ data class ChatMessage(
  * ✅ No generic "I understand you're asking" for non-English
  * ✅ All features work in all languages
  */
-class ChatManager(private val context: Context) {
-
+class ChatManager(private val context:Context) {
+    private val job = SupervisorJob()
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + job)
     private val messages = mutableListOf<ChatMessage>()
     private val modelsDir = File(context.filesDir, "david_models")
     
@@ -56,7 +58,7 @@ class ChatManager(private val context: Context) {
     }
 
     private fun loadBestAvailableModel() {
-        GlobalScope.launch(Dispatchers.IO) {
+        coroutineScope.launch {
             try {
                 if (!modelsDir.exists()) {
                     modelsDir.mkdirs()
@@ -110,8 +112,15 @@ class ChatManager(private val context: Context) {
                     isCommand(correctedMessage) -> executeCommand(correctedMessage)
                     isWeatherQuery(correctedMessage) -> getWeatherInfo(correctedMessage)
                     isMotivationQuery(correctedMessage) -> getMotivation(correctedMessage, detectedLang)
-                    webSearch.needsWebSearch(correctedMessage) -> searchWeb(correctedMessage)
-                    isModelReady() -> generateWithModel(correctedMessage)
+                    isSearchQuery(correctedMessage) -> searchWeb(correctedMessage)
+                    isModelReady() -> {
+                        val modelResponse = generateWithModel(correctedMessage)
+                        if (modelResponse.isNotBlank() && modelResponse.length > 5) {
+                            modelResponse
+                        } else {
+                            searchWeb(correctedMessage)
+                        }
+                    }
                     else -> generateSmartFallback(correctedMessage, detectedLang)
                 }
                 
@@ -132,6 +141,13 @@ class ChatManager(private val context: Context) {
                 isUser = false
             )
         }
+    }
+    private fun isSearchQuery(message: String): Boolean {
+        val lower = message.lowercase()
+        return lower.startsWith("search for") || lower.startsWith("google") ||
+                lower.startsWith("what is") || lower.startsWith("who is") ||
+                lower.startsWith("where is") || lower.startsWith("when is") ||
+                lower.startsWith("how to")
     }
     
     private suspend fun generateWithModel(input: String): String = withContext(Dispatchers.IO) {
@@ -437,6 +453,7 @@ class ChatManager(private val context: Context) {
 
     fun release() {
         universalLoader.release()
+        job.cancel()
     }
 
     companion object {
