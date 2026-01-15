@@ -216,7 +216,7 @@ class LanguageModelManager @Inject constructor(
                 val loadResult = loadLanguage(language)
                 if (loadResult.isFailure) {
                     // Fallback to mBERT
-                    return@withContext processWith MBert(text, task)
+                    return@withContext processWithMBert(text, task)
                 }
             }
 
