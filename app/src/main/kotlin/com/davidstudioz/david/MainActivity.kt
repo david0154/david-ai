@@ -138,14 +138,16 @@ class MainActivity : ComponentActivity() {
             
             // NEW: Check scripture download status
             scriptureDownloadManager = ScriptureDownloadManager(this)
-            if (!scriptureDownloadManager!!.isDownloaded()) {
-                showDownloadDialog = true
+            scriptureDownloadManager?.let {
+                if (!it.isDownloaded()) {
+                    showDownloadDialog = true
+                }
             }
 
             setContent {
                 DavidAITheme {
                     when {
-                        initError != null -> ErrorScreen(initError!!)
+                        initError != null -> ErrorScreen(initError ?: "Unknown error")
                         showPermissionDialog -> PermissionDenialDialog(missingPermissions) {
                             showPermissionDialog = false
                         }
@@ -182,108 +184,10 @@ class MainActivity : ComponentActivity() {
 
     private fun initializeComponents() {
         try {
-            resourceManager = DeviceResourceManager(this)
-            resourceStatus = resourceManager?.getResourceStatus()
-
-            deviceAccess = DeviceAccessManager(this)
-            updatePermissions()
-
-            userProfile = UserProfile(this).apply {
-                if (isFirstLaunch) {
-                    nickname = "Friend"
-                    isFirstLaunch = false
-                }
-                statusMessage = "Hi $nickname, I'm initializing..."
-            }
-
-            permissionManager = PermissionManager(this)
-            requestRequiredPermissions()
-
-            textToSpeechEngine = TextToSpeechEngine(this)
-
-            lifecycleScope.launch {
-                delay(1000)
-                try {
-                    statusMessage = "Voice systems online"
-                    textToSpeechEngine?.speak(
-                        "Hello ${userProfile?.nickname}, D.A.V.I.D systems are online!"
-                    )
-                } catch (e: Exception) {
-                    Log.e(TAG, "TTS error", e)
-                }
-            }
-
-            deviceController = DeviceController(this)
-            Log.d(TAG, "Device controller initialized")
-
-            chatManager = ChatManager(this)
-            Log.d(TAG, "Chat manager initialized")
-
-            voiceController = VoiceController(this, deviceController!!, chatManager)
-
-            voiceController?.setOnCommandProcessed { command, response ->
-                lifecycleScope.launch {
-                    chatHistory = chatHistory + "You: $command" + "DAVID: $response"
-                    statusMessage = response
-                    Log.d(TAG, "Command processed: $command -> $response")
-                }
-            }
-            Log.d(TAG, "Voice controller initialized with device controller AND chat manager")
-
-            weatherTimeProvider = WeatherTimeProvider(this)
-            deviceLockManager = DeviceLockManager(this)
-            pointerController = PointerController(this)
-            pointerController?.setOnClickListener { x, y ->
-                statusMessage = "Clicked at ($x, $y)"
-            }
-
-            gestureController = GestureController(this)
-            gestureController?.initialize { gesture ->
-                lifecycleScope.launch {
-                    try {
-                        statusMessage = "Gesture detected: $gesture"
-                        Log.d(TAG, "Gesture: $gesture")
-                        when (gesture) {
-                            GestureController.GESTURE_OPEN_PALM -> {
-                                pointerController?.showPointer()
-                                textToSpeechEngine?.speak("Pointer shown")
-                            }
-                            GestureController.GESTURE_CLOSED_FIST -> {
-                                pointerController?.hidePointer()
-                                textToSpeechEngine?.speak("Pointer hidden")
-                            }
-                            GestureController.GESTURE_VICTORY -> {
-                                gestureController?.performClick()
-                                textToSpeechEngine?.speak("Click performed")
-                            }
-                            GestureController.GESTURE_POINTING -> {
-                                statusMessage = "Pointing gesture detected"
-                            }
-                            else -> {
-                                Log.d(TAG, "Unhandled gesture: $gesture")
-                            }
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error handling gesture", e)
-                    }
-                }
-            }
-            Log.d(TAG, "Gesture controller initialized with callbacks")
-
-            hotWordDetector = HotWordDetector(this)
-            hotWordDetector?.startListening(
-                hotWords = listOf("hey david", "ok david", "jarvis"),
-                callback = { word ->
-                    try {
-                        statusMessage = "Wake word detected: $word"
-                        activateListeningMode()
-                        voiceController?.startListening()
-                        textToSpeechEngine?.speak("Yes, I'm listening...")
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error in hotword callback", e)
-                    }
-                }
-            )
+            initCoreComponents()
+            initVoiceAndChat()
+            initGestureAndPointer()
+            initOtherComponents()
 
             initializeWeather()
             statusMessage = "D.A.V.I.D systems ready! 100% complete!"
@@ -291,7 +195,123 @@ class MainActivity : ComponentActivity() {
         } catch (e: Exception) {
             Log.e(TAG, "Initialization error", e)
             statusMessage = "Error: ${e.localizedMessage ?: e.message ?: "Unknown error"}"
+            initError = "Error: ${e.localizedMessage ?: e.message ?: "Unknown error"}"
         }
+    }
+
+    private fun initCoreComponents() {
+        Log.d(TAG, "Initializing core components...")
+        resourceManager = DeviceResourceManager(this)
+        resourceStatus = resourceManager?.getResourceStatus()
+
+        deviceAccess = DeviceAccessManager(this)
+        updatePermissions()
+
+        userProfile = UserProfile(this).apply {
+            if (isFirstLaunch) {
+                nickname = "Friend"
+                isFirstLaunch = false
+            }
+            statusMessage = "Hi $nickname, I'm initializing..."
+        }
+
+        permissionManager = PermissionManager(this)
+        requestRequiredPermissions()
+        Log.d(TAG, "Core components initialized.")
+    }
+
+    private fun initVoiceAndChat() {
+        Log.d(TAG, "Initializing voice and chat...")
+        textToSpeechEngine = TextToSpeechEngine(this)
+
+        lifecycleScope.launch {
+            delay(1000)
+            try {
+                statusMessage = "Voice systems online"
+                textToSpeechEngine?.speak(
+                    "Hello ${userProfile?.nickname}, D.A.V.I.D systems are online!"
+                )
+            } catch (e: Exception) {
+                Log.e(TAG, "TTS error", e)
+            }
+        }
+
+        deviceController = DeviceController(this)
+        chatManager = ChatManager(this)
+
+        deviceController?.let {
+            voiceController = VoiceController(this, it, chatManager)
+            voiceController?.setOnCommandProcessed { command, response ->
+                lifecycleScope.launch {
+                    chatHistory = chatHistory + "You: $command" + "DAVID: $response"
+                    statusMessage = response
+                }
+            }
+        } ?: run {
+            Log.e(TAG, "DeviceController is null, cannot initialize VoiceController")
+            statusMessage = "Voice control disabled: DeviceController failed."
+        }
+
+        hotWordDetector = HotWordDetector(this)
+        hotWordDetector?.startListening(
+            hotWords = listOf("hey david", "ok david", "jarvis"),
+            callback = { word ->
+                try {
+                    statusMessage = "Wake word detected: $word"
+                    activateListeningMode()
+                    voiceController?.startListening()
+                    textToSpeechEngine?.speak("Yes, I'm listening...")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error in hotword callback", e)
+                }
+            }
+        )
+        Log.d(TAG, "Voice and chat initialized.")
+    }
+
+    private fun initGestureAndPointer() {
+        Log.d(TAG, "Initializing gesture and pointer...")
+        pointerController = PointerController(this)
+        pointerController?.setOnClickListener { x, y ->
+            statusMessage = "Clicked at ($x, $y)"
+        }
+
+        gestureController = GestureController(this)
+        gestureController?.initialize { gesture ->
+            lifecycleScope.launch {
+                try {
+                    statusMessage = "Gesture detected: $gesture"
+                    when (gesture) {
+                        GestureController.GESTURE_OPEN_PALM -> {
+                            pointerController?.showPointer()
+                            textToSpeechEngine?.speak("Pointer shown")
+                        }
+                        GestureController.GESTURE_CLOSED_FIST -> {
+                            pointerController?.hidePointer()
+                            textToSpeechEngine?.speak("Pointer hidden")
+                        }
+                        GestureController.GESTURE_VICTORY -> {
+                            gestureController?.performClick()
+                            textToSpeechEngine?.speak("Click performed")
+                        }
+                        GestureController.GESTURE_POINTING -> {
+                            statusMessage = "Pointing gesture detected"
+                        }
+                        else -> Log.d(TAG, "Unhandled gesture: $gesture")
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error handling gesture", e)
+                }
+            }
+        }
+        Log.d(TAG, "Gesture and pointer initialized.")
+    }
+
+    private fun initOtherComponents() {
+        Log.d(TAG, "Initializing other components...")
+        weatherTimeProvider = WeatherTimeProvider(this)
+        deviceLockManager = DeviceLockManager(this)
+        Log.d(TAG, "Other components initialized.")
     }
 
     private fun startBackgroundServices() {
