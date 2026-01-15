@@ -8,6 +8,7 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
 import com.davidstudioz.david.chat.ChatManager
+import com.davidstudioz.david.chat.LanguageDetector
 import com.davidstudioz.david.device.DeviceController
 import com.davidstudioz.david.features.WeatherService
 import com.davidstudioz.david.features.NewsService
@@ -35,6 +36,7 @@ class VoiceController(
     private val weatherService = WeatherService(context)
     private val newsService = NewsService(context)
     private val searchService = SearchService(context)
+    private val languageDetector = LanguageDetector()
     private val _isListening = MutableStateFlow(false)
     val isListeningFlow: StateFlow<Boolean> = _isListening
     private val _recognizedText = MutableStateFlow("")
@@ -157,6 +159,7 @@ class VoiceController(
         
         scope.launch {
             try {
+                val detectedLanguage = languageDetector.detectLanguage(command)
                 response = when {
                     lower.contains("news") || lower.contains("headlines") -> {
                         val category = when {
@@ -212,7 +215,10 @@ class VoiceController(
                     }
                 }
                 
-                if (response.isNotEmpty()) speak(response)
+                if (response.isNotEmpty()) {
+                    ttsEngine.setLanguage(detectedLanguage)
+                    speak(response)
+                }
                 onCommandProcessed?.invoke(command, response)
             } catch (e: Exception) {
                 Log.e(TAG, "Error processing command: $command", e)

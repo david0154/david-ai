@@ -133,6 +133,25 @@ class BhagavadGitaQuotes {
                 chapter = "18.66",
                 theme = "Surrender"
             )
+        ),
+        // Additional Quotes
+        "wisdom" to listOf(
+            Quote(
+                sanskrit = "श्रद्धावान्ल्लभते ज्ञानं तत्परः संयतेन्द्रियः।\nज्ञानं लब्ध्वा परां शान्तिमचिरेणाधिगच्छति॥",
+                transliteration = "Shraddhavan labhate jnanam tat-parah samyatendriyah\nJnanam labdhva param shantim achirenadhigachchhati",
+                english = "A faithful man who is dedicated to transcendental knowledge and who subdues his senses is eligible to achieve such knowledge, and having achieved it he quickly attains the supreme spiritual peace.",
+                chapter = "4.39",
+                theme = "Wisdom"
+            )
+        ),
+        "detachment" to listOf(
+            Quote(
+                sanskrit = "दुःखेष्वनुद्विग्नमनाः सुखेषु विगतस्पृहः।\nवीतरागभयक्रोधः स्थितधीर्मुनिरुच्यते॥",
+                transliteration = "Duhkheshv-anudvigna-manah sukheshu vigata-sprihah\nVita-raga-bhaya-krodhah sthita-dhir munir uchyate",
+                english = "One who is not disturbed in mind even amidst the threefold miseries or elated when there is happiness, and who is free from attachment, fear and anger, is called a sage of steady mind.",
+                chapter = "2.56",
+                theme = "Detachment"
+            )
         )
     )
     

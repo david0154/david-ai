@@ -60,11 +60,13 @@ class ChatManager(private val context: Context) {
             try {
                 if (!modelsDir.exists()) {
                     modelsDir.mkdirs()
-                    return@launch
                 }
                 
                 val availableModels = universalLoader.scanForModels(modelsDir)
-                if (availableModels.isEmpty()) return@launch
+                if (availableModels.isEmpty()) {
+                    universalLoader.loadModelFromAssets("models/chat_model.tflite")
+                    return@launch
+                }
                 
                 val bestModel = availableModels.firstOrNull { it.type == UniversalModelLoader.ModelType.GGUF }
                     ?: availableModels.firstOrNull { it.type == UniversalModelLoader.ModelType.ONNX }
@@ -265,12 +267,22 @@ class ChatManager(private val context: Context) {
         // TIME & DATE
         if (lower.contains("time") || lower.contains("समय") || lower.contains("நேரம்")) {
             val time = SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date())
-            return "The time is $time"
+            return when (language) {
+                "hi" -> "समय है $time"
+                "ta" -> "நேரம் $time"
+                "te" -> "సమయం $time"
+                else -> "The time is $time"
+            }
         }
 
         if (lower.contains("date") || lower.contains("तारीख") || lower.contains("தேதி")) {
             val date = SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault()).format(Date())
-            return "Today is $date"
+            return when (language) {
+                "hi" -> "आज है $date"
+                "ta" -> "இன்று $date"
+                "te" -> "ఈరోజు $date"
+                else -> "Today is $date"
+            }
         }
 
         // MATH
@@ -285,10 +297,16 @@ class ChatManager(private val context: Context) {
 
         // JOKES
         if (lower.contains("joke") || lower.contains("मजाक")) {
-            return listOf(
-                "Why don't programmers like nature? Too many bugs!",
-                "What's an AI's favorite snack? Microchips!"
-            ).random()
+            return when (language) {
+                "hi" -> listOf(
+                    "प्रोग्रामर प्रकृति को क्यों पसंद नहीं करते? बहुत सारे कीड़े!",
+                    "एआई का पसंदीदा नाश्ता क्या है? माइक्रोचिप्स!"
+                ).random()
+                else -> listOf(
+                    "Why don't programmers like nature? Too many bugs!",
+                    "What's an AI's favorite snack? Microchips!"
+                ).random()
+            }
         }
 
         // ✅ FIXED: Better default response for non-English

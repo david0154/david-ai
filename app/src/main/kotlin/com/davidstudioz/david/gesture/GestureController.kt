@@ -63,9 +63,8 @@ class GestureController(private val context: Context) {
             Log.d(TAG, "📦 Found ${files.size} files")
 
             if (files.isEmpty()) {
-                Log.w(TAG, "⚠️ No models found")
-                initializeFallback()
-                onGestureCallback("⚠️ Please download gesture models")
+                Log.w(TAG, "⚠️ No models found, loading from assets")
+                initializeWithGestureModelFromAssets("models/gesture_model.tflite")
                 return
             }
 
@@ -160,6 +159,9 @@ class GestureController(private val context: Context) {
     }
 
     private fun initializeWithGestureModel(modelFile: File): Boolean {
+        if (!modelFile.exists() || !modelFile.canRead()) {
+            return initializeWithGestureModelFromAssets(modelFile.path)
+        }
         return try {
             Log.d(TAG, "📥 Loading gesture model: ${modelFile.name}")
             val modelBytes = modelFile.readBytes()
@@ -191,6 +193,20 @@ class GestureController(private val context: Context) {
         } catch (e: Exception) {
             Log.e(TAG, "❌ Gesture model error: ${e.message}")
             false
+        }
+    }
+
+    private fun initializeWithGestureModelFromAssets(assetPath: String): Boolean {
+        try {
+            val assetManager = context.assets
+            val inputStream = assetManager.open(assetPath)
+            val file = File(context.cacheDir, assetPath.split("/").last())
+            val outputStream = file.outputStream()
+            inputStream.copyTo(outputStream)
+            return initializeWithGestureModel(file)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading gesture model from assets", e)
+            return false
         }
     }
 

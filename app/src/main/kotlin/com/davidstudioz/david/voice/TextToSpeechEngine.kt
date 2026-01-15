@@ -156,12 +156,12 @@ class TextToSpeechEngine(private val context: Context) {
                 
                 // ✅ FIXED: Apply pitch adjustment for male voice
                 when (currentGender) {
-                    "male" -> {
+                    "david" -> {
                         // Lower pitch for male voice (deeper)
                         setPitch(0.85f)
                         setSpeechRate(0.95f)
                     }
-                    "female" -> {
+                    "dayana" -> {
                         // Normal pitch for female voice
                         setPitch(1.0f)
                         setSpeechRate(1.0f)
@@ -172,7 +172,7 @@ class TextToSpeechEngine(private val context: Context) {
                 val prefs = context.getSharedPreferences("voice_settings", Context.MODE_PRIVATE)
                 prefs.edit().putString("tts_gender", gender).apply()
                 
-                Log.d(TAG, "✅ Voice changed to: ${targetVoice.name} ($gender, pitch: ${if (currentGender == "male") "0.85" else "1.0"})")
+                Log.d(TAG, "✅ Voice changed to: ${targetVoice.name} ($gender, pitch: ${if (currentGender == "david") "0.85" else "1.0"})")
             } else {
                 Log.w(TAG, "⚠️ No $gender voice found for ${currentLanguage.displayLanguage}, using default")
             }
