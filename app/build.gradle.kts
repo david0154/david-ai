@@ -9,12 +9,12 @@ plugins {
 
 android {
     namespace = "com.davidstudioz.david"
-    compileSdk = 35
+    compileSdk = 34  // ✅ FIXED: Match documentation and stable SDK
 
     defaultConfig {
         applicationId = "com.davidstudioz.david"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 34  // ✅ FIXED: Match compileSdk for consistency
         versionCode = 1
         versionName = "1.0.0"
 
@@ -25,10 +25,6 @@ android {
 
         multiDexEnabled = true
 
-        ksp {
-            arg("room.schemaLocation", "$projectDir/schemas")
-        }
-
         ndk {
             abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
             debugSymbolLevel = "NONE"
@@ -37,7 +33,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true  // ✅ CRITICAL FIX: Enable ProGuard/R8
+            isShrinkResources = true  // ✅ NEW: Remove unused resources
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -136,16 +133,17 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:1.4.1")
     implementation("androidx.camera:camera-view:1.4.1")
 
-    // ✅ ML/AI - Multiple Frameworks
-    // TensorFlow Lite
+    // ✅ ML/AI - OPTIMIZED: Keep only TensorFlow Lite
+    // TensorFlow Lite - Primary ML framework (~12MB total)
     implementation("org.tensorflow:tensorflow-lite:2.14.0")
     implementation("org.tensorflow:tensorflow-lite-gpu:2.14.0")
     implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
 
-    // ONNX Runtime for Android
-    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.17.0")
+    // ✅ REMOVED: ONNX Runtime (save ~25MB)
+    // Use TensorFlow Lite for all model inference instead
+    // Can be added back later as dynamic feature module if needed
 
-    // ML Kit
+    // ML Kit - Lightweight vision tasks (~6MB total)
     implementation("com.google.mlkit:text-recognition:16.0.1")
     implementation("com.google.mlkit:face-detection:16.1.7")
 
@@ -167,7 +165,7 @@ dependencies {
     // Web scraping
     implementation("org.jsoup:jsoup:1.18.3")
 
-    // Hilt
+    // Hilt - Dependency Injection
     implementation("com.google.dagger:hilt-android:2.52")
     ksp("com.google.dagger:hilt-compiler:2.52")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
@@ -176,13 +174,14 @@ dependencies {
     implementation("androidx.hilt:hilt-work:1.2.0")
     ksp("androidx.hilt:hilt-compiler:1.2.0")
 
-    // Room
-    val roomVersion = "2.6.1"
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-    ksp("androidx.room:room-compiler:$roomVersion")
+    // ✅ REMOVED: Room Database (not currently used, save ~2MB)
+    // Uncomment if you add database functionality:
+    // val roomVersion = "2.6.1"
+    // implementation("androidx.room:room-runtime:$roomVersion")
+    // implementation("androidx.room:room-ktx:$roomVersion")
+    // ksp("androidx.room:room-compiler:$roomVersion")
 
-    // MediaPipe
+    // MediaPipe - Gesture recognition
     implementation("com.google.mediapipe:tasks-vision:0.10.18")
 
     // Testing
