@@ -27,8 +27,9 @@ data class ChatMessage(
 )
 
 /**
- * ChatManager - COMPLETE with LlamaCpp Integration
+ * ChatManager - COMPLETE with LlamaCpp Integration + Bhagavad Gita
  * ✅ NEW: LlamaCpp GGUF model support
+ * ✅ NEW: Bhagavad Gita quotes integration (700+ verses)
  * ✅ ALL 100+ smart responses PRESERVED
  * ✅ News headlines (India)
  * ✅ Real-time weather API (500+ Indian cities)
@@ -59,6 +60,9 @@ class ChatManager(private val context: Context) {
     
     private val responseCache = ResponseCache()
     private val personalityEngine = PersonalityEngine()
+    
+    // ✅ NEW: Bhagavad Gita quotes integration
+    private val gitaQuotes = BhagavadGitaQuotes()
 
     init {
         loadLLMModel()
@@ -409,10 +413,33 @@ class ChatManager(private val context: Context) {
     }
 
     /**
-     * ✅ ALL 100+ SMART RESPONSES PRESERVED
+     * ✅ ALL 100+ SMART RESPONSES PRESERVED + Bhagavad Gita Integration
      */
     private fun generateSmartFallback(input: String): String {
         val lower = input.lowercase().trim()
+
+        // ✅ NEW: BHAGAVAD GITA QUOTES
+        if (lower.contains("gita") || lower.contains("bhagavad") ||
+            lower.contains("quote") || lower.contains("motivate") ||
+            lower.contains("inspire") || lower.contains("motivation") ||
+            lower.contains("wisdom") || lower.contains("spiritual")) {
+            return try {
+                Log.d(TAG, "🕉️ Fetching Bhagavad Gita quote")
+                when {
+                    lower.contains("karma") -> gitaQuotes.getQuoteByTheme("Karma Yoga", "en")
+                    lower.contains("peace") || lower.contains("calm") -> gitaQuotes.getQuoteByTheme("Peace", "en")
+                    lower.contains("duty") -> gitaQuotes.getQuoteByTheme("Duty", "en")
+                    lower.contains("meditation") -> gitaQuotes.getQuoteByTheme("Meditation", "en")
+                    lower.contains("devotion") -> gitaQuotes.getQuoteByTheme("Devotion", "en")
+                    lower.contains("ramayana") -> gitaQuotes.getQuoteFrom("ramayana", "en")
+                    lower.contains("purana") -> gitaQuotes.getQuoteFrom("puranas", "en")
+                    else -> gitaQuotes.getRandomQuote("en")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching Gita quote", e)
+                "Here's some wisdom: Keep doing your duty without expecting results. That's the essence of Karma Yoga!"
+            }
+        }
 
         // GREETINGS
         if (lower.matches(".*(hello|hi|hey|greetings|sup|yo).*".toRegex())) {
@@ -447,7 +474,7 @@ class ChatManager(private val context: Context) {
 
         // CAPABILITIES
         if (lower.contains("what can you do") || lower.contains("help") || lower.contains("capabilities")) {
-            return "I can:\n• Get news headlines (India)\n• Control device (WiFi, Bluetooth, flashlight, volume)\n• Get real weather data (500+ Indian cities)\n• Make calls & send messages\n• Check time & date\n• Answer questions\n• Set reminders\n• Open apps\n• And much more! Just ask!"
+            return "I can:\n• Get news headlines (India)\n• Control device (WiFi, Bluetooth, flashlight, volume)\n• Get real weather data (500+ Indian cities)\n• Make calls & send messages\n• Check time & date\n• Give motivational quotes (Bhagavad Gita)\n• Answer questions\n• Set reminders\n• Open apps\n• And much more! Just ask!"
         }
 
         // TIME & DATE
@@ -492,9 +519,9 @@ class ChatManager(private val context: Context) {
 
         // DEFAULT
         return when {
-            input.endsWith("?") -> "That's a great question! I can help with news, weather, device control, and more. What do you need?"
+            input.endsWith("?") -> "That's a great question! I can help with news, weather, device control, motivational quotes, and more. What do you need?"
             input.length < 3 -> "I'm listening. What would you like me to do?"
-            else -> "I understand you're asking about that. Try asking me about news, weather, time, or device control!"
+            else -> "I understand you're asking about that. Try asking me about news, weather, time, Gita quotes, or device control!"
         }
     }
 
@@ -575,6 +602,7 @@ class ChatManager(private val context: Context) {
             append("\n✅ Weather API: Available")
             append("\n✅ Web Search: Available")
             append("\n✅ Device Control: Available")
+            append("\n✅ Bhagavad Gita: 700+ verses")
         }
     }
     
@@ -582,7 +610,8 @@ class ChatManager(private val context: Context) {
         "gguf_ready" to llamaCppEngine.isReady().toString(),
         "model_ready" to isModelReady().toString(),
         "model_name" to (llmModelPath?.name ?: "none"),
-        "model_size_mb" to "${(llmModelPath?.length() ?: 0) / (1024 * 1024)}"
+        "model_size_mb" to "${(llmModelPath?.length() ?: 0) / (1024 * 1024)}",
+        "gita_verses" to "700+"
     )
 
     fun release() {
