@@ -5,12 +5,14 @@ import android.content.Context
 import android.util.Log
 import androidx.work.Configuration
 import androidx.work.WorkManager
+import dagger.hilt.android.HiltAndroidApp
 
 /**
  * DAVID AI Application Class
- * Main entry point for the app
- * Simple initialization without Hilt to prevent crashes
+ * Main entry point for the app with Hilt dependency injection
+ * ✅ FIXED: Added @HiltAndroidApp annotation for proper Hilt initialization
  */
+@HiltAndroidApp  // ✅ CRITICAL FIX: Enable Hilt dependency injection
 class DavidAIApp : Application(), Configuration.Provider {
 
     companion object {
@@ -26,7 +28,7 @@ class DavidAIApp : Application(), Configuration.Provider {
         instance = this
         
         try {
-            Log.d(TAG, "D.A.V.I.D AI Application starting...")
+            Log.d(TAG, "D.A.V.I.D AI Application starting with Hilt...")
             
             // Initialize WorkManager with custom configuration
             try {
@@ -39,7 +41,7 @@ class DavidAIApp : Application(), Configuration.Provider {
             // Set up global exception handler to prevent app crashes
             setupExceptionHandler()
             
-            Log.d(TAG, "D.A.V.I.D AI Application initialized successfully")
+            Log.d(TAG, "D.A.V.I.D AI Application initialized successfully with Hilt DI")
             
         } catch (e: Exception) {
             Log.e(TAG, "Error during Application initialization", e)
